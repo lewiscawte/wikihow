@@ -1,3 +1,0 @@
-<?
-echo  date ("YmdH") . "\n";
-

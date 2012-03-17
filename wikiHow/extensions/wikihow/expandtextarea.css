@@ -1,7 +1,0 @@
-DIV#main .taButtons { float: right; }
-DIV#main .taButtons P { 
-    margin: 8px 0; 
-    cursor: pointer;
-    cursor: hand;
-}
-DIV#main TEXTAREA { width: 93%; }
