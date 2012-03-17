@@ -1,0 +1,12 @@
+# *.whstatic.com, non-www.wikihow.com robots.txt
+
+# Google is special case because it'll index articles it can't fetch
+User-agent: Googlebot
+Disallow: /index.php
+Disallow: /Special:
+Noindex: /
+
+# Everyone else
+User-agent: *
+Disallow: /
+
