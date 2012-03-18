@@ -1,31 +1,26 @@
 <?php
-
-if ( ! defined( 'MEDIAWIKI' ) ) die();
-
-/**#@+
+/**
  * Server side helper for the Firefox toolbar
- * 
- * @package MediaWiki
- * @subpackage Extensions
  *
- *
- *
+ * @file
+ * @ingroup Extensions
+ * @version 1.0
  * @author Travis Derouin <travis@wikihow.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU General Public License 2.0 or later
  */
-/**
- *
- * @package MediaWiki
- * @subpackage SpecialPage
- */
 
+if ( !defined( 'MEDIAWIKI' ) ) {
+	die();
+}
+
+// Extension credits that will show up on Special:Version
 $wgExtensionCredits['specialpage'][] = array(
-    'name' => 'Toolbarhelper',
-    'author' => 'Travis <travis@wikihow.com>',
-    'description' => 'Server side helper for the toolbar, could be replaced by RCBuddy at some point',
+	'name' => 'ToolbarHelper',
+	'version' => '1.0',
+	'author' => 'Travis Derouin',
+	'description' => 'Server-side helper for the toolbar, could be replaced by RCBuddy at some point',
 );
 
-
-$wgSpecialPages['Toolbarhelper'] = 'Toolbarhelper';
-$wgAutoloadClasses['Toolbarhelper'] = dirname( __FILE__ ) . '/ToolbarHelper.body.php';
- 
+// Set up the new special page
+$wgAutoloadClasses['ToolbarHelper'] = dirname( __FILE__ ) . '/ToolbarHelper.body.php';
+$wgSpecialPages['ToolbarHelper'] = 'Toolbarhelper';
