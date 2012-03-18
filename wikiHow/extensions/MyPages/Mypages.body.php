@@ -1,22 +1,29 @@
-<?
+<?php
 
-class Mypages extends SpecialPage {
+class MyPages extends SpecialPage {
 
-	function __construct() {
-		SpecialPage::SpecialPage( 'Mypages' );
+	/**
+	 * Constructor -- set up the new special page
+	 */
+	public function __construct() {
+		parent::__construct( 'MyPages' );
 	}
 
-	function execute($par) {
-		global $wgOut, $wgUser, $wgRequest; 
+	/**
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the special page or null
+	 */
+	public function execute( $par ) {
+		global $wgOut, $wgUser;
 
-		if ('Fanmail' == $par) {
-			$url = Title::makeTitle(NS_USER_KUDOS, $wgUser->getName())->getFullURL();
+		if ( $par == 'Fanmail' ) {
+			$url = Title::makeTitle( NS_USER_KUDOS, $wgUser->getName() )->getFullURL();
 		} else { // default to 'Contributions' instead of empty page
-			$url = Title::makeTitle(NS_SPECIAL, "Contributions")->getFullURL() . "/" . $wgUser->getName();
+			$url = SpecialPage::getTitleFor( 'Contributions', $wgUser->getName() )->getFullURL();
 		}
 
-		$wgOut->redirect($url);
+		$wgOut->redirect( $url );
 	}
 
 }
-

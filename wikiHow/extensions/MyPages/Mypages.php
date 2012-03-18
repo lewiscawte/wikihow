@@ -1,27 +1,26 @@
 <?php
-if ( ! defined( 'MEDIAWIKI' ) )
-	die();
-    
-/**#@+
- * An extension that allows users to rate articles. 
- * 
- * @package MediaWiki
- * @subpackage Extensions
+/**
+ * An extension that provides redirecting static URLs to dynamic user pages.
  *
- * @link http://www.wikihow.com/WikiHow:Mypages-Extension Documentation
- *
- *
+ * @file
+ * @ingroup Extensions
+ * @version 1.0
  * @author Travis Derouin <travis@wikihow.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU General Public License 2.0 or later
  */
 
+if ( !defined( 'MEDIAWIKI' ) ) {
+	die();
+}
+
+// Extension credits that will show up on Special:Version
 $wgExtensionCredits['specialpage'][] = array(
-	'name' => 'Mypages',
+	'name' => 'MyPages',
+	'version' => '1.0',
 	'author' => 'Travis Derouin',
-	'description' => 'Provides redirecting static urls to dynamic user pages',
+	'description' => 'Provides redirecting static URLs to dynamic user pages',
 );
 
-
-$wgSpecialPages['Mypages'] = 'Mypages';
-$wgAutoloadClasses['Mypages'] = dirname( __FILE__ ) . '/Mypages.body.php';
-
+// Set up the new special page
+$wgAutoloadClasses['MyPages'] = dirname( __FILE__ ) . '/Mypages.body.php';
+$wgSpecialPages['MyPages'] = 'MyPages';
