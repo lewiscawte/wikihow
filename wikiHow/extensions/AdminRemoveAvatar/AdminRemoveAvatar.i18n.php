@@ -21,4 +21,6 @@ This change will be visible to non-cookied users within $2 hours and will be vis
 See results: [[User:$1|$1]]",
 	'adminremoveavatar-reset' => 'reset',
 	'adminremoveavatar-rules' => 'The only images you should remove are those with nudity, obscenity, violence, or expressions of hate - everything else is fair game',
+	// For Special:ListGroupRights
+	'right-adminremoveavatar' => "Remove other user's avatars",
 );
