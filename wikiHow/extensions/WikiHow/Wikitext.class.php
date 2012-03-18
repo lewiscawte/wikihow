@@ -45,7 +45,7 @@ class Wikitext {
 
 	/**
 	 * Remove wikitext markup from a single section of an article to return
-	 * the flattened text.  Removes some unicode characters, templates, 
+	 * the flattened text.  Removes some unicode characters, templates,
 	 * links (leaves the descriptive text in the link though) and images.
 	 * @param string $text wikitext to flatten
 	 * @return string the flattened text
@@ -60,7 +60,7 @@ class Wikitext {
 
 		// remove [[Image:foo.jpg]] images and [[Link]] links
 		$text = preg_replace_callback(
-			'@\[\[([^\]|]+(#[^\]|]*)?)((\|[^\]|]*)*\|([^\]|]*))?\]\]@', 
+			'@\[\[([^\]|]+(#[^\]|]*)?)((\|[^\]|]*)*\|([^\]|]*))?\]\]@',
 			function ($m) {
 
 				// if the link text has Image: or something at the start,
@@ -81,9 +81,9 @@ class Wikitext {
 
 		// remove [http://link.com/ Link] links
 		$text = preg_replace_callback(
-			'@\[http://[^\] ]+( ([^\]]*))?\]@', 
+			'@\[http://[^\] ]+( ([^\]]*))?\]@',
 			function ($m) {
-				// if the link looks like [http://link/ Link], we try to 
+				// if the link looks like [http://link/ Link], we try to
 				// grab the stuff after the space
 				if (isset($m[2])) {
 					return $m[2];

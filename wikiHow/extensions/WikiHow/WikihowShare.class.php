@@ -2,51 +2,51 @@
 
 
 class WikihowShare{
-	
+
 	public static function getTopShareButtons(){
 		global $wgLanguageCode, $wgTitle, $wgUser, $wgServer;
-		
+
 		$action = self::getAction();
 
 		if($wgTitle->getNamespace() != NS_MAIN || $action != "view" || self::isMainPage($action))
 			return "";
 
 		$sk = $wgUser->getSkin();
-		
+
 		$url = urlencode($wgServer . "/" . $wgTitle->getPrefixedURL());
 		$img = urlencode(self::getPinterestImage($wgTitle));
-		$desc = urlencode(wfMsg('howto', $wgTitle->getText()) . self::getPinterestTitleInfo($wgTitle)); 
-				
+		$desc = urlencode(wfMsg('howto', $wgTitle->getText()) . self::getPinterestTitleInfo($wgTitle));
+
 		$fb = '<div class="like_button"><fb:like href="' . $url . '" send="false" layout="box_count" width="46" show_faces="false"></fb:like></div>';
 		$gp1 = '<div class="gplus1_button"><g:plusone size="tall" callback="plusone_vote"></g:plusone></div>';
 
 		$pinterest = '<div id="pinterest"><a href="http://pinterest.com/pin/create/button/?url=' . $url . '&media=' . $img . '&description=' . $desc . '" class="pin-it-button" count-layout="vertical">Pin It</a></div>';
 		$tb = '<div class="admin_state"><a href="http://twitter.com/share" data-lang="' . $wgLanguageCode . '" style="display:none; background-image: none; color: #ffffff;" class="twitter-share-button" data-count="vertical" data-via="wikiHow" data-text="How to ' . htmlspecialchars($wgTitle->getText()) . '" data-related="JackHerrick:Founder of wikiHow">Tweet</a></div>';
-		
+
 		if ($wgLanguageCode != 'en') {
 			return $gp1 . $tb . $fb;
 		}
 		else {
 			return $gp1 . $fb . $pinterest;
 		}
-		
+
 	}
-	
+
 	public static function getBottomShareButtons(){
-		
+
 		global $wgLanguageCode, $wgTitle, $wgServer;
-		
+
 		$action = self::getAction();
-		
+
 		if($wgTitle->getNamespace() != NS_MAIN || $action != "view" || self::isMainPage($action))
 			return "";
-		
+
 		$url = urlencode($wgServer . "/" . $wgTitle->getPrefixedURL());
-				
+
 		$fb_share = '<div class="like_button like_tools"><fb:like href="' . $url . '" send="false" layout="button_count" width="86" show_faces="false"></fb:like></div>';
 		$tb_share = '<a href="http://twitter.com/share" data-lang="' . $wgLanguageCode . '" style="display:none; background-image: none; color: #ffffff;" class="twitter-share-button" data-count="horizontal" data-via="wikiHow" data-text="How to ' . htmlspecialchars($wgTitle->getText()) . '" data-related="JackHerrick:Founder of wikiHow">Tweet</a>';
 
-		
+
 		if ($wgLanguageCode != 'en') {
 			return $fb_share . $tb_share;
 		}
@@ -54,26 +54,26 @@ class WikihowShare{
 			return $fb_share . $tb_share;
 		}
 	}
-	
+
 	function getAction() {
 		global $wgRequest;
-		
+
 		$action = $wgRequest->getVal("action", "view");
 		if ($wgRequest->getVal("diff", "") != "")
 			$action = "diff";
-		
+
 		return $action;
 	}
-	
+
 	function isMainPage($action) {
 		global $wgTitle;
-		
+
 		return ($wgTitle
 			&& $wgTitle->getNamespace() == NS_MAIN
 			&& $wgTitle->getText() == wfMsg('mainpage')
 			&& $action == 'view');
 	}
-	
+
 	function getPinterestImage($title) {
 		global $wgMemc, $wgLanguageCode, $wgContLang, $wgUser;
 
@@ -82,7 +82,7 @@ class WikihowShare{
 		if ($wgMemc->get($key)) {
 			return $wgMemc->get($key);
 		}
-		
+
 		$sk = $wgUser->getSkin();
 
 		if (($title->getNamespace() == NS_MAIN) || ($title->getNamespace() == NS_CATEGORY) ) {
@@ -168,7 +168,7 @@ class WikihowShare{
 			}
 		}
 	}
-	
+
 	public static function getPinterestTitleInfo($title) {
 		$r = Revision::newFromTitle($title);
 		if ($r == null) return '';
@@ -185,10 +185,10 @@ class WikihowShare{
 		} else {
 			$titleDetail = '';
 		}
-		
+
 		return $titleDetail;
 	}
-	
+
 }
 
 ?>

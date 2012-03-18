@@ -59,7 +59,7 @@ class WikiHow {
 
 	function loadFromText ($text) {
 		global $wgContLang;
-		
+
 		//echo "<BR>$text<BR>";
 
 		// extract the category if there is one
@@ -343,8 +343,8 @@ class WikiHow {
 			$good_titles[] = wfMsg($s);
 		}
 
-	 	while (true && $index < $count) {	
-	 		$section = $article->getSection($text, $index); 
+	 	while (true && $index < $count) {
+	 		$section = $article->getSection($text, $index);
 	 		$title = WikiHow::getSectionTitle($section);
 
 	 		if ($title == wfMsg('steps')) {
