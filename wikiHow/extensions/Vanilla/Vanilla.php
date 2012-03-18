@@ -1,101 +1,90 @@
-<?
+<?php
+/**
+ * Vanilla extension -- integration with Vanilla forums (http://vanillaforums.org/)
+ *
+ * @file
+ * @ingroup Extensions
+ * @version 1.0
+ * @author Travis Derouin <travis@wikihow.com>
+ * @author Jack Phoenix <jack@countervandalism.net>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU General Public License 2.0 or later
+ */
 
-$wgHooks['UserLogout'][] = array("wfLogoutOfVanilla");
-$wgHooks['UserLoginComplete'][] = array("wfProcessVanillaRedirect"); 
-$wgHooks['UserLoginComplete'][] = array("wfLogoutOfVanilla"); 
-$wgHooks['BlockIpComplete'][] = 'wfBlockVanillaUser';
-$wgHooks['AvatarUpdated'][] = 'wfUpdateVanillaPicture';
-
-function wfLogoutOfVanilla() {
-	global $wgCookieDomain;
-	$cookies = array('Vanilla', 'Vanilla-Volatile');
-	foreach ($cookies as $c) {
-		setcookie($c, ' ', time() - 3600, '/', '.' . $wgCookieDomain);
-		unset($_COOKIE[$c]);
-	}
-	return true;
+if ( !defined( 'MEDIAWIKI' ) ) {
+	die( 'This is not a valid entry point.' );
 }
 
-function wfProcessVanillaRedirect() {
-	global $wgRequest, $wgOut;
-	if ($wgRequest->getVal('returnto') == 'vanilla') {
-		$wgOut->redirect('http://forums.wikihow.com');
-	}
-	return true;
-}
+// Extension credits that will show up on Special:Version
+$wgExtensionCredits['other'][] = array(
+	'name' => 'Vanilla',
+	'version' => '1.0',
+	'author' => array( 'Travis Derouin', 'Jack Phoenix' ),
+	'description' => 'Integration with [http://vanillaforums.org/ Vanilla] forums',
+	'url' => 'http://www.mediawiki.org/wiki/Extension:Vanilla'
+);
 
+// Settings for the extension so that it knows what the Vanilla DB is called
+// and so on.
+/*
+$wgVanillaDB = array(
+	'host' => WH_VANILLA_HOST,
+	'dbname' => WH_VANILLA_DBNAME, // name of the Vanilla DB
+	'user' => WH_VANILLA_USER,
+	'password' => WH_VANILLA_PASSWORD
+);
+*/
+$wgVanillaDB = array();
+
+// Set up the new special page and i18n
+$dir = dirname( __FILE__ ) . '/';
+$wgExtensionMessagesFiles['Vanilla'] = $dir . 'Vanilla.i18n.php';
+$wgAutoloadClasses['Vanilla'] = $dir . 'Vanilla.body.php';
 $wgSpecialPages['Vanilla'] = 'Vanilla';
-$dir = dirname(__FILE__) . '/';
-$wgAutoloadClasses['Vanilla']		  = $dir . 'Vanilla.body.php';
 
+// Hooked functions
+$wgHooks['UserLogout'][] = 'Vanilla::destroyCookies';
+$wgHooks['UserLoginComplete'][] = 'Vanilla::processVanillaRedirect';
+$wgHooks['UserLoginComplete'][] = 'Vanilla::destroyCookies';
+$wgHooks['BlockIpComplete'][] = 'Vanilla::blockVanillaUser';
+$wgHooks['AvatarUpdated'][] = 'Vanilla::setAvatar';
 
-#$wgHooks['ArticleSaveComplete'][] = array("wfCheckIp");
-#$wgHooks['GeneratingUrl'][] = array("wfCheckPAD");
+// @todo FIXME/CHECKME: still needed?
+$wgHooks['ArticleSaveComplete'][] = 'wfCheckIp';
 
-function wfCheckIp($article, $user, $text) {
-	global $wgUser;
+$wgVanillaEmergencyContact = 'alerts@localhost';
+
+/**
+ * Make sure that no real user is using the IP 192.168.100 but if someone is,
+ * send an alert e-mail to the server administrator.
+ *
+ * @param $article Object: Article object
+ * @param $user Object: User object
+ * @param $text
+ * @return Boolean: true
+ */
+function wfCheckIp( $article, $user, $text ) {
+	global $wgUser, $wgVanillaEmergencyContact;
 	$ip = wfGetIP();
-	if (strpos($ip, "192.168.100") !== false ){	
-		$alerts = new MailAddress("alerts@wikihow.com");
-		$subject = "Bad ip connected to " . wfHostname() . " - " . date("r");
-		$body = "UHOH: $ip User {$wgUser->getName()} " 
-				. "\n-------------------------------------\n" 
-				. print_r(getallheaders(), true) 
-				. "\n-------------------------------------\n" 
-				. print_r($_POST, true) 
-				. "\n-------------------------------------\n" 
-				. print_r($_SERVER, true) 
-				. "\n-------------------------------------\n" 
-				. print_r($wgUser, true) 
-				. "\n-------------------------------------\n" 
-				.  wfBacktrace() 
-				. "\n-------------------------------------\n" 
-				. print_r($article) 
+	if ( strpos( $ip, '192.168.100' ) !== false ) {
+		$alerts = new MailAddress( $wgVanillaEmergencyContact );
+		$subject = 'Bad IP connected to ' . wfHostname() . ' - ' . date( 'r' );
+		$body = "UHOH: $ip User {$wgUser->getName()} "
+				. "\n-------------------------------------\n"
+				. print_r( getallheaders(), true )
+				. "\n-------------------------------------\n"
+				. print_r( $_POST, true )
+				. "\n-------------------------------------\n"
+				. print_r( $_SERVER, true )
+				. "\n-------------------------------------\n"
+				. print_r( $wgUser, true )
+				. "\n-------------------------------------\n"
+				. wfBacktrace()
+				. "\n-------------------------------------\n"
+				. print_r( $article )
 				. "\n";
-		UserMailer::send($alerts, $alerts, $subject, $body, $alerts); 
-		error_log($body);
-		wfDebug($body);	
-	}
-	return true;
-}
-
-function wfBlockVanillaUser($block, $user) {
-	global $wgVanillaDB;
-	try {
-		if ($block->mUser == 0) return true;
-		Vanilla::setUserRole($block->mUser, 1);
-	} catch (Exception $e) {
-		print_r($e); exit;
-	}
-	return true;
-}
-
-function wfUpdateVanillaPicture($user) {
-	Vanilla::setAvatar($user); 
-	return true;
-}
-
-function wfCheckPAD($url, $pad) {
-	global $wgServer, $wgTitle, $wgCookieDomain; 
-	if ($wgServer == "http://testers.wikihow.com") return true;
-	if (($wgServer == "http://www.wikihow.com" || strpos(wfHostname(), "wikihow.com") !== false)
-		&& strpos($pad, "whstatic") === false) {
-        $alerts = new MailAddress("alerts@wikihow.com");
-		// format of date to correspond to varnish file 04/Dec/2010:07:19:06 -0800
-		$now = date("d/M/Y:h:i:s O");
-        $subject = "Not using PAD for thumbnail on " . wfHostname() . " - " . $now;
-		$body  = "article {$wgTitle->getFullURL()}\n\n
-Url: $url \n\n 
-pad $pad \n\n
-server variables " . print_r($_SERVER, true) . "\n\n allheaders: " 
-			. print_r(getallheaders(), true) 
-			. "\n\n wgserver $wgServer
-\ncookie domain $wgCookieDomain
-\n Title " . print_r($wgTitle, true) 
-			. "\n\nbacktrace: " . strip_tags(wfBacktrace()); 
-        UserMailer::send($alerts, $alerts, $subject, $body, $alerts);
-        error_log($body);
-        wfDebug($body);
+		UserMailer::send( $alerts, $alerts, $subject, $body, $alerts );
+		error_log( $body );
+		wfDebugLog( 'Vanilla', $body );
 	}
 	return true;
 }
