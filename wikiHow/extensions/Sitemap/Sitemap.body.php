@@ -2,96 +2,128 @@
 
 class Sitemap extends SpecialPage {
 
-	function __construct() {
-		SpecialPage::SpecialPage( 'Sitemap' );
+	/**
+	 * Constructor -- set up the new special page
+	 */
+	public function __construct() {
+		parent::__construct( 'Sitemap' );
 	}
 
+	/**
+	 * Get the top-level categories by parsing the page defined in
+	 * MediaWiki:Sitemap-article and excluding the categories listed in
+	 * MediaWiki:Sitemap-excluded-categories.
+	 *
+	 * @return Array: array of top-level categories
+	 */
 	function getTopLevelCategories() {
-		global $wgCategoriesArticle;
-		wfLoadExtensionMessages('Sitemap');
-		$results = array (); 
-		$revision = Revision::newFromTitle( Title::newFromText( wfMsg('categories_article') ) );
-		if (!$revision) return $results;
+		$results = array();
+		$categoryArticle = Title::newFromText( wfMsgForContent( 'sitemap-article' ) );
+		$excludedCategories = explode( "\n", wfMsgForContent( 'sitemap-excluded-categories' ) );
 
-		// INTL: If there is a redirect to a localized page name, follow it
-		if(strpos($revision->getText(), "#REDIRECT") !== false) {
-			$revision = Revision::newFromTitle( Title::newFromRedirect($revision->getText()));
+		$revision = Revision::newFromTitle( $categoryArticle );
+		if ( !$revision ) {
+			return $results;
 		}
 
-		$lines = split("\n", $revision->getText() );
-		foreach ($lines as $line) {
-			if (preg_match ('/^\*[^\*]/', $line)) {
-				$line = trim(substr($line, 1)) ;
-				switch ($line) {
-					case "Other":
-					case "wikiHow":
-						break;
-					default:
-						$results [] = $line;
+		// INTL: If there is a redirect to a localized page name, follow it
+		if( strpos( $revision->getText(), '#REDIRECT' ) !== false ) {
+			$revision = Revision::newFromTitle( Title::newFromRedirect( $revision->getText() ) );
+		}
+
+		$lines = explode( "\n", $revision->getText() );
+		foreach ( $lines as $line ) {
+			if ( preg_match( '/^\*[^\*]/', $line ) ) {
+				$line = trim( substr( $line, 1 ) );
+				// If $line is not an excluded category (as defined by the MW
+				// message), add it to the $results array
+				if ( !in_array( $line, $excludedCategories ) ) {
+					$results[] = $line;
 				}
 			}
 		}
 		return $results;
 	}
 
-	function getSubcategories($t) {
-		$dbr =& wfGetDB( DB_SLAVE );
+	/**
+	 * Get the subcategories for a given Title object.
+	 *
+	 * @param $t Object: Title object (usually a page in the category NS)
+	 * @return Array: array of subcategories (page_title of each subcategory)
+	 */
+	function getSubcategories( $t ) {
+	 	$dbr = wfGetDB( DB_SLAVE );
 		$subcats = array();
-		$res = $dbr->select ( array ('categorylinks', 'page'),
-			array('page_title'),
-			array('page_id=cl_from',
-				'cl_to' => $t->getDBKey(),
-				'page_namespace=' .NS_CATEGORY
+		$res = $dbr->select(
+			array( 'categorylinks', 'page' ),
+			array( 'page_title' ),
+			array(
+				'page_id = cl_from',
+				'cl_to' => $t->getDBkey(),
+				'page_namespace' => NS_CATEGORY
 			),
-			"Sitemap:wfGetSubcategories"
+			__METHOD__
 		);
-		while ($row = $dbr->fetchObject($res)) {
-			if (strpos($row->page_title, 'Requests') !== false) continue;
+		foreach ( $res as $row ) {
+			// @todo FIXME: not very internationally compatible, eh?
+			if( strpos( $row->page_title, 'Requests' ) !== false ) {
+				continue;
+			}
 			$subcats[] = $row->page_title;
 		}
 		return $subcats;
 	}
-	
-	function execute($par) {
-		global $wgOut, $wgUser;
-		$wgOut->setRobotPolicy("index,follow");
-		$sk = $wgUser->getSkin();
+
+	/**
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the page or null
+	 */
+	public function execute( $par ) {
+		global $wgOut;
+
+		// Allow search robots to index this page, obviously
+		$wgOut->setRobotPolicy( 'index,follow' );
+
+		// Add CSS
+		if ( defined( 'MW_SUPPORTS_RESOURCE_MODULES' ) ) {
+			$wgOut->addModules( 'ext.sitemap' );
+		} else {
+			global $wgScriptPath;
+			$wgOut->addExtensionStyle( $wgScriptPath . '/extensions/Sitemap/sitemap.css' );
+		}
+
 		$topcats = $this->getTopLevelCategories();
 
-		$wgOut->setHTMLTitle('wikiHow Sitemap');
+		$wgOut->setHTMLTitle( wfMsg( 'sitemap' ) );
 
 		$count = 0;
-		$wgOut->addHTML("
-			<style>
-				#catentry li {
-					margin-bottom: 0;
-				}
-				.cats td {
-					vertical-align: top;
-					border: 1px solid #C3D9FF;
-					padding: 5px;
-				}
-			</style>
-			<table align='center' class='cats' width='90%' cellspacing=10px>");
+		$wgOut->addHTML(
+			'<table align="center" class="cats" width="90%" cellspacing="10px">'
+		);
 
-		foreach ($topcats as $cat) {
-			$t = Title::newFromText($cat, NS_CATEGORY);
-			$subcats = $this->getSubcategories($t);
-			if ($count % 2 == 0)
-				$wgOut->addHTML("<tr>");
-			$wgOut->addHTML ( "<td><h3>" . $sk->makeLinkObj($t, $t->getText()) . "</h3><ul id='catentry'>");
-			foreach ($subcats as $sub) {
-				$t = Title::newFromText($sub, NS_CATEGORY);
-				$wgOut->addHTML ( "<li>" . $sk->makeLinkObj($t, $t->getText()) . "</li>\n");
+		foreach ( $topcats as $cat ) {
+			$t = Title::newFromText( $cat, NS_CATEGORY );
+			$subcats = $this->getSubcategories( $t );
+			if ( $count % 2 == 0 ) {
+				$wgOut->addHTML( '<tr>' );
 			}
-			$wgOut->addHTML("</ul></td>\n");
-			if ($count % 2 == 1)
-				$wgOut->addHTML("</tr>");
+			$wgOut->addHTML(
+				'<td><h3>' . Linker::link($t, $t->getText() ) .
+				'</h3><ul id="catentry">'
+			);
+			foreach ( $subcats as $sub ) {
+				$t = Title::newFromText( $sub, NS_CATEGORY );
+				$wgOut->addHTML( '<li>' . Linker::link( $t, $t->getText() ) . "</li>\n" );
+			}
+			$wgOut->addHTML( "</ul></td>\n" );
+			if ( $count % 2 == 1 ) {
+				$wgOut->addHTML( '</tr>' );
+			}
 			$count++;
 		}
 
-		$wgOut->addHTML("</table>");
+		$wgOut->addHTML( '</table>' );
 	}
 
 }
-
