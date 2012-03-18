@@ -1,27 +1,28 @@
-<?
+<?php
 
-if (!defined('MEDIAWIKI')) die();
+class AdminResetPassword extends SpecialPage {
 
-class AdminResetPassword extends UnlistedSpecialPage {
-
-	function __construct() {
-		UnlistedSpecialPage::UnlistedSpecialPage('AdminResetPassword');
+	/**
+	 * Constructor -- set up the new special page
+	 */
+	public function __construct() {
+		parent::__construct( 'AdminResetPassword', 'adminresetpassword' );
 	}
 
 	/**
-	 * Resets a user's password (account found by username). The Logic here
+	 * Resets a user's password (account found by username). The logic here
 	 * was lifted from LoginReminder.body.php (but it wasn't generalized
-	 * there -- it was for email only).
+	 * there -- it was for e-mail only).
 	 *
-	 * @param $username string, the username
-	 * @return a temporary password string to give to user
+	 * @param $username String: the username
+	 * @return String: a temporary password string to give to the user
 	 */
-	function resetPassword($username) {
-		$user = User::newFromName($username);
-		if ($user->getID() > 0) {
-			$newPassword = $user->randomPassword();
+	function resetPassword( $username ) {
+		$user = User::newFromName( $username );
+		if ( $user->getID() > 0 ) {
+			$newPassword = User::randomPassword();
 			// TODO: log this action somewhere, along with which user did it
-			$user->setNewpassword($newPassword, false);
+			$user->setNewpassword( $newPassword, false );
 			$user->saveSettings();
 			return $newPassword;
 		} else {
@@ -30,79 +31,76 @@ class AdminResetPassword extends UnlistedSpecialPage {
 	}
 
 	/**
-	 * Execute special page.  Only available to wikihow staff.
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the special page or null
 	 */
-	function execute() {
-		global $wgRequest, $wgOut, $wgUser, $wgLang;
+	public function execute( $par ) {
+		global $wgRequest, $wgOut, $wgUser;
 
-		$userGroups = $wgUser->getGroups();
-		if ($wgUser->isBlocked() || !in_array('staff', $userGroups)) {
-			$wgOut->setRobotpolicy('noindex,nofollow');
-			$wgOut->errorpage('nosuchspecialpage', 'nospecialpagetext');
+		// Check permissions
+		if ( !$wgUser->isAllowed( 'adminresetpassword' ) ) {
+			$this->displayRestrictionError();
 			return;
 		}
 
-		if ($wgRequest->wasPosted()) {
-			$username = $wgRequest->getVal('username', '');
-			$wgOut->setArticleBodyOnly(true);
-			$newPass = $this->resetPassword($username);
-			if ($newPass) {
-				$url = 'http://www.wikihow.com/Special:Userlogin';
-				$tmpl = <<<EOHTML
-<p>Account '{$username}' has been reset.  No email has been sent to the user.</p>
-<p>New password: $newPass</p>
-<p>User can login here: <a href='$url'>$url</a></p>
-EOHTML;
-				$result = array('result' => $tmpl);
+		// Show a message if the database is in read-only mode
+		if ( wfReadOnly() ) {
+			$wgOut->readOnlyPage();
+			return;
+		}
+
+		// If the user is blocked, they don't need to access this page
+		if ( $wgUser->isBlocked() ) {
+			$wgOut->blockedPage();
+			return;
+		}
+
+		// The JS file POSTs into this very page
+		if ( $wgRequest->wasPosted() ) {
+			$username = $wgRequest->getVal( 'username', '' );
+
+			// So that we don't get a special page inside a special page :P
+			// We're not interested in the skin, we just need the content
+			$wgOut->setArticleBodyOnly( true );
+
+			$newPass = $this->resetPassword( $username );
+
+			if ( $newPass ) {
+				$url = SpecialPage::getTitleFor( 'Userlogin' )->getFullURL();
+				$tmpl = wfMessage( 'adminresetpassword-success', $username, $newPass, $url )->parseAsBlock();
+				$result = array( 'result' => $tmpl );
 			} else {
-				$result = array('result' => "error: user '{$username}' not found");
+				$result = array(
+					'result' => wfMsg( 'adminresetpassword-error', $username )
+				);
 			}
-			print json_encode($result);
+			echo json_encode( $result );
 			return;
 		}
 
-		$wgOut->setHTMLTitle('Admin - Reset User Password - wikiHow');
+		// Set headers, such as the page title, robot policy, etc.
+		$this->setHeaders();
 
-$tmpl = <<<EOHTML
-<form method="post" action="/Special:AdminResetPassword">
-<h4>Enter username of account to reset</h4>
-<br/>
+		$enter = wfMsg( 'adminresetpassword-enter-username' );
+		$reset = wfMsg( 'adminresetpassword-reset' );
+		$postURL = $this->getTitle()->getFullURL();
+		$tmpl = <<<EOHTML
+<form method="post" action="$postURL">
+<h4>$enter</h4>
+<br />
 <input id="reset-username" type="text" size="40" />
-<button id="reset-go" disabled="disabled">reset</button><br/>
-<br/>
+<button id="reset-go" disabled="disabled">$reset</button><br />
+<br />
 <div id="reset-result">
 </div>
 </form>
-
-<script>
-(function($) {
-	$(document).ready(function() {
-		$('#reset-go')
-			.attr('disabled', '')
-			.click(function () {
-				$('#reset-result').html('loading ...');
-				$.post('/Special:AdminResetPassword',
-					{ 'username': $('#reset-username').val() },
-					function(data) {
-						$('#reset-result').html(data['result']);
-						$('#reset-username').focus();
-					},
-					'json');
-				return false;
-			});
-		$('#reset-username')
-			.focus()
-			.keypress(function (evt) {
-				if (evt.which == 13) { // if user hits 'enter' key
-					$('#reset-go').click();
-					return false;
-				}
-			});
-	});
-})(jQuery);
-</script>
 EOHTML;
 
-		$wgOut->addHTML($tmpl);
+		// Add JS
+		$wgOut->addModules( 'ext.adminResetPassword' );
+
+		// Output the form
+		$wgOut->addHTML( $tmpl );
 	}
 }
