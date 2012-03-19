@@ -2,7 +2,7 @@
 	require_once('commandLine.inc');
 
 	function escapeDuck($str) {
-		return preg_replace("@[\n\t]@", " ", $str); 
+		return trim(preg_replace("@[\n\t]@", " ", $str)); 
 	}
 
 	function flatten($arg) {
@@ -22,7 +22,7 @@
 
 	$res = $dbr->select('page', array('page_namespace', 'page_title'), array('page_namespace'=>NS_MAIN, 'page_is_redirect'=>0
 		//, 'page_title'=>'Get-Six-Pack-Abs'	
-		//, 'page_id=1082596'
+		// , 'page_id=12813'
 		, 'page_id NOT IN (5, 5791)'
 		),
 			"duck-duck-go",
@@ -53,16 +53,33 @@
 
 		$text = $r->getText(); 
 
-		$steps = preg_split("@^(#)@im", Article::getSection($text, 1), 0, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY); 
-		while (sizeof($steps) > 0) {
-			$s = array_shift($steps);
-			if ($s == "#") {
+		$sx = array();
+		$index = 1; 
+		while ($section = Article::getSection($text, $index)) {
+			$steps = preg_split("@^(#)@im", $section, 0, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY); 
+			$found = false;
+			while (sizeof($steps) > 0) {
 				$s = array_shift($steps);
-				$s = preg_replace("@\[\[Image:[^\]]*\]\]@", "", $s); 
-				$first_step = escapeDuck(strip_tags($wgOut->parse(($s))));
+				if ($s == "#") {
+					$s = array_shift($steps);
+					$s = preg_replace("@\[\[Image:[^\]]*\]\]@", "", $s); 
+					$sx[] = escapeDuck(strip_tags($wgOut->parse(($s))));
+					$found = true;
+					if (sizeof($sx) > 1 || strlen($sx[0]) > 50) {
+						break;
+					}
+				}
+			}
+			if ($found) {
 				break;
 			}
+			$index++;
 		}
+		if (sizeof($sx) == 1) {
+			$sx[] = ""; // keep # of columns consistent
+		}
+
+#print_r($sx); 
 
 		$intro = Article::getSection($text, 0);
 		$photo = "";
@@ -129,7 +146,9 @@
 */
 
 		#$key = escapeDuck(generateSearchKey($t->getText()));
-		echo "{$t->getArticleID()}\t{$t->getText()}\t{$t->getFullURL()}\t$first_step\t$photo\t$cat_str\t$related_str\n";
+		echo "{$t->getArticleID()}\t{$t->getText()}\t{$t->getFullURL()}\t" 
+			. implode("\t", $sx) 
+			. "\t$photo\t$cat_str\t$related_str\n";
 		$index++;
 		if ($index % 1000 == 0) {
 			//echo "#" . date("r") . " - " . (memory_get_usage() - $baseMemory) . "\n";

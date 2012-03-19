@@ -13,6 +13,9 @@ if ($wgLanguageCode == 'en') {
 	require_once("$IP/extensions/wikihow/thumbsup/ThumbsUp.php");
 	require_once("$IP/extensions/wikihow/thumbsup/ThumbsNotifications.php");
 	require_once("$IP/extensions/wikihow/thumbsup/ThumbsEmailNotifications.php");
+	require_once("$IP/extensions/wikihow/IheartwikiHow.php");
+	require_once("$IP/extensions/wikihow/fblogin/FBLink.php");
+	require_once("$IP/extensions/wikihow/h5e/Html5editor.php");
 }
 
 # International-specific extensions
@@ -64,7 +67,6 @@ require_once("$IP/extensions/wikihow/Managepagelist.php");
 require_once("$IP/extensions/wikihow/Unpatrol.php");
 require_once("$IP/extensions/wikihow/RCPatrol.php");
 require_once("$IP/extensions/wikihow/fblogin/FBLogin.php");
-require_once("$IP/extensions/wikihow/fblogin/FBLink.php");
 require_once("$IP/extensions/wikihow/Wikitext.class.php");
 require_once("$IP/extensions/wikihow/FBAppContact.php");
 require_once("$IP/extensions/wikihow/Categorylisting.php");
@@ -157,10 +159,8 @@ require_once("$IP/extensions/wikihow/LoginReminder.php");
 require_once("$IP/extensions/wikihow/NewHowtoArticles.php");
 require_once("$IP/extensions/wikihow/fbnuke/FBNuke.php");
 require_once("$IP/extensions/wikihow/editfinder/EditFinder.php");
-require_once("$IP/extensions/wikihow/h5e/Html5editor.php");
 require_once("$IP/extensions/wikihow/ctalinks/CTALinks.php");
 require_once("$IP/extensions/wikihow/dashboard/AdminCommunityDashboard.php");
-require_once("$IP/extensions/wikihow/IheartwikiHow.php");
 require_once("$IP/extensions/wikihow/slider/Slider.php");
 require_once("$IP/extensions/wikihow/starter/StarterTool.php");
 require_once("$IP/extensions/wikihow/ProfileBadges.php");

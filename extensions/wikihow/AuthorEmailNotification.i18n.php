@@ -9,5 +9,8 @@ $messages['en'] =
 			'aen_createpage_msg' => 'Email me when this article gets updated:',
 			'aen_from' => 'wikiHow Team <support@wikihow.com>',
 			'emailn_title' => '<h3>Author Email Notifications</h3>
-Please select the articles below that you would like to receive email notifications for.'
+Please select the articles below that you would like to receive email notifications for.',
+			'aen_form_email' => 'Email',
+			'aen_form_title' => 'Article Title',
+			'aen_form_created' => 'Date Created'
 		);

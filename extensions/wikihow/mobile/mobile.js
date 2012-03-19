@@ -29,6 +29,17 @@ var mobileWikihow = (function () {
 		}
 	}
 
+	function hideDropHeadings(clickedTab) {
+		$('div[id^=drop-heading-]').show();
+		$('#drop-heading-' + clickedTab).hide();
+
+		// Tips and warnings show on the same tab. Hide warnings section if 
+		// tips is clicked
+		if(clickedTab == 'tips') {
+			$('#drop-heading-warnings').hide();
+		}
+	}
+
 	// singleton class
 	return {
 		startup: function() {
@@ -39,11 +50,15 @@ var mobileWikihow = (function () {
 				// hide URL bar on iphone
 				iphoneHideUrlBar();
 
-				$('#drop-heading-steps').hide();
+				// Initial case when step tab loads.  No click so manually send in
+				// steps as the clicked tab.
+				hideDropHeadings('steps');
+
 				// add click handlers -- tabs
 				$.each(contentTabs, function(i, clickedTab) {
 					if (clickedTab == 'warnings') return;
 					$('#tab-' + clickedTab).click( function(e) {
+						hideDropHeadings(clickedTab);
 						$.each(contentTabs, function(j, tab) {
 							var thisTab = (tab == clickedTab || clickedTab == 'tips' && tab == 'warnings');
 							var node = $('#tab-content-' + tab);

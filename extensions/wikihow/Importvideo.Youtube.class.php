@@ -130,7 +130,7 @@ class ImportvideoYoutube extends Importvideo {
 		$wgOut->addHTML($this->getPostForm($target));
 		$this->getTopResults($target, 10, $wgRequest->getVal('q'));
 		$wgOut->addHTML(" <br/>
-			Sort by <select name='orderby' id='orderby' onchange='changeUrl();'>
+			" . wfMsg('importvideo_youtube_sortby') . " <select name='orderby' id='orderby' onchange='changeUrl();'>
 				<OPTION value='relevance' " . ($orderby == 'relevance' ? "SELECTED" : "") . "> " . wfMSg('importvideo_youtubesort_rel') . "</OPTION>
 				<OPTION value='howto' " . ($orderby == 'howto' ? "SELECTED" : "") . "> " . wfMsg('importvideo_youtubesort_howto') . "</OPTION>
 				<OPTION value='rating' " . ($orderby == 'rating' ? "SELECTED" : "") . "> " . wfMsg('importvideo_youtubesort_rating') . "</OPTION>

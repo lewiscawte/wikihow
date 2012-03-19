@@ -8,7 +8,7 @@ class WikihowShare{
 		
 		$action = self::getAction();
 
-		if($wgTitle->getNamespace() != NS_MAIN || $action != "view" || self::isMainPage($action))
+		if(!$wgTitle->exists() || $wgTitle->getNamespace() != NS_MAIN || $action != "view" || self::isMainPage($action))
 			return "";
 
 		$sk = $wgUser->getSkin();
@@ -38,7 +38,7 @@ class WikihowShare{
 		
 		$action = self::getAction();
 		
-		if($wgTitle->getNamespace() != NS_MAIN || $action != "view" || self::isMainPage($action))
+		if(!$wgTitle->exists() || $wgTitle->getNamespace() != NS_MAIN || $action != "view" || self::isMainPage($action))
 			return "";
 		
 		$url = urlencode($wgServer . "/" . $wgTitle->getPrefixedURL());

@@ -110,7 +110,7 @@ function wfRunHooks($event, $args = null) {
 
 		/* Call the hook. */
 		wfProfileIn( $func );
-		$retval = call_user_func_array( $callback, &$hook_args );
+		$retval = call_user_func_array( $callback, $hook_args );
 		wfProfileOut( $func );
 
 		/* String return is an error; false return means stop processing. */

@@ -5,7 +5,7 @@ require_once('commandLine.inc');
 define('REPORTS_HOST', 'spare1.wikihow.com');
 define('REPORTS_DIR', '/x/dashboard');
 if (true) {
-	// use the revisiont able
+	// use the revision table
 	$table = "revision";
 	$join = " left join page on page_id = rev_page " ;
 	$cond = " page_namespace = 0 "; 
@@ -335,8 +335,8 @@ if (isset($argv[0])) {
 $w_cutoff 	= wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 7); // 7 days
 $ww_cutoff 	= wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 14); // 14 days
 $m_cutoff 	= wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 30); // 30 days
-$mm_cutoff 	= wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 60); // 3days
-$start 		= wfTimestamp(TS_MW, $start); // conver it over to a ts_mw
+$mm_cutoff 	= wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 60); // 60 days
+$start 		= wfTimestamp(TS_MW, $start); // convert it over to a ts_mw
 $now  		= wfTimestampNow();
 
 // a list of bots, because we want to exclude them from the report

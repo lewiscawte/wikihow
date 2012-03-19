@@ -481,6 +481,16 @@ DIV#article {
 
 #article .category_column.column_first{ margin:0 25px 25px 10px; }
 
+.wikihow_watermark {
+	background: url(/skins/WikiHow/images/wikihow_watermark.png) no-repeat right 0;
+	width: 100%;
+	height: 23px;
+	margin-top: -30px;
+	z-index: 1;
+	position: relative;
+}
+.no_rounders .wikihow_watermark { display: none; }
+
 #article LI {
 	padding: 4px 0 0 0;
 	line-height: 1.2em;
@@ -2633,36 +2643,6 @@ div.adunitp2 {
 	float: left; 
 	width: 290px; 
 	margin-right: 25px;
-}
-
-DIV#iphone_notice {
-	height: auto;
-	text-align:center;
-	margin-left: auto;
-	margin-right: auto;
-	background-color: #FFA;
-	-moz-border-radius:1em;
-	-webkit-border-radius:1em;
-	-border-radius:1em;
-}
-
-DIV#iphone_notice #gatIphoneNoticeHide {
-	float: right;
-	padding: 5px;
-}
-
-DIV#iphone_notice #ip_message {
-	display:table;
-	margin-left:auto;
-	margin-right:auto;
-	text-align:left;
-}
-DIV#iphone_notice img {
-	float: left;
-	padding: 5px;
-}
-DIV#iphone_notice H3 {
-	line-height: 120%;
 }
 
 /*** HISTORY ***/

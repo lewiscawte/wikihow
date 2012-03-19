@@ -811,19 +811,6 @@ function wfGetPad(url) {
 	}
 }
 
-function checkIphone() {
-
-	if ( navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i) ) {
-
-		var iphonediv = document.getElementById('iphone_notice');
-		var iphone_content = "<a id=\"gatIphoneNoticeHide\" onclick=\"javascript:document.cookie='iphoneNoticeHide=hide';getElementById('iphone_notice').style.display = 'none';\">[Hide]</a><br> <div id=\"ip_message\"> <img src=\"" + WH_CDN_BASE + "/extensions/wikihow/app_store_badge.png\" height=\"40px\" > <h3>Using an iPhone?<br> <a id=\"gatIphoneNotice\" href=\"http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=309209200&mt=8&uo=6\">Download the wikiHow App</a> from the iTunes Store!</h3> </div>\n";
-		var cookiePos = document.cookie.indexOf("iphoneNoticeHide=");
-		if (cookiePos == -1)  {
-			iphonediv.innerHTML = iphone_content;
-		}
-	}
-}
-
 function getRequestObject() {
 	var request;
 	try {

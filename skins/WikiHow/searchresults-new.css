@@ -209,5 +209,16 @@ div.searchresult_1 {
 }
 
 .lo_abstract {
-	font-size: 1.1em;
+	font-size: 13px;
+}
+
+#adcontainer2{
+	width: 480px; 
+	margin-left: 20px;
+}
+
+#adcontainer1{
+	float: right; 
+	width: 300px;
+	margin-right:150px;
 }

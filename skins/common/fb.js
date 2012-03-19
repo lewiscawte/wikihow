@@ -134,6 +134,11 @@ WH.FB.init = function(debug) {
 		locale = wgUserLanguage + '_' + wgUserLanguage.toUpperCase();
 	}
 
+	// Set pt.wikihow.com to brazillian portuguese
+	if (wgUserLanguage == 'pt') {
+		locale = 'pt_BR';
+	}
+
 	WH.FB.initLikeButtons();
 
 	(function () {

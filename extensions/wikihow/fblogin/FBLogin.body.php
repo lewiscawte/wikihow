@@ -10,12 +10,13 @@ class FBLogin extends UnlistedSpecialPage {
     }
 
 	function execute($par) {
-		global $wgOut, $wgRequest, $wgUser, $wgFBAppId, $wgFBAppSecret, $wgLanguageCode;
+		global $wgOut, $wgRequest, $wgUser, $wgFBAppId, $wgFBAppSecret, $wgLanguageCode, $wgContLang;
 		require_once('extensions/wikihow/facebook-platform/facebook-php-sdk-771862b/src/facebook.php');
 		//require_once('extensions/wikihow/facebook-platform/php/facebook.php');
 
 
-		$this->returnto = "/Special:CommunityDashboard";
+		wfLoadExtensionMessages('FBLogin');
+		$this->returnto = $wgLanguageCode == 'en' ? wfMsg('fbc_returnto') : "/" . $wgContLang->getNSText(NS_PROJECT) . ":" . wfMsg('communityportal');
 		//$this->returnto = $_COOKIE['wiki_returnto'] ? $_COOKIE['wiki_returnto'] : "/Special:CommunityDashboard";
 		$this->userid = $_COOKIE['wiki_fbuser'];
 		$userid = $this->userid;

@@ -69,9 +69,13 @@ if (@$_SERVER['SERVER_NAME'] == 'm.wikihow.com' ||
 	//@$_SERVER['SERVER_PORT'] == 8000 ||
 	$isDevServer)
 {
-	$portStr = (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != '80' ? ':' . $_SERVER['SERVER_PORT'] : '');
-	$wgServer = 'http://' . $_SERVER['SERVER_NAME'] . $portStr;
-	if ($isDevServer) $wgCookieDomain = 'wikidiy.com';
+	if ($isDevServer) {
+		$wgServer = 'http://' . $_SERVER['HTTP_HOST'];
+		$wgCookieDomain = 'wikidiy.com';
+	} else {
+		$portStr = (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != '80' ? ':' . $_SERVER['SERVER_PORT'] : '');
+		$wgServer = 'http://' . $_SERVER['SERVER_NAME'] . $portStr;
+	}
 } elseif (!$wgIsDomainTest) {
 	$wgServer = 'http://www.wikihow.com';
 }
@@ -315,16 +319,20 @@ $wgEnableLateLoadingAds = true;
 
 $wgAvailableRights[] = 'staff';
 $wgGroupPermissions['staff'] = $wgGroupPermissions['sysop'];
-$wgGroupPermissions['staff' ]['newbienap']   = true;
-$wgGroupPermissions['staff' ]['importxml']   = true;
-$wgGroupPermissions['staff' ]['qc']   = true;
+$wgGroupPermissions['staff']['newbienap']   = true;
+$wgGroupPermissions['staff']['importxml']   = true;
+$wgGroupPermissions['staff']['qc']   = true;
+
+# Detect mime types of files which are uploaded
+# see also: http://www.mediawiki.org/wiki/Manual:$wgMimeDetectorCommand
+#$wgMimeDetectorCommand = "file --brief --mime";
 
 $wgVanillaDB = array(
-           'host'      => WH_VANILLA_HOST,
-           "dbname"    => WH_VANILLA_DBNAME,
-           "user"      => WH_VANILLA_USER,
-           "password"  => WH_VANILLA_PASSWORD
-		);
+	'host'      => WH_VANILLA_HOST,
+	"dbname"    => WH_VANILLA_DBNAME,
+	"user"      => WH_VANILLA_USER,
+	"password"  => WH_VANILLA_PASSWORD
+);
 
 # Instruct the front-end cache (varnish or squid) purge code to purge at
 # most 50 URLs

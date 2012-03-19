@@ -6,7 +6,12 @@ class Authorleaderboard extends SpecialPage {
     }
 
     function execute ($par) {
-		global $wgRequest, $wgOut, $wgUser, $wgLang;
+		global $wgRequest, $wgOut, $wgUser, $wgLang, $wgLanguageCode;
+
+		if ($wgLanguageCode != 'en') {
+			$wgOut->errorpage( 'nosuchspecialpage', 'nospecialpagetext' );
+			return;
+		}
 		$target = isset( $par ) ? $par : $wgRequest->getVal( 'target' );
 		$sk = $wgUser->getSkin();
 		$dbr = &wfGetDB(DB_SLAVE);
@@ -55,6 +60,7 @@ class Authorleaderboard extends SpecialPage {
 		}
 
 		$total_risingstar = $dbr->numRows($res2);
+		$leader_rs = array();
 		// Setup array for rising star articles
 		while ( ($row = $dbr->fetchObject($res2)) != null) {
 			$t = Title::newFromText($row->rc_title);

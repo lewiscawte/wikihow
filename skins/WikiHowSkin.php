@@ -34,7 +34,7 @@ class SkinWikihowskin extends SkinTemplate {
 	public $mGlobalComments	= array();
 	public $mAuthors;
 	public $mSidebarWidgets	= array();
-        public $mCategories = array();
+    public $mCategories = array();
 
 	function initPage( &$out ) {
 		SkinTemplate::initPage( $out );
@@ -53,6 +53,33 @@ class SkinWikihowskin extends SkinTemplate {
 
 		array_push($this->mSidebarWidgets,$display);
 		return;
+	}
+
+	/*
+	* A mild hack to allow for the language appropriate 'How to' to be added to interwiki link titles.
+	* Note German (de) is a straight pass-through since the 'How to' is already stored in the de database
+	*/
+	function getInterWikiLinkText(&$linkText, &$langCode) {
+		static $formatting = array( 
+			"ar" => "$1 كيفية", 
+			"de" => "$1", 
+			"es" => "Como $1", 
+			"en" => "How to $1", 
+			"fa" => "$1 چگونه", 
+			"fr" => "Comment $1", 
+			"he" => "$1 איך", 
+			"it" => "Come $1", 
+			"ja" => "$1（する）方法", 
+			"nl" => "Hoe moet je $1", 
+			"pt" => "Como $1", 
+		);
+
+		$result = $linkText;
+		$format = $formatting[$langCode];
+		if(!empty($format)) {
+			$result = preg_replace("@(\\$1)@", $linkText, $format);
+		}
+		return $result;
 	}
 
 	function getCategoryList() {
@@ -684,7 +711,9 @@ class SkinWikihowskin extends SkinTemplate {
 				// For some reason only the english site returns the partial URL for self::getTopCategory
 				if (isset($cat) && $wgLanguageCode != 'en') {
 					$title = Title::newFromText($cat);
-					$cat = $title->getPartialURL();
+					if ($title) {
+						$cat = $title->getPartialURL();
+					}
 				}
 			}
 
@@ -924,9 +953,10 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 
 	function getTopCategory($title = null) {
-		global $wgTitle;
+		global $wgTitle, $wgContLang;
 		if (!$title)
 			$title = $wgTitle;
+		$catNamespace = $wgContLang->getNSText(NS_CATEGORY) . ":";
 		$parenttree = $title->getParentCategoryTree();
 		$parenttree_tier1 = $parenttree;
 
@@ -935,7 +965,7 @@ class SkinWikihowskin extends SkinTemplate {
 			$a = array_shift($parenttree);
 			if (!$a) {
 				$keys = array_keys($parenttree_tier1);
-				$result = str_replace("Category:", "", $keys[0]);
+				$result = str_replace($catNamespace, "", $keys[0]);
 				break;
 			}
 			$last = $a;
@@ -943,7 +973,7 @@ class SkinWikihowskin extends SkinTemplate {
 				$last = $a;
 			}
 			$keys = array_keys($last);
-			$result = str_replace("Category:", "", $keys[0]);
+			$result = str_replace($catNamespace, "", $keys[0]);
 		}
 		return $result;
 	}
@@ -1232,7 +1262,7 @@ class SkinWikihowskin extends SkinTemplate {
 		}
 		return $s;
 	}
-
+	
 	function loadAuthors() {
 		global $wgUser, $wgTitle;
 		if (is_array($this->mAuthors)) {
@@ -1261,7 +1291,7 @@ class SkinWikihowskin extends SkinTemplate {
 			}
 		}
 	}
-
+	
 	function isQuickBounceUrl($mwMsg = 'clicky_urls') {
 		global $wgTitle, $wgRequest;
 
@@ -1289,31 +1319,33 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 
 	function getAuthorHeader() {
-		global $wgTitle, $wgRequest, $wgUser;
+		global $wgTitle, $wgRequest, $wgUser, $wgLanguageCode;
 		if (!$wgTitle  || !($wgTitle->getNamespace() == NS_MAIN || $wgTitle->getNamespace() == NS_PROJECT) || $wgRequest->getVal('action', 'view') != 'view'
 			|| $wgRequest->getVal('diff') != '') return "";
 		$this->loadAuthors();
 		$html = "";
-		if($wgUser->getID() > 0){
+		// Logged in and intl users see this
+		if($wgUser->getID() > 0 || $wgLanguageCode != 'en'){
 			$users =  array_slice($this->mAuthors, 0, min(sizeof($this->mAuthors), 4));
-			if (sizeof($users) > 0) {
-				$html = "<p id='originators'>" . wfMsg('originated_by') . "<span>"
-				. $this->formatAuthorList($users) . "</span></p>";
+			if (!empty($users)) {
+				$html = wfMsg('originated_by') . "<span>" .  $this->formatAuthorList($users) . "</span>";
 			}
 		}
 		else{
 			$users =  array_slice($this->mAuthors, 0, min(sizeof($this->mAuthors), 1));
-			if (sizeof($users) > 0) {
+			if (!empty($users)) {
 				$userCount = sizeof($this->mAuthors) - 1;
-				$html = "<p id='originators'>" . wfMsg('originated_by_anon') . "<span>"
-					. $this->formatAuthorList($users, false) . "</span>";
-				if($userCount > 1)
-					$html .= " and " . $this->makeLinkObj($wgTitle, $userCount . " others", "action=credits");
-				else if($userCount == 1)
-					$html .= " and " . $this->makeLinkObj($wgTitle, $userCount . " other", "action=credits");
-				$html .= "</p>";
+				$html = wfMsg('originated_by_anon') . "<span>" . $this->formatAuthorList($users, false) . "</span>";
+				$others = $userCount > 1 ? "others" : "other";
+				$html .= " and " . $this->makeLinkObj($wgTitle, "$userCount $others", "action=credits");
 			}
 		}
+
+		if (empty($users))  {
+			$html = "<span>&nbsp;</span>";
+		}
+
+		$html = "<p id='originators'>$html</p>";
 		return $html;
 	}
 
@@ -1356,6 +1388,7 @@ class SkinWikihowskin extends SkinTemplate {
 		$html = implode(", ", $links);
 		if($showAllLink)
 			$html .=  " (" . $this->makeLinkObj($wgTitle, wfMsg('see_all'), "action=credits")  . ")";
+
 		return $html;
 	}
 
@@ -1901,521 +1934,195 @@ class WikiHowTemplate extends QuickTemplate {
 		'Make-Gluten-Free-Peanut-Butter-Cookies'
 	);
 	
-	static $checkbox_array = array(
-		'Be-a-Good-Girlfriend',
-		'Be-a-Good-Listener',
-		'Be-a-Hipster',
-		'Be-a-Ninja',
-		'Be-a-Singer',
-		'Be-Cool',
-		'Become-a-CIA-Agent',
-		'Build-with-Steel-Studs',
-		'Cheat-a-Polygraph-Test-(Lie-Detector)',
-		'Cook-Rice-in-a-Microwave',
-		'Copy-Your-DVDs-With-Mac-OS-X',
-		'Eat-Healthy',
-		'Gauge-Your-Ears',
-		'Get-Bigger-Chest-Muscles-(Pecs)',
-		'Get-out-of-a-Cellular-Service-Contract',
-		'Get-Rid-of-a-Pimple',
-		"Get-Rid-of-a-Wasp's-Nest",
-		'Get-Rid-of-Scars-and-Cuts-Left-by-Acne',
-		'Have-Sex-During-Your-Period',
-		'Have-Soft-Shiny-Hair-Inexpensively',
-		'Improve-WiFi-Reception',
-		'Lose-Weight',
-		'Make-3D-Photos',
-		'Make-a-Bong',
-		'Make-a-Box-Styled-Gimp',
-		'Make-a-Guy-Jealous',
-		'Make-a-Soda-Bottle-Volcano',
-		'Make-Eyes-Look-Bigger',
-		'Make-the-Chinese-Staircase-Bracelet',
-		'Make-Yourself-Sneeze',
-		'Paint-Your-Nails',
-		'Play-Beer-Pong',
-		'Print-from-Your-iPhone',
-		'Recharge-the-Air-Conditioner-in-a-Car',
-		'Remove-Mildew-Smell-from-Towels',
-		'Say-"I-Love-You"',
-		'See-in-the-Dark',
-		'Send-Pictures-from-Your-Cell-Phone-to-Your-Computer',
-		'Speed-Up-a-Slow-Windows-Computer-for-Free',
-		'Stop-Sweet-Cravings',
-		'Take-Action-to-Reduce-Global-Warming',
-		'Take-Erotic-Photos-of-Yourself',
-		'Talk-to-a-Guy-You-Like',
-		'Tell-a-Guy-You-Like-Him',
-		'Tell-if-an-Egg-is-Bad',
-		'Treat-a-Sunburn',
-		'Tune-a-Guitar',
-		'Watch-Movies-and-TV-Online-for-Free',
-		'Wear-a-Mini-Skirt',
-		'Win-at-Rock,-Paper,-Scissors',
-		'Write-a-Script',
-		'Write-an-Essay',
-		'Stop-Being-a-People-Pleaser',
-		'Stop-Swearing',
-		'Stop-Thinking-Too-Much',
-		'Use-a-Paint-Roller',
-		'Act-Around-Guys',
-		'Admit-Mistakes',
-		'Announce-Your-Pregnancy',
-		'Apply-Eye-Makeup-on-a-Creaseless-Eye',
-		'Apply-for-a-Job',
-		'Argue-That-God-Exists-(Christianity)',
-		'Ash-Your-Cigarette',
-		'Ask-a-Girl-out-if-You-Are-a-Girl',
-		'Ask-Your-Girlfriend-or-Boyfriend-to-Lose-Weight',
-		"Attend-the-New-Year's-Celebrations-in-Times-Square",
-		'Attract-the-Guy-You-Have-a-Crush-On',
-		'Avoid-Bumps-When-Plucking-Hair',
-		'Avoid-Mosquito-Bites',
-		'Be-a-Couch-Potato',
-		'Be-a-Creative-Thinker-and-Problem-Solver',
-		'Be-a-Dance-Music-DJ-Using-CDs',
-		'Be-a-Fabulous-Diva',
-		'Be-a-Good-Boyfriend-As-a-Teen',
-		'Be-a-Good-Prom-Date-(for-Guys)',
-		'Be-a-Good-Roommate',
-		'Be-a-Good-Writer',
-		'Be-a-Scene-Queen',
-		'Be-an-Actress',
-		'Be-Drug-Free',
-		'Be-Fearless',
-		'Be-Friendly',
-		'Be-Friends-with-a-Girl-That-Rejected-You',
-		'Be-More-Physically-Attractive-(Men)',
-		'Be-Normal',
-		'Be-Responsible',
-		'Be-the-Girl-Every-Boy-Wants',
-		'Be-Yourself-As-a-Young-Teen',
-		'Become-a-Christian-According-to-the-Bible',
-		'Become-a-Geek',
-		'Become-a-Hand-Model',
-		'Become-a-Mortician',
-		'Become-a-Professional-Web-Designer-and-Programmer',
-		'Become-a-Social-Butterfly-in-High-School',
-		'Become-the-Best-Salesperson-You-Can-Be',
-		'Begin-a-Walking/-Weight-Loss-Program-for-the-Very-Unfit-Person',
-		'Begin-Woodcarving-with-a-Utility-Knife',
-		'Block-MySpace-from-a-Home-Network',
-		'Brew-Antioxidant-Rich-Beer',
-		'Build-a-Chicken-Coop',
-		'Build-a-Dry-Stack-Retaining-Rock-Wall',
-		'Build-a-Grass-Landing-Strip',
-		'Build-a-Great-Relationship-with-Your-Auto-Mechanic',
-		'Build-a-Lamp',
-		'Build-a-Temporary-Brick-Barbecue',
-		'Build-Wooden-Bookshelves',
-		'Build-Your-Own-Air-Conditioner',
-		'Build-Your-Own-Fishing-Pond',
-		'Burn-a-Divx-Movie-to-Play-in-a-DVD-Player',
-		'Burn-DVDs-Using-IFOedit',
-		'Buy-a-Private-Island',
-		'Calculate-the-Geometric-Mean',
-		'Calculate-the-Volume-of-a-Cylinder',
-		'Calculate-Your-Real-Hourly-Wage',
-		'Capture-FLV-Streaming-Internet-Video-from-Websites-Protected-by-the-HTTP-Protocol',
-		'Care-for-Gerbils',
-		'Care-for-Green-Anole-Lizards',
-		'Care-for-Hermit-Crabs',
-		'Catch-Shaymin-on-Pokemon-Diamond-or-Pearl',
-		'Celebrate-the-Ides-of-March',
-		'Change-a-Car-Engine',
-		'Change-Guitar-Strings',
-		'Change-Line-Spacing-in-a-Microsoft-Word-Document',
-		'Change-Musical-Keys-on-a-Piano',
-		'Change-the-Batteries-in-a-Buzz-Lightyear-Action-Figure',
-		'Change-the-Default-Photo-Display-Program-in-Windows-XP',
-		'Change-the-Default-Web-Browser-in-Mac-OS-X',
-		'Change-the-Folder-Background-in-Windows-Explorer',
-		'Check-if-a-Number-Is-Prime',
-		'Choose-a-Camera',
-		'Choose-a-Diet-That-Suits-You',
-		'Choose-a-Dress-Shirt',
-		'Choose-the-Right-Ceiling-Fan',
-		'Choose-the-Right-Email-for-You',
-		'Clean-a-Clothes-Dryer-Vent',
-		'Clean-a-Dull-Stainless-Steel-Sink',
-		'Clean-a-House',
-		'Clean-the-Steam-Iron-and-Its-Base-Plate',
-		'Clean-the-Tub',
-		'Clear-Clogged-Windshield-Washers',
-		'Close-a-Sale',
-		'Coin-Stack-a-Nickel-Spiral',
-		'Color-Your-Name-in-Quake-3',
-		'Configure-X11-in-Linux',
-		'Convert-an-Old-TV-Into-a-Fish-Tank',
-		'Convince-Someone-to-Trust-You-Again',
-		'Cook-an-Omelet-on-a-George-Foreman-Grill',
-		'Cope-if-You-Want-to-Become-Anorexic',
-		'Cope-With-Being-a-Diaper-Lover',
-		'Cope-with-Hair-Loss',
-		'Cope-with-Loss-and-Pain',
-		'Cope-with-Short-Term-Memory-Problems',
-		'Cosplay-As-Elle-in-"Legally-Blonde"',
-		'Create-a-Figurine-for-Clay-Animation',
-		'Create-a-Secret-Society',
-		'Create-a-Zen-Bedroom',
-		"Create-an-American-1940's-Hairstyle",
-		'Create-an-Art-Car',
-		'Create-an-Urban-Emergency-Evacuation-Kit-for-Work',
-		'Create-and-Install-Symbols-on-Microsoft-Word',
-		'Create-Tree-Flower-Beds',
-		'Create-Unique-Lyrics-for-a-Song',
-		'Crochet-a-Hat',
-		'Cure-Hiccups',
-		'Date-a-Man-with-Kids',
-		'Deal-With-a-Mean-Friend',
-		"Deal-With-Alzheimer's-as-a-Caregiver",
-		'Deal-with-Braces',
-		'Deal-With-Missing-Your-Significant-Other',
-		'Deal-With-People-Who-Ignore-You',
-		'Deal-With-Riot-Control-Agents',
-		"Deal-With-the-Need-to-'Pass-Gas'-in-Public",
-		'Decorate-a-Dorm',
-		'Delete-Run-History-in-Windows',
-		'Describe-Medical-Symptoms-to-Your-Doctor',
-		'Design-Your-Own-Home',
-		'Design-Your-Own-T-Shirt',
-		'Dig-a-Hole',
-		'Do-a-"Chip-in"-in-PangYa',
-		'Do-a-Three-Step',
-		'Do-an-Ollie-Impossible-on-a-Tech-Deck',
-		'Do-the-Black-Magic',
-		'Do-Well-in-an-Interview-With-a-Modeling-Agency',
-		"Dog-Proof-the-Cat's-Litterbox",
-		'Download-Applications-to-Your-iPod-Touch',
-		'Draw-3D-Block-Letters',
-		'Draw-a-Dog-Face',
-		'Draw-a-Straight-Line',
-		"Draw-an-Anime-Girl's-Face",
-		'Draw-Realistic-Animals-With-Depth',
-		'Dress-Goth',
-		'Dress-Like-Daisy-from-Super-Mario-Brothers',
-		'Dress-to-Impress',
-		'Dress-Up-As-Dorothy-in-the-Wizard-of-Oz',
-		'Dress-Up-for-a-Disco-Party',
-		'Dull-Your-Taste-Buds',
-		'Dumpster-Dive',
-		'Eat-Slowly-to-Avoid-Overeating',
-		'End-a-Controlling-or-Manipulative-Relationship',
-		'Endure-Acute-Withdrawal-from-Opiates-(Narcotics)',
-		'Enter-a-Cleanroom',
-		'Exercise-Without-Joining-a-Gym',
-		'Express-Yourself',
-		'Extend-the-Battery-Life-of-an-iPad',
-		'Fake-Cry-in-Less-Than-10-Seconds',
-		'Fast-As-a-Christian',
-		'Feed-a-Snake-Frozen-Food',
-		'Feel-Great-in-the-Morning',
-		'Field-Dress-a-Deer',
-		'Find-a-Cheap-Guitar',
-		'Find-a-Lost-Cat',
-		'Find-a-Theme-to-Decorate-a-Small-Bedroom',
-		'Find-a-True-Friend',
-		'Find-the-Perpendicular-Bisector-of-Two-Points',
-		'Find-Water-in-the-Desert',
-		'Find-Your-Own-Dancing-Style',
-		'Finger-Knit',
-		'Forgive',
-		'Freeze-a-Wart-With-Liquid-Nitrogen',
-		'Fry-Cheese',
-		'Get--Your-Dog-to-Sleep',
-		'Get-a-7-in-IB-Diploma-English',
-		'Get-a-Boyfriend',
-		'Get-a-Date',
-		'Get-a-Fake-Tan-That-Looks-Real',
-		'Get-a-Free-Internet-Connection',
-		'Get-a-Full-Scholarship',
-		'Get-a-Side-Part-in-Your-Hair-(for-Girls)',
-		'Get-a-Six-Pack-(for-Girls)',
-		'Get-an-Flash-Game-Onto-a-Flash-Drive',
-		'Get-Bigger-Breasts-Without-Surgery',
-		'Get-Fit-As-a-Teenager',
-		'Get-Good-Skin-with-Milk',
-		'Get-Great-Lips',
-		'Get-Inspired-to-Write',
-		'Get-Money-Without-Working',
-		'Get-out-of-a-Bad-Mood-Fast',
-		'Get-Out-of-Trouble-at-School',
-		'Get-over-a-Crush',
-		"Get-Over-a-Friend's-Betrayal",
-		'Get-Over-Fear-of-Commitment',
-		'Get-Pecs-and-Abs',
-		'Get-Rid-of-a-Sore-Neck',
-		'Get-Rid-of-an-Obsessive-Ex-Girlfriend',
-		'Get-Rid-of-Hiccups-When-You-Are-Drunk',
-		'Get-Rid-of-Powdery-Mildew-on-Plants',
-		'Get-the-Perfect-Personality',
-		'Get-Your-Passport-Stamped-from-Protectorate-of-Emigrants-in-Pakistan',
-		'Give-Your-Boots-That-Military-Mirror-Shine',
-		'Grow-Tomatoes-in-a-Green-House',
-		'Hack-Lanschool',
-		'Hack-Minesweeper',
-		'Handle-a-Stray-Cat',
-		'Have-a-Great-Sense-of-Style',
-		'Have-a-Perfect-Bedroom-(Teen-Girls)',
-		'Have-a-Small-Private-Wedding',
-		'Have-a-Witty-Conversation',
-		'Have-Fun-in-a-Hotel-Room',
-		'Help-Your-Child-Accept-a-New-Baby',
-		'Hide-a-Lip-Piercing-from-Parents/Bosses',
-		'Hide-Your-Online-Status-on-MySpace',
-		'Hook-up-an-iPod-in-a-Prius',
-		'Host-a-Sleepover-(Teen-Girls)',
-		"Host-a-Teen's-Birthday-Slumber-Party",
-		'Identify-a-Sears-Kit-Home',
-		'Identify-Common-Poisonous-Berries-in-North-America',
-		'Improve-Physical-Intimacy',
-		'Improve-Social-Skills',
-		'Improve-Your-Alcohol-Tolerance',
-		'Improve-Your-Love-Life-by-Improving-Your-Health',
-		'Improve-Your-Sense-of-Smell',
-		'Improve-Your-Speaking-Voice',
-		'Increase-the-Number-of-Pushups-You-Can-Do',
-		'Inspect-Your-Suspension-System',
-		'Install-a-Split-System-Air-Conditioner',
-		'Install-Network-Interface-Card-in-Desktop-Computer',
-		'Invert-Colors-on-Windows-7',
-		'Invest-Small-Amounts-of-Money-Wisely',
-		'Kick-Down-a-Door',
-		'Landscape-an-Above-Ground-Pool',
-		'Lead-a-Happy-Life-Without-Romantic-Relationships',
-		'Learn-the-Art-of-Seduction',
-		'Let-Someone-Go',
-		'Live-in-a-Yurt',
-		'Live-Like-Socrates',
-		'Live-Without-Friends-During-School-Years',
-		'Longboard-Skateboard',
-		'Look-Attractive-(Girls)',
-		'Look-Drop-Dead-Gorgeous',
-		'Look-Good-Naked',
-		"Look-Like-a-Victoria's-Secret-Model",
-		'Look-Like-An-Elderly-Person-for-Halloween',
-		'Look-Like-Angelina-Jolie',
-		'Look-Pretty-at-School',
-		'Look-Taller',
-		'Lose-Water-Weight',
-		'Lose-Weight-As-a-Teenager',
-		'Lose-Weight-Quickly-and-Safely-(for-Teen-Girls)',
-		'Lose-Weight-Without-Working-Out',
-		'Mail-Merge-Address-Labels-Using-Excel-and-Word',
-		'Maintain-Eyeglasses',
-		"Make-'Melt-and-Pour'-Soap",
-		'Make-a-Bow-from-Green-Wood',
-		'Make-a-Candy-Cane',
-		'Make-a-Chain-from-Starburst-Wrappers',
-		'Make-a-Cloak',
-		'Make-a-Computer-Case',
-		'Make-a-Didgeridoo-out-of-PVC-Pipe',
-		'Make-a-Duct-Tape-Wrist-Band',
-		'Make-a-Friend-Jealous',
-		'Make-a-Full-Belly-Dance-Skirt',
-		'Make-a-Good-Impression-on-the-First-Day-of-School',
-		'Make-a-Gravity-Bong-in-10-Minutes',
-		'Make-a-Hawaiian-Pizza',
-		'Make-a-Japanese-Paper-Lantern',
-		'Make-a-Joke',
-		'Make-a-Kusudama-Flower',
-		'Make-a-Mask-out-of-Tin-Foil-and-Tape',
-		'Make-a-Mini-Survival-Kit',
-		'Make-a-Pop-Bottle-Gun',
-		'Make-a-Power-Outage-Bearable',
-		'Make-a-Reverse-Fold',
-		'Make-a-Rubber-Stamp-for-Letterboxing',
-		'Make-a-Sling-Shot',
-		'Make-a-Spinner',
-		'Make-a-Spinning-Top-from-a-Plastic-Bottle',
-		'Make-a-Strawberry-Daiquiri',
-		'Make-a-Superhero-Costume',
-		'Make-a-Timetable',
-		'Make-a-Video-Game-from-Scratch',
-		'Make-a-Visual-Baby-Monitor-with-Skype',
-		'Make-a-Waterbomb',
-		'Make-a-Webcam-Into-an-Infrared-Camera',
-		'Make-a-Whole-New-Wardrobe-by-Recycling-Your-Clothes',
-		'Make-an-Anime-Kitty-Hat',
-		'Make-an-MP3-CD-Using-iTunes',
-		'Make-an-Object-Float-in-Claymation',
-		'Make-an-Origami-Bunny',
-		'Make-Bead-Earrings',
-		'Make-Book-Earrings',
-		'Make-Clothes-for-Your-Doll',
-		'Make-Cream-Cheese-and-Honey-Treats-for-Your-Dog',
-		'Make-Crispy-Microwave-Bacon',
-		'Make-Dandelion-Wine',
-		'Make-Frozen-Grapes',
-		'Make-Glowing-Bottles-for-a-Blacklight',
-		"Make-Jacob's-Ladder-out-of-String",
-		'Make-Jello-Shots-in-an-Orange',
-		'Make-Kitty-Litter-Cake',
-		'Make-Kombucha-Tea',
-		'Make-Large-Breasts-Look-Smaller',
-		'Make-Mochi-Ice-Cream',
-		'Make-Natural-Skin-Bleach',
-		'Make-Onigiri',
-		'Make-People-Instantly-Like-You',
-		'Make-Popcorn',
+	static $watermark_array = array(
+		'Make-a-Boat-out-of-Clay',
+		'Scrunch-Hair',
+		'Prepare-a-Tuna-Melt',
+		'Make-Great-Curry',
 		'Make-Potato-Chips',
-		'Make-Punk-Clothes',
-		'Make-Rice-Sandwiches',
+		'Redecorate-Your-Room-Inexpensively-and-Creatively',
+		'Have-Fun-in-Bed-With-Your-Partner-Without-Sex',
+		'Look-Good-in-the-Winter',
+		'Convert-from-Decimal-to-Binary',
+		'Knit',
+		'Look-Good-for-a-School-Dance',
+		'Tame-Frizzy-Hair-Quickly',
+		'Make-Balloon-Animals',
+		'Make-a-Flaming-Dr.-Pepper',
+		'Text-on-an-iPod-Touch',
+		'Make-Mint-Chutney',
+		'Clean-a-Loofah-or-Natural-Sponge',
+		'Make-Apple-Cider',
+		'Prepare-Strawberry-Ice-Cream-Milkshake',
+		'Make-a-No-Bake-Birthday-Cake',
+		'Bread-Fish',
+		'Draw-a-Poodle',
+		'Make-a-CD-Mix',
+		'Make-Steamed-Rice',
+		'Spin-a-Pencil-Around-Your-Middle-Finger',
+		'Drain-the-Gas-Tank-of-Your-Car',
+		'Measure-Square-Footage',
+		'Hold-Hands',
+		'Lighten-Your-Skin',
+		'Make-Cayenne-Pepper',
+		'Fry-Chicken-Wings',
+		'Do-Side-Splits',
+		'Make-Pumpkin-Mousse',
+		'Make-Almond-Milk',
+		'Look-Cool',
+		'Make-Games-in-Excel',
+		'Save-an-iPod-from-Water',
+		'Infuse-Vodka-with-Flavor',
+		'Make-a-Quick-Greek-Goddess-Costume',
+		'Dye-Hair',
+		'Make-a-Cootie-Catcher',
+		'Find-a-Lost-Television-Remote',
+		'Annotate-a-Book',
+		'Paint-a-Bumblebee-Design-on-Your-Nails',
+		'Make-Cucumber-Water',
+		'Set-an-Alarm-on-an-iPhone-Clock',
+		'Shape-a-Beret',
+		'Retain-Information-when-You-Study-for-a-Test',
+		'Make-an-LED-Flashlight',
+		'Make-Chicken-Soup',
+		'Dress-to-Impress',
+		'Make-a-Sundae',
+		'Dress-in-the-American-1980s-Fashion',
+		'Get-Car-Loans-After-Bankruptcy',
+		'Wear-a-Halter-Dress',
+		'Lose-Weight-with-Vitamins',
+		'Make-a-Wire-Tree-Sculpture',
+		'Wear-Shoes-That-Are-Too-Big',
+		'Make-Vegan-Peanut-Butter-Chocolate-Bars',
+		'Draw-an-Elephant',
+		'Ash-Your-Cigarette',
+		'Make-a-Pocahontas-Costume',
+		'Get-and-Maintain-a-Healthy-Lawn',
+		'Safely-Pierce-Your-Own-Ear',
+		'Make-a-Whole-New-Wardrobe-by-Recycling-Your-Clothes',
+		'Make-a-Soap-Carving',
+		'Inverse-a-3X3-Matrix',
+		'Roast-Garlic',
+		'Add-5-Consecutive-Numbers-Quickly',
+		'Calculate-the-Volume-of-a-Cone',
+		'Buy-a-Digital-Camera',
+		'Win-at-Battleship',
+		'Find-Hot-People-to-Be-Friends-on-Facebook',
+		'Hard-Reset-an-iPhone',
+		'Make-Indonesian-Kopi-Tobruk',
+		'Get-a-Car-Dealer-License-to-Sell-Cars',
+		'Stop-Windshield-Wiper-Blades-from-Squeaking',
+		'Clean-Pennies',
+		'Grate-Cheese',
+		'Make-a-Beaded-Necklace',
+		'Make-a-Braid-Using-More-Than-Three-Strands',
+		'Remove-Mildew-Smell-from-Clothing',
+		'Make-Miso-Soup',
+		'Make-a-California-Roll',
+		'Save-Power-on-a-Laptop',
+		'Fill-out-a-Checking-Deposit-Slip',
+		'Make-a-Flapping-Paper-Airplane',
+		'Do-Emo-Makeup',
+		'Calculate-the-Volume-of-a-Sphere',
 		'Make-SIM-Card-Earrings',
-		'Make-Table-Placemats-with-Leaves',
-		'Make-Text-Invisible-on-a-Web-Page',
-		'Make-the-Show-Desktop-Icon-in-Windows-Quick-Launch-Toolbar',
-		'Make-Your-Bedroom-Unique',
-		'Make-Your-Girlfriend-Like-You-More',
-		'Make-Your-Hair-Like-Selena-Gomez',
-		'Make-Your-Own-Blizzard-or-McFlurry-at-Home',
-		'Marry-a-Millionaire',
-		'Massage-Your-Pregnant-Wife',
-		'Master-the-Etch-a-Sketch',
-		'Mixdown-Music-with-Digital-Editing-Software',
-		'Modify-a-Computer-Case',
-		'Modify-Your-Car-for-Better-Performance',
-		'Monitor-Your-Apartment-With-a-Webcam-While-on-Vacation',
-		'Move',
-		'Not-Get-Caught-Smoking',
-		'Obtain-a-Prenuptial-Agreement',
-		'Order-Ready-Mix-Concrete',
-		'Organize-a-Birthday-Party-for-Kids',
-		'Organize-a-Kitchen',
-		'Pack-for-a-Trip-to-New-York-City',
-		'Pack-Liquid-and-Gels-on-a-Plane',
-		'Pay-off-Student-Loans',
-		'Perform-Well-in-a-Group-Interview',
-		'Personalize-Your-Mac-OS-X-Desktop',
-		'Pick-and-Trade-Penny-Stocks',
-		'Pick-Up-Men',
-		'Plan-an-Affordable-Beach-Wedding',
-		'Plant-Flowers',
-		'Play-a-Video-Game-on-Paper',
-		'Play-Battlefield-2-Well',
-		'Play-Hex',
-		'Play-High-Notes-on-the-Trumpet',
-		'Play-Pool-Like-a-Pro',
-		'Play-Scales-on-the-Clarinet',
-		'Play-Starcraft-Well-Using-Protoss',
-		'Play-With-Your-Pet-Rabbit',
-		'Prepare-for-a-Behavioral-Interview',
-		'Prepare-Soil-for-a-Garden',
-		'Prevent-Bed-Bugs',
-		'Prevent-Date-Rape',
-		'Prevent-Frozen-Water-Pipes',
-		'Pronounce-Latin',
-		'Quit-Drinking-without-Alcoholics-Anonymous',
-		'Race-a-Junker-on-a-Dirt-Track',
-		'Read-Documents-on-an-iPod',
-		'Read-Drum-Tabs',
-		'Reboot-an-iPod-Touch',
-		'Record-from-a-Webcam',
-		'Recycle-Old-Computer-Hard-Drives',
-		'Recycle-Old-Plastic-Bags',
-		'Recycle-Wine-Bottles',
-		'Reduce-Pain-Caused-by-a-New-Piercing',
-		'Reduce-Powerpoint-File-Size',
-		'Remove-a-Website-From-the-Restricted-Site-List-in-Internet-Explorer',
-		'Remove-Blackheads',
-		'Remove-Permanent-Marker-from-a-White-Board',
-		'Remove-Spyware',
-		'Reset-a-Windows-XP-or-Vista-Password',
-		'Resolve-Problems-with-Your-Boyfriend',
-		'Respond-to-Sarcasm',
-		'Retrain-a-Cat-to-Use-the-Litter-Box',
-		'Safely-Swim-with-Piranhas',
-		'Save-Music-off-of-a-MySpace-Music-Page-Without-Using-the-Download-Button',
-		'Say-Most-Common-Words-in-Farsi',
-		'Say-Yes-in-Different-Languages',
-		'Select-the-Best-Pokémon-to-Beat-the-Elite-Four-in-Pokémon-Diamond-and-Pearl',
-		'Sell-Your-Pokemon-Cards',
-		'Send-an-Email-at-a-Specific-Time-in-the-Future-Using-Mozilla-Thunderbird.',
-		"Set-Your-Guitar's-Intonation",
-		'Setup-a-12-Lead-Ekg',
-		'Sew-and-Turn-Narrow-Shoulder-Straps',
-		'Shampoo-Hair-Naturally',
-		'Shave-a-Cat',
-		'Shave-Your-Head',
-		'Show-a-Girl-You-Like-Her',
-		'Sing-High-Notes',
-		'Sing-Karaoke-with-Confidence',
-		'Sketch',
-		'Sleep-When-You-Are-Not-Tired',
-		'Snipe-in-Halo-2',
-		'Snuggle-With-a-Girl',
-		'Speak-Confidently-to-Intimidating-People',
-		'Speak-Korean',
-		'Spice-Up-a-Plain-Waffle',
-		'Spot-a-Fake-Social-Security-Card',
-		'Start-a-New-Life',
-		'Start-an-Affiliate-Marketing-Business',
-		'Start-Contact-Juggling',
-		'Start-Playing-the-Bass-Guitar',
-		'Stay-Awake-when-Driving',
-		'Stop-a-Sneeze',
-		'Stop-Being-Scared-After-Watching-Scary-Movies',
-		'Stop-Being-Selfish',
-		'Stop-Being-Viewed-As-a-Nerd',
-		'Stop-Comparing-Yourself-to-Others',
-		'Stop-Cracking-Your-Knuckles',
-		"Stop-Loving-Someone-Who-Doesn't-Love-You",
-		'Stop-Passive-Aggressive-Behavior-in-the-Workplace',
-		'Survive-a-Break-Up-(Girls)',
-		'Survive-in-Federal-Prison',
-		'Switch-from-Yahoo!-Mail-to-Gmail',
-		'Take-a-Screenshot-of-the-Entire-Screen',
-		'Take-Apart-a-Track-Bicycle',
-		'Take-Care-of-Goldfish',
-		'Take-Care-of-Mice',
-		'Talk-to-a-Shy-Person',
-		'Talk-Your-Mom-into-Saying-Yes',
-		'Teach-a-Dog-to-Smile',
-		'Test-Coffee-Freshness-With-a-Zipper-Bag',
-		'Thread-Your-Eyebrows',
-		'Throw-a-Knife-Without-It-Spinning',
-		'Throw-a-Sinker',
-		'Throw-Darts',
-		'Train-Puppies',
-		'Transform-Your-Dollhouse-Into-a-Faerie-House',
-		'Treat-a-Hot-Water-Spill-on-Your-Skin',
-		'Treat-a-Urinary-Tract-Infection',
-		'Treat-an-Infection-in-Your-Ear-Caused-by-Your-New-Earring',
-		'Troubleshoot-Computer-Startup-Problems',
-		'Type-Foreign-Language-Characters-with-an-American-Keyboard',
-		'Understand-Parts-of-Speech',
-		'Understand-What-wikiHow-Is-Not',
-		'Unlock-Motorola-Phones-with-Windows',
-		'Unlock-Toadette-in-Mario-Kart-Wii',
-		'Unlock-Your-Nokia-Cell-Phone',
-		'Use-an-Instead-Softcup',
-		'Use-an-Oven',
-		'Use-Cassia-Obovata-on-Hair',
-		'Use-Cheat-Engine',
-		"Use-Its-and-It's",
-		'Win-a-25-Words-or-Less-Competition',
-		'Win-a-Hot-Dog-Eating-Contest',
-		'Win-a-Street-Fight',
-		'Write-a-Check',
-		'Write-a-Famous-Blog',
-		'Write-a-Letter-to-Your-Teacher',
-		'Write-a-Memo',
-		'Write-a-Mystery-Story',
-		'Write-a-Symphony',
-		'Write-a-Thank-You-Speech',
-		'Write-to-HM-Queen-Elizabeth-II',
-		'Write-Words-With-a-Calculator'
+		'Cool-Yourself-in-a-Car-Without-Air-Conditioning',
+		'Broil-Steak',
+		'Style-a-Classic-Chignon-Hair-Style',
+		'Make-a-Kusudama-Flower',
+		'Wire-a-3-Way-Light-Switch',
+		'Wear-a-Short-Skirt-Without-Looking-Overexposed',
+		'Solder-Stained-Glass',
+		'Look-Good-at-a-Prom',
+		'Get-a-Loan-Even-With-Bad-Credit',
+		'Make-Homemade-Baked-Potato-Crisps',
+		'Make-Chicken-Marinade',
+		'Make-Chocolate-Vodka',
+		'Remove-Fruit-Juice-Stains-from-Carpet',
+		'Make-Chinese-Dumplings',
+		'Find-the-Median-of-a-Set-of-Numbers',
+		'Make-Hot-Cross-Buns',
+		'Make-an-Origami-Heart',
+		'Draw-an-Elf',
+		'Make-Tea',
+		'Zoom-In-or-Out-on-an-iPhone-or-iPod-Touch',
+		'Make-a-Milky-Way-Cake',
+		'Make-a-Shirt-out-of-a-One-Dollar-Bill',
+		'Play-3-Coin-Hockey',
+		'Fry-Pot-Stickers',
+		'Make-a-Sandwich',
+		'Wash-a-Vehicle-with-Micro-Fiber-Cloths',
+		'Find-the-Greatest-Common-Divisor-of-Two-Integers',
+		'Make-Chinese-Green-Tea',
+		'Make-a-Hemp-Necklace',
+		'Make-Strawberry-Lemonade',
+		'Make-a-Padlock-Shim',
+		'Draw-a-Sunset',
+		'Use-Quotation-Marks-Correctly',
+		'Finish-a-Crossword-Puzzle',
+		'Dress-to-Make-Yourself-Look-Skinnier',
+		'Write-a-Love-Letter',
+		'Make-KFC-Original-Fried-Chicken',
+		'Factor-a-Number',
+		'Roll-Sushi',
+		'Find-out-How-Much-Space-Is-Left-on-Your-iPod-Touch-or-iPhone',
+		'Make-a-Potato-Clock',
+		'Sew-a-Button',
+		'Explode-a-Grape-in-the-Microwave',
+		'Roll-a-Coin-on-Your-Knuckles',
+		'Convert-a-Percentage-into-a-4.0-Grade-Point-Average',
+		'Make-a-Bird-out-of-a-Plastic-Straw',
+		'Change-a-Word-Document-to-JPEG-Format',
+		'Make-a-Paper-Army-Tank',
+		'Calculate-the-Volume-of-a-Pyramid',
+		'Build-Credit-Without-Credit-Cards',
+		'Fold-a-Paper-Crane',
+		'Dispose-of-Unused-Medication',
+		'Drink-More-Water-Every-Day',
+		'Make-CD-Earrings',
+		'Make-Lumpia',
+		'Multiply',
+		'Make-Cat-Eyes-With-Eyeliner',
+		'Make-a-Pop-Up-Card',
+		'Use-a-Padlock-Shim',
+		'Eat-Properly',
+		'Fix-Your-iPod-Jack',
+		'Solve-Fraction-Questions-in-Math',
+		'Read-Nutrition-Facts-on-Food-Labels',
+		'Jump-Start-a-Car',
+		'Tie-a-Silk-Scarf',
+		'Make-a-Gift-Bag',
+		'Decode-a-Caesar-Box-Code',
+		'Make-Black-Icing',
+		'Make-Buttered-Noodles',
+		'Make-an-Origami-Balloon',
+		'Finger-Weave',
+		'Microwave-a-Peep',
+		'Convert-Grams-Into-Pounds',
+		'Turn-off-a-Normal-School-Calculator',
+		'Upload-Songs-to-an-iPod',
+		'Unclog-a-Kitchen-Sink',
+		'Make-a-Paper-Boat',
+		'Look-Feminine-With-Short-Hair',
+		'Do-Long-Multiplication',
+		'Fry-Cheese',
+		'Make-the-Chinese-Staircase-Bracelet',
+		'Play-Wall-Ball',
+		'Get-a-SIM-Card-out-of-an-iPhone',
+		'Multiply-Square-Roots',
+		'Follow-a-Clear-Liquid-Diet',
+		'Make-Cake-Pops',
+		'Make-a-No-Bake-Cherry-Cheesecake'
 	);
 	
-	static $checkbox = false;
+	static $Watermark = false;
 
-	public function checkForCheckbox() {
+	public function checkForWatermark() {
 		global $wgTitle, $wgUser, $wgRequest;
 		if ($wgTitle->getNamespace() == NS_MAIN &&
-			in_array($wgTitle->getDBkey(),self::$checkbox_array) &&
+			in_array($wgTitle->getDBkey(),self::$watermark_array) &&
 			$wgRequest->getVal('oldid') == '' &&
 			($wgRequest->getVal('action') == '' || $wgRequest->getVal('action') == 'view')) {
-				self::$checkbox = true;
+				self::$Watermark = true;
 		}
 	}
 	
@@ -2436,7 +2143,31 @@ class WikiHowTemplate extends QuickTemplate {
 		$body= "";
 		for ($i = 0; $i < sizeof($parts); $i++) {
 			if ($i == 0) {
-				
+			
+				//check for the nointroimg template
+				if (self::$Watermark) {
+					//make the intro image big
+					preg_match("/Image:(.*)\">/", $parts[$i], $matches);
+					
+					if (count($matches) > 0) {
+						$img = $matches[1];
+						$img = preg_replace('@%27@',"'",$img);
+						$image = Title::makeTitle(NS_IMAGE, $img);
+						
+						if ($image) {
+							$file = wfFindFile($image);
+							if ($file) {
+								$thumb = $file->getThumbnail(625, -1, true, true);
+								$newintroimg = '<p style="text-align:center;"><img border="0" width="625" class="mwimage101" src="'.wfGetPad($thumb->url).'" alt=""><div class="wikihow_watermark" style="margin-top:-38px;"></div></p>';
+								$bImgFound = true;
+							}
+						}
+						
+						$parts[$i] = preg_replace('/<div class=\'mwimg\'>.*<\/div>\n<\/div>\n<p>/is','<p>',$parts[$i]);
+						$body = "<div class='article_inner editable'>" . $newintroimg.$parts[$i] . "</div>\n";
+					}
+				}
+			
 				if ($body == "") {
 					// if there is no alt tag for the intro image, so it to be the title of the page
 					preg_match("@<img.*mwimage101[^>]*>@", $parts[$i], $matches);
@@ -2572,12 +2303,7 @@ class WikiHowTemplate extends QuickTemplate {
 						case "<ol>":
 							$level++;
 							if ($level == 1)  {
-								if (self::$checkbox) {
-									$p = '<ol class="steps_list_2 checkbox_steps">';
-								}
-								else {
-									$p = '<ol class="steps_list_2">';
-								}
+								$p = '<ol class="steps_list_2">';
 								$upper_tag = "ol";
 							} else {
 								$p = "&nbsp;<div class='listbody'>{$p}";
@@ -2606,13 +2332,7 @@ class WikiHowTemplate extends QuickTemplate {
 							$closecount = 0;
 							if ($level == 1 && $upper_tag == "ol") {
 								$li_number = $current_li++;
-								if (self::$checkbox) {
-									$checkbox = '<div class="step_checkbox"></div>';
-								}
-								else {
-									$checkbox = '';
-								}
-								$p = '<li>'.$checkbox.'<div class="step_num">' . $li_number . '</div>';
+								$p = '<li><div class="step_num">' . $li_number . '</div>';
 								# this is where things get interesting. Want to make first sentence bold!
 								# but we need to handle cases where there are tags in the first sentence
 								# split based on HTML tags
@@ -2641,7 +2361,7 @@ class WikiHowTemplate extends QuickTemplate {
 											$apply_b = true;
 										}
 										if ($apply_b) {
-											$x = preg_replace("@([{$punct}])@im", "</b>$1", $x, 1, &$closecount);
+											$x = preg_replace("@([{$punct}])@im", "</b>$1", $x, 1, $closecount);
 										}
 									}
 									$p .= $x;
@@ -2755,6 +2475,12 @@ class WikiHowTemplate extends QuickTemplate {
 					break;
 				}		
 			}
+		}
+		
+		//add watermarks
+		if (self::$Watermark) {
+			$watermark_div = '<div class="wikihow_watermark"></div>';
+			$body = preg_replace("@<div class=[\"|']corner bottom_right[\"|']></div>@im",'<div class="corner bottom_right"></div>'.$watermark_div,$body);
 		}
 
 		/// ads below tips, walk the sections and put them after the tips
@@ -3020,7 +2746,7 @@ class WikiHowTemplate extends QuickTemplate {
 		
 		//adding recipe microdata tags?
 		self::checkForRecipeMicrodata();
-		//self::checkForCheckbox();
+		self::checkForWatermark();
 		
 		$isWikiHow = false;
 		if ($wgArticle != null && $wgTitle->getNamespace() == NS_MAIN)  {
@@ -3406,11 +3132,12 @@ class WikiHowTemplate extends QuickTemplate {
 			if (class_exists('IntroImageAdder')) {
 			$imagepicklink = "<li>" . $sk->makeLinkObj(Title::makeTitle(NS_PROJECT, "IntroImageAdderStartPage"), wfMsg('IntroImageAdder')) . "</li>";
 			}
-			$categorypickerlink = "<li>" . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Categorizer"), wfMsg('UncategorizedPages')) . "</li>";
 			if ($wgLanguageCode == 'en') {
 				$moreideaslink = "<li><a href='/Special:CommunityDashboard'>" . wfMsg('more-ideas') . "</a></li>";
+				$categorypickerlink = "<li>" . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Categorizer"), wfMsg('UncategorizedPages')) . "</li>";
 			} else {
 				$moreideaslink = "<li><a href='/Contribute-to-wikiHow'>" . wfMsg('more-ideas') . "</a></li>";
+				$categorypickerlink = "<li>" . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Uncategorizedpages"), wfMsg('UncategorizedPages')) . "</li>";
 			}
 		}
 
@@ -3777,7 +3504,7 @@ class WikiHowTemplate extends QuickTemplate {
             <a id="nav_home" href="<?=$mainPageObj->getFullURL();?>" id="nav_home" title="Home" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">Home</a>            <a id="nav_articles" href="" title="Articles" class="on" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">Articles</a>            <a id="nav_community" href="<?=$cp->getFullURL();?>" id="nav_community" title="Community" onmouseover="button_swap(this);" onmouseout="button_unswap(this);" onmousedown="button_click(this)"><?=wfMsg('community');?></a>            <?if ($wgUser->getID() >0) { ?>            <a id="nav_profile" href="<?=$wgUser->getUserPage()->getFullURL(); ?>" id="nav_profile" title="My Profile" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">My Profile</a>            <? } else{ ?>            <a id="nav_profile" href="/Special:Userlogin" id="nav_profile" title="My Profile" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">My Profile</a>            <? } ?>
 */
 	$lpage = Title::makeTitle(NS_SPECIAL, "Userlogin");
-	$dpage = $wgLanguageCode == 'en' ? Title::makeTitle(NS_SPECIAL, "CommunityDashboard") : Title::makeTitle(NS_PROJECT, "Community");
+	$dpage = $wgLanguageCode == 'en' ? Title::makeTitle(NS_SPECIAL, "CommunityDashboard") : Title::makeTitle(NS_PROJECT, wfMsg("community"));
 	$nav_tabs = array(
 				'nav_home'	=> array('status' => '', 'mouseevents' => '', 'possibleurls' => array($mainPageObj->getLocalURL()), 'link' => $mainPageObj->getLocalURL(), 'text' => wfMsg('navbar_home')),
 				'nav_articles'	=> array('status' => '', 'mouseevents' => '', 'possibleurls' => array("/Special:Categorylisting"), 'link' => "/Special:Categorylisting", 'text' => wfMsg('navbar_articles')),
@@ -4061,10 +3788,6 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 	</div><!--end bubbles-->
 </div><!--end header-->
 
-<div id="iphone_notice">
-</div>
-
-
 <div id="main">
 	<?= $announcement ?>
 	<?= $mpActions ?>
@@ -4228,16 +3951,20 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
         </p>
 			<p><?=$authors?></p>
 
-
         <?php if (is_array($this->data['language_urls'])) { ?>
         <p>
-            <?php $this->msg('otherlanguages') ?><br />
-            <?php
+            <?php $this->msg('otherlanguages') ?><br /><?php
                 $links = array();
                 foreach($this->data['language_urls'] as $langlink) {
-                    $links[] = $langlink['language'] . ' <a href="' .  htmlspecialchars($langlink['href']) . '">' .  $langlink['text'] . "</a>";
+					$linkText = $langlink['text'];
+					preg_match("@interwiki-(..)@", $langlink['class'], $langCode);
+					if (!empty($langCode[1])) {
+						$sk = $wgUser->getSkin();
+						$linkText = $sk->getInterWikiLinkText($linkText, $langCode[1]);
+					}
+                    $links[] = htmlspecialchars(trim($langlink['language'])) . '&nbsp;<span><a href="' .  htmlspecialchars($langlink['href']) . '">' .  $linkText . "</a><span>";
                 }
-                echo implode(", ", $links);
+                echo implode("&#44;&nbsp;", $links);
             ?>
         </p>
         <? } ?>
@@ -4647,13 +4374,6 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 <?php } ?>
 
 <!-- LOAD EVENT LISTENERS ALL PAGES -->
-<script type="text/javascript">
-if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
-	jQuery(window).load(checkIphone);
-} else {
-	Event.observe(window, 'load', checkIphone);
-}
-</script>
 	<div id='img-box'></div>
 <?
 if (class_exists('CTALinks') && trim(wfMsgForContent('cta_feature')) == "on") {

@@ -360,6 +360,7 @@ class WikiPhotoProcess {
 		// the above and below wikitext intact
 		list($text, $url, $title) = self::getArticleDetails($articleID);
 		if (!$text || !$title) $err = 'Could not find article ID ' . $articleID;
+if ($articleID == 1251223) $err = 'Reuben forced skipping this article because there was an error processing it';
 		if (!$err) {
 			list($text, $steps, $stepsToken) = self::cutStepsSection($text);
 			if (!$stepsToken) {
@@ -425,7 +426,7 @@ class WikiPhotoProcess {
 	 * format for a directory path is:
 	 *   userid/articleid/photoid.jpg
 	 */
-	private static function processImagesDir() {
+	/*private static function processImagesDir() {
 		// read all the image/article dirs
 		$dh1 = opendir(self::IMAGES_DIR);
 		while (false !== ($user = readdir($dh1))) {
@@ -479,7 +480,7 @@ class WikiPhotoProcess {
 			closedir($dh2);
 		}
 		closedir($dh1);
-	}
+	}*/
 
 	/**
 	 * Grab the status of all articles processed.
@@ -664,7 +665,12 @@ class WikiPhotoProcess {
 		foreach ($articles as $id => $details) {
 			$debug = self::$debugArticleID;
 			if ($debug && $debug != $id) continue;
-			if (@$details['err']) continue;
+			if (@$details['err']) {
+				if (!$processed[$id]) {
+					self::setArticleProcessed($id, $details['user'], $details['err'], '', 0, 0);
+				}
+				continue;
+			}
 
 			// if article needs to be processed because new files were
 			// uploaded, but article has already been processed, we should
@@ -744,6 +750,8 @@ class WikiPhotoProcess {
 
 			if (!$err) {
 				list($err, $title) = self::processImages($id, $details['user'], $imageList);
+			} else {
+				self::setArticleProcessed($id, $details['user'], $err, '', 0, 0);
 			}
 
 			if ($stageDir) {
@@ -850,11 +858,15 @@ class WikiPhotoProcess {
 		if ($rev) {
 			$text = $rev->getText();
 			$title = $rev->getTitle();
-			$url = 'http://www.wikihow.com/' . $title->getPartialURL();
+			$url = self::makeWikihowURL($title);
 			return array($text, $url, $title);
 		} else {
 			return array('', '', null);
 		}
+	}
+
+	private static function makeWikihowURL($title) {
+		return 'http://www.wikihow.com/' . $title->getPartialURL();
 	}
 
 	/**
