@@ -1,30 +1,29 @@
 <?php
-if ( ! defined( 'MEDIAWIKI' ) )
-	die();
-    
-/**#@+
- * An extension that allows users to rate articles. 
- * 
- * @package MediaWiki
- * @subpackage Extensions
+/**
+ * Basic dashboard that gives some summarized information on a page.
  *
- * @link http://www.wikihow.com/WikiHow:RateArticle-Extension Documentation
- *
- *
+ * @file
+ * @ingroup Extensions
+ * @version 1.0
  * @author Travis Derouin <travis@wikihow.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU General Public License 2.0 or later
  */
 
-/**#@+
- */
+if ( !defined( 'MEDIAWIKI' ) ) {
+	die();
+}
+
+// Extension credits that will show up on Special:Version
 $wgExtensionCredits['specialpage'][] = array(
-	'name' => 'Articlestats',
+	'name' => 'ArticleStats',
+	'version' => '1.0',
 	'author' => 'Travis Derouin',
 	'description' => 'Basic dashboard that gives some summarized information on a page',
-	'url' => 'http://www.wikihow.com/WikiHow:Articlestats-Extension',
+	'url' => 'http://www.mediawiki.org/wiki/Extension:ArticleStats',
 );
 
-$wgSpecialPages['Articlestats'] = 'Articlestats';
-$wgExtensionMessagesFiles['Cite'] = dirname( __FILE__ ) . "/Articlestats.i18n.php";
-$wgAutoloadClasses['Articlestats'] = dirname( __FILE__ ) . '/Articlestats.body.php';
-
+// Set up the new special page
+$dir = dirname( __FILE__ ) . '/';
+$wgExtensionMessagesFiles['ArticleStats'] = $dir . 'ArticleStats.i18n.php';
+$wgAutoloadClasses['ArticleStats'] = $dir . 'ArticleStats.body.php';
+$wgSpecialPages['ArticleStats'] = 'ArticleStats';
