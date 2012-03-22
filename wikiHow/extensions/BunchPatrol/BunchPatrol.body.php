@@ -1,136 +1,195 @@
-<?
+<?php
 
-class Bunchpatrol extends SpecialPage {
+class BunchPatrol extends SpecialPage {
 
-	function __construct() {
-		SpecialPage::SpecialPage('Bunchpatrol');
+	/**
+	 * Constructor -- set up the new special page
+	 */
+	public function __construct() {
+		parent::__construct( 'BunchPatrol' );
 	}
 
-	function execute($par) {
+	/**
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the page or null
+	 */
+	public function execute( $par ) {
 		global $wgRequest, $wgOut, $wgUser;
-		$target = isset($par) ? $par : $wgRequest->getVal('target');
 
-		if ($target == $wgUser->getName() ) {
-			$wgOut->addHTML(wfMsg('bunchpatrol_noselfpatrol'));
+		$target = isset( $par ) ? $par : $wgRequest->getVal( 'target' );
+
+		// No patrolling your own edits!
+		if ( $target == $wgUser->getName() ) {
+			$wgOut->addHTML( wfMsg( 'bunchpatrol-noselfpatrol' ) );
 			return;
 		}
 
-		$wgOut->setHTMLTitle('Bunch Patrol - wikiHow');
-		$sk = $wgUser->getSkin();
-		$dbr =& wfGetDB(DB_SLAVE);
-		$me = Title::makeTitle(NS_SPECIAL, "Bunchpatrol");
+		// Set the page title, robot policies, etc.
+		$this->setHeaders();
 
-		$unpatrolled = $dbr->selectField('recentchanges', array('count(*)'), array('rc_patrolled=0'));
+		// Add JavaScript
+		$wgOut->addModules( 'ext.bunchPatrol' );
+
+		$dbr = wfGetDB( DB_SLAVE );
+		$me = $this->getTitle();
+
+ 		$unpatrolled = $dbr->selectField(
+			'recentchanges',
+			array( 'COUNT(*)' ),
+			array( 'rc_patrolled' => 0 ),
+			__METHOD__
+		);
+
 		if ( !strlen( $target ) ) {
-			$restrict = " AND (rc_namespace = 2 OR rc_namespace = 3) ";
-			$res = $dbr->query("SELECT rc_user, rc_user_text, COUNT(*) AS C
-								FROM recentchanges
-								WHERE rc_patrolled=0
-									{$restrict}
-								GROUP BY rc_user_text HAVING C > 2
-								ORDER BY C DESC");
-			$wgOut->addHTML("<table width='85%' align='center'>");
-			while ( ($row = $dbr->fetchObject($res)) != null) {
-				$u = User::newFromName($row->rc_user_text);
-				if ($u) {
-					$bpLink = SpecialPage::getTitleFor( 'Bunchpatrol', $u->getName() );
-					$wgOut->addHTML("<tr><td>" . $sk->makeLinkObj($bpLink,$u->getName()) . "</td><td>{$row->C}</td>");
+			$restrict = '(rc_namespace = 2 OR rc_namespace = 3)';
+			$res = $dbr->select(
+				'recentchanges',
+				array( 'rc_user', 'rc_user_text', 'COUNT(*) AS C' ),
+				array( 'rc_patrolled' => 0, $restrict ),
+				__METHOD__,
+				array(
+					'GROUP BY' => 'rc_user_text',
+					'HAVING' => 'C > 2',
+					'ORDER BY' => 'C DESC'
+				),
+			);
+			$wgOut->addHTML( '<table width="85%" align="center">' );
+			while ( ( $row = $dbr->fetchObject( $res ) ) != null ) {
+				$u = User::newFromName( $row->rc_user_text );
+				if ( $u ) {
+					$bpLink = SpecialPage::getTitleFor( 'BunchPatrol', $u->getName() );
+					$wgOut->addHTML(
+						'<tr><td>' .
+						Linker::link( $bpLink, $u->getName() ) .
+						"</td><td>{$row->C}</td>"
+					);
 				}
 			}
-			$dbr->freeResult($res);
-			$wgOut->addHTML("</table>");
+			$wgOut->addHTML( '</table>' );
 			return;
 		}
 
-		if ($wgRequest->wasPosted() && $wgUser->isAllowed('patrol') ) {
+		if ( $wgRequest->wasPosted() && $wgUser->isAllowed( 'patrol' ) ) {
 			$values = $wgRequest->getValues();
 			$vals = array();
-			foreach ($values as $key=>$value) {
-				if (strpos($key, "rc_") === 0 && $value == 'on') {
-					$vals[] = str_replace("rc_", "", $key);
+			foreach ( $values as $key => $value ) {
+				if ( strpos( $key, 'rc_' ) === 0 && $value == 'on' ) {
+					$vals[] = str_replace( 'rc_', '', $key );
 				}
 			}
-			foreach ($vals as $val) {
+			foreach ( $vals as $val ) {
 				RecentChange::markPatrolled( $val );
 				PatrolLog::record( $val, false );
 			}
-			$restrict = " AND (rc_namespace = 2 OR rc_namespace = 3) ";
-			$res = $dbr->query("SELECT rc_user, rc_user_text, COUNT(*) AS C
-								FROM recentchanges
-								WHERE rc_patrolled=0
-									{$restrict}
-								GROUP BY rc_user_text HAVING C > 2
-								ORDER BY C DESC");
-			$wgOut->addHTML("<table width='85%' align='center'>");
-			while ( ($row = $dbr->fetchObject($res)) != null) {
-				$u = User::newFromName($row->rc_user_text);
-				if ($u)
-					$wgOut->addHTML("<tr><td>" . $sk->makeLinkObj($me,$u->getName(), "target=" . $u->getName()) . "</td><td>{$row->C}</td>");
+			$whereConds = array(
+				'rc_patrolled = 0'
+			);
+			$whereConds[] = ' (rc_namespace 2 OR rc_namespace = 3) ';
+			$res = $dbr->select(
+				'recentchanges',
+				array( 'rc_user', 'rc_user_text', 'COUNT(*) AS C' ),
+				$whereConds,
+				__METHOD__,
+				array(
+					'GROUP BY' => 'rc_user_text',
+					'HAVING' => 'C > 2',
+					'ORDER BY' => 'C DESC'
+				)
+			);
+			$wgOut->addHTML( '<table width="85%" align="center">' );
+			while ( ( $row = $dbr->fetchObject( $res ) ) != null ) {
+				$u = User::newFromName( $row->rc_user_text );
+				if ( $u ) {
+					$wgOut->addHTML(
+						'<tr><td>' .
+							Linker::link(
+								$me,
+								$u->getName(),
+								array( 'target' => $u->getName() )
+							) . "</td><td>{$row->C}</td>"
+					);
+				}
 			}
-			$wgOut->addHTML("</table>");
+			$wgOut->addHTML( '</table>' );
 			return;
 		}
 
 		// don't show main namespace edits if there are < 500 total unpatrolled edits
-		$target = str_replace('-', ' ', $target);
-		$opts = array ('rc_user_text' =>$target, 'rc_patrolled=0');
+		// the following line is related to a bad development/design decision
+		// made by wikiHow ages ago: they chose to replace spaces with hyphens
+		// in URLs. So the following line is needed for wikiHow.com, but we are
+		// trying to deprecate that unsupported URL scheme.
+		//$target = str_replace( '-', ' ', $target );
+		$opts = array(
+			'rc_user_text' => $target,
+			'rc_patrolled = 0'
+		);
 		$opts[] = ' (rc_namespace = 2 OR rc_namespace = 3) ';
 
-		$res = $dbr->select ( 'recentchanges',
-				array ('rc_id', 'rc_title', 'rc_namespace', 'rc_this_oldid', 'rc_cur_id', 'rc_last_oldid'),
-				$opts,
-			"wfSpecialBunchpatrol",
-				array ('LIMIT' => 15)
-			);
+		$res = $dbr->select(
+			'recentchanges',
+			array(
+				'rc_id', 'rc_title', 'rc_namespace', 'rc_this_oldid',
+				'rc_cur_id', 'rc_last_oldid'
+			),
+			$opts,
+			__METHOD__,
+			array( 'LIMIT' => 15 )
+		);
+
 		$count = 0;
-		$wgOut->addHTML("
-			<script type='text/javascript'>
-			function checkall(selected) {
-				for (i = 0; i < document.checkform.elements.length; i++) {
-					var e = document.checkform.elements[i];
-					if (e.type=='checkbox') {
-						e.checked = selected;
-					}
-				}
-			}
-			</script>
-			<form method='POST' name='checkform' action='{$me->getFullURL()}'>
-			<input type='hidden' name='target' value='{$target}'>
-			");
-		if ($wgUser->isSysop()) {
-			$wgOut->addHTML("Select: <input type='button' onclick='checkall(true);' value='All'/>
-					<input type='button' onclick='checkall(false);' value='None'/>
-				");
+
+		$wgOut->addHTML(
+			"<form method=\"post\" name=\"checkform\" action=\"{$me->getFullURL()}\">
+				<input type=\"hidden\" name=\"target\" value=\"{$target}\" />"
+		);
+
+		if ( $wgUser->isAllowed( 'bunchpatrol' ) ) {
+			$wgOut->addHTML(
+				wfMsg( 'bunchpatrol-select' ) .
+					' <input type="button" id="check-all" value="' . wfMsg( 'bunchpatrol-all' ) . '" />
+					<input type="button" id="check-none" value="' . wfMsg( 'bunchpatrol-none' ) . '" />'
+			);
 		}
 
-		$wgOut->addHTML(" <table width='100%' align='center' class='bunchtable'>
-				<tr><td><b>Patrol?</b></td><td align='center'><b>Diff</b></td></tr>
-			");
+		$wgOut->addHTML(
+			'<table width="100%" align="center" class="bunchtable">
+				<tr>
+					<td><b>' . wfMsg( 'bunchpatrol-patrol' ) . '</b></td>
+					<td align="center"><b>' . wfMsg( 'bunchpatrol-diff' ) . '</b></td>
+				</tr>'
+			);
 
-		while ( ($row = $dbr->fetchObject($res)) != null) {
-			$t = Title::makeTitle($row->rc_namespace, $row->rc_title);
+		while ( ( $row = $dbr->fetchObject( $res ) ) != null ) {
+			$t = Title::makeTitle( $row->rc_namespace, $row->rc_title );
 			$diff = $row->rc_this_oldid;
 			$rcid = $row->rc_id;
 			$oldid = $row->rc_last_oldid;
 			$de = new DifferenceEngine( $t, $oldid, $diff, $rcid );
-			$wgOut->addHTML("<tr> <td valign='middle' style='padding-right:24px; border-right: 1px solid #eee;'><input type='checkbox' name='rc_{$rcid}'></td><td style='border-top: 1px solid #eee;'>");
-			$wgOut->addHTML($sk->makeLinkObj($t));
-			$de->showDiffPage(true);
-			$wgOut->addHTML("</td></tr>");
+			$wgOut->addHTML(
+				"<tr>
+					<td valign=\"middle\" style=\"padding-right: 24px; border-right: 1px solid #eee;\">
+						<input type=\"checkbox\" name=\"rc_{$rcid}\" />
+					</td>
+					<td style=\"border-top: 1px solid #eee;\">"
+			);
+			$wgOut->addHTML( Linker::link( $t/*, $row->rc_title */ ) );
+			$de->showDiffPage( true );
+			$wgOut->addHTML( '</td></tr>' );
 			$count++;
 		}
 
-		$wgOut->addHTML("</table><br/><br/>");
-		if ($count > 0) {
-			$wgOut->addHTML("<input type='submit' value='" . wfMsg('submit') . "'>");
+		$wgOut->addHTML( '</table><br /><br />' );
+		if ( $count > 0 ) {
+			$wgOut->addHTML( '<input type="submit" value="' . wfMsg( 'submit' ) . '" />' );
 		}
-		$wgOut->addHTML("</form>");
-		$wgOut->setPageTitle(wfMsg('bunchpatrol'));
-		$dbr->freeResult($res);
-		if ($count == 0) {
-			$wgOut->addWikiText(wfMsg('bunchpatrol_nounpatrollededits', $target));
+		$wgOut->addHTML( '</form>' );
+
+		// Nothing to patrol...
+		if ( $count == 0 ) {
+			$wgOut->addWikiMsg( 'bunchpatrol-nounpatrollededits', $target );
 		}
 	}
 
 }
-
