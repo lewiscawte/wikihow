@@ -815,8 +815,13 @@ class RecommendedArticles extends SpecialPage {
 	}
 
     function execute($par) {
-		global $wgOut, $wgRequest, $wgUser, $wgTitle;
+		global $wgOut, $wgRequest, $wgUser, $wgTitle, $wgLanguageCode;
 		require_once('Leaderboard.body.php');
+
+		if ($wgLanguageCode != 'en') {
+			$wgOut->errorpage( 'nosuchspecialpage', 'nospecialpagetext' );
+			return;
+		}
 
 		$map = SuggestCategories::getCatMap(true);
 		$cats = SuggestCategories::getSubscribedCats();
@@ -960,7 +965,13 @@ class YourArticles extends SpecialPage {
 	}
 
     function execute($par) {
-		global $wgOut, $wgUser, $wgTitle;
+		global $wgOut, $wgUser, $wgTitle, $wgLanguageCode;
+
+
+		if ($wgLanguageCode != 'en') {
+			$wgOut->errorpage( 'nosuchspecialpage', 'nospecialpagetext' );
+			return;
+		}
 
 		require_once('Leaderboard.body.php');
 

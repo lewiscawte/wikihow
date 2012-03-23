@@ -52,6 +52,7 @@ A one sentence description will  help the reader know if he or she wants to spen
 		'importvideo_youtubeblocked' => "Unfortunately it is not possible to add videos uploaded from the Youtube user '$1' at this time.",
 		'importvideo_rating_wonderhowtodesc' => "(out of 100%)",
 		'importvideo_youtubesort_rel' => "Relevance",
+		'importvideo_youtube_sortby' => "Sort by ",
 		'importvideo_youtubesort_howto' => "Only videos from the How-to category",
 		'importvideo_youtubesort_rating' => "Rating",
 		'importvideo_youtubesort_date' => "Date published",

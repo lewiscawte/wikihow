@@ -69,4 +69,5 @@ $messages['en'] = array (
 			<a href='http://www.facebook.com/about/login/' class='fbc_link'>Learn more</a></div>
 		</div>
 	",
+	"fbc_returnto" => "/Special:CommunityDashboard",
 );

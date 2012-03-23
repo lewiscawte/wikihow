@@ -33,21 +33,21 @@
 					$indent = "\xc2\xa0\xc2\xa0";
 				?>
 				<select name='wpLicense' id='wpLicense' tabindex='4' onchange='easyImageUpload.cssShowHideAttribution();'>
-<option value="" disabled="disabled" style="color: GrayText"><?= wfMsg('eiu-your-own-work') ?></option>
-	<option value="cc-by-sa-nc-2.5-self" title="{{cc-by-sa-nc-2.5-self}}" selected="selected"><?= $indent . wfMsg('eiu-made-myself-wikihow') ?></option>
-	<option value="Self" title="{{Self}}"><?= $indent . wfMsg('eiu-made-myself-cc') ?></option>
-	<option value="PD self" title="{{PD self}}"><?= $indent . wfMsg('eiu-made-myself-public') ?></option>
-<option value="" disabled="disabled" style="color: GrayText"><?= wfMsg('eiu-not-self-made') ?></option>
-	<option value="GFDL" title="{{GFDL}}"><?= $indent . wfMsg('eiu-public-gfdl') ?></option>
-	<option value="cc-by-2.5" title="{{cc-by-2.5}}"><?= $indent . wfMsg('eiu-public-cc-by') ?></option>
-	<option value="cc-by-sa-2.5" title="{{cc-by-sa-2.5}}"><?= $indent . wfMsg('eiu-public-cc-sa') ?></option>
-	<option value="PD" title="{{PD}}"><?= $indent . wfMsg('eiu-public-domain') ?></option>
-<option value="" disabled="disabled" style="color: GrayText"><?= wfMsg('eiu-cr') ?></option>
-	<option value="copyrighted-rerelease" title="{{copyrighted-rerelease}}"><?= $indent . wfMsg('eiu-cr-cc') ?></option>
-	<option value="Fair Use" title="{{Fair Use}}"><?= $indent . wfMsg('eiu-cr-fu') ?></option>
-	<option value="Screenshot" title="{{Screenshot}}"><?= $indent . wfMsg('eiu-cr-ss') ?></option>
-<option value="" disabled="disabled" style="color: GrayText"><?= wfMsg('eiu-unknown-deleted') ?></option>
-	<option value="No License" title="{{No License}}"><?= $indent . wfMsg('eiu-unknown-found') ?></option>
+					<option value="" disabled="disabled" style="color: GrayText"><?= wfMsg('eiu-your-own-work') ?></option>
+					<option value="cc-by-sa-nc-2.5-self" title="{{cc-by-sa-nc-2.5-self}}" <?= $license=='cc-by-sa-nc-2.5-self'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-made-myself-wikihow') ?></option>
+					<option value="Self" title="{{Self}}" <?= $license=='Self'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-made-myself-cc') ?></option>
+					<option value="PD self" title="{{PD self}}" <?= $license=='PD self'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-made-myself-public') ?></option>
+					<option value="" disabled="disabled" style="color: GrayText"><?= wfMsg('eiu-not-self-made') ?></option>
+					<option value="GFDL" title="{{GFDL}}" <?= $license=='GFDL'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-public-gfdl') ?></option>
+					<option value="cc-by-2.5" title="{{cc-by-2.5}}" <?= $license=='cc-by-2.5'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-public-cc-by') ?></option>
+					<option value="cc-by-sa-2.5" title="{{cc-by-sa-2.5}}" <?= $license=='cc-by-sa-2.5'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-public-cc-sa') ?></option>
+					<option value="PD" title="{{PD}}" <?= $license=='PD'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-public-domain') ?></option>
+					<option value="" disabled="disabled" style="color: GrayText"><?= wfMsg('eiu-cr') ?></option>
+					<option value="copyrighted-rerelease" title="{{copyrighted-rerelease}}" <?= $license=='copyrighted-rerelease'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-cr-cc') ?></option>
+					<option value="Fair Use" title="{{Fair Use}}" <?= $license=='Fair Use'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-cr-fu') ?></option>
+					<option value="Screenshot" title="{{Screenshot}}" <?= $license=='Screenshot'?'selected="selected"':''?>><?= $indent . wfMsg('eiu-cr-ss') ?></option>
+					<option value="" disabled="disabled" style="color: GrayText"><?= wfMsg('eiu-unknown-deleted') ?></option>
+					<option value="No License" title="{{No License}}" <?= ($license=='' || $license=='No License')?'selected="selected"':''?>><?= $indent . wfMsg('eiu-unknown-found') ?></option>
 				</select>
 
 				<?

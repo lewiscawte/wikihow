@@ -49,7 +49,7 @@ class Html5editor extends UnlistedSpecialPage {
 		return "[$href $text]";
 	}
 
-	function handleLinks(&$doc, &$xpath, $oldtext) {
+	function handleLinks(&$doc, &$xpath, &$oldtext) {
 		// boundary case, self links, just remove the link
 		$nodes = $xpath->query("//strong[@class='selflink']");
 		foreach ($nodes as $node) {
@@ -105,7 +105,7 @@ class Html5editor extends UnlistedSpecialPage {
 	}
 
 	// returns whether or not there were any references to handle
-	function handleReferences(&$doc, &$xpath, $oldtext) {
+	function handleReferences(&$doc, &$xpath, &$oldtext) {
 		// get rid of the visual representation of the reference
 		$nodes = $xpath->query("//sup");
 		foreach ($nodes as $node) {
@@ -394,8 +394,8 @@ DONE;
 		#$this->debug("input.html", $doc->saveXML());
 #echo "so far so good " . __LINE__ . "\n"; exit;
 		// handle references
-		$hadrefs = $this->handleReferences(&$doc, &$xpath, &$oldtext);
-		$this->handleLinks(&$doc, &$xpath, &$oldtext);
+		$hadrefs = $this->handleReferences($doc, $xpath, $oldtext);
+		$this->handleLinks($doc, $xpath, $oldtext);
 
 		// filter out templates, we add these back in from the old wikitext
 		// any incoming ads from anons gets whacked!
@@ -741,7 +741,7 @@ DONE;
 
 			$newArticle = !$t->exists();
 
-			$a = new Article(&$t);
+			$a = new Article($t);
 
 			// check for edit conflict
 

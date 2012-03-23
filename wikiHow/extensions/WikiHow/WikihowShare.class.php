@@ -7,7 +7,7 @@ class WikihowShare {
 
 		$action = self::getAction();
 
-		if( $wgTitle->getNamespace() != NS_MAIN || $action != 'view' || self::isMainPage( $action ) ) {
+		if( !$wgTitle->exists() || $wgTitle->getNamespace() != NS_MAIN || $action != 'view' || self::isMainPage( $action ) ) {
 			return '';
 		}
 
@@ -37,7 +37,7 @@ class WikihowShare {
 
 		$action = self::getAction();
 
-		if( $wgTitle->getNamespace() != NS_MAIN || $action != 'view' || self::isMainPage( $action ) ) {
+		if( !$wgTitle->exists() || $wgTitle->getNamespace() != NS_MAIN || $action != 'view' || self::isMainPage( $action ) ) {
 			return '';
 		}
 

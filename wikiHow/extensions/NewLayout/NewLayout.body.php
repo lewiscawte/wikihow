@@ -661,14 +661,7 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 		}
 
 		$footertail .= "<!-- LOAD EVENT LISTENERS ALL PAGES -->
-<script type=\"text/javascript\">
-if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
-	jQuery(window).load(checkIphone);
-} else {
-	Event.observe(window, 'load', checkIphone);
-}
-</script>
-	<div id='img-box'></div>";
+		<div id='img-box'></div>";
 
 		if (class_exists('CTALinks') && trim(wfMsgForContent('cta_feature')) == "on") {
 			$footertail .= CTALinks::getBlankCTA();

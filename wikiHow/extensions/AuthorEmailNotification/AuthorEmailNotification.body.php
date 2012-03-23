@@ -675,10 +675,13 @@ class AuthorEmailNotification extends SpecialPage {
 		$wgOut->addHTML("<br/><center><table width='500px' align='center' class='status'>" );
 		// display header
 		$index = 1;
+		$aen_email = wfMsg('aen_form_email');
+		$aen_title = wfMsg('aen_form_title');
+		$aen_created = wfMsg('aen_form_created');
 		$wgOut->addHTML("<tr>
-			<td><strong>Email</strong></td>
-			<td><strong>Article Title</strong></td>
-			<td><strong>Date Created</strong> <a id='aen_date' onclick='aenReorder(this);'>$orderby</a></td>
+			<td><strong>$aen_email</strong></td>
+			<td><strong>$aen_title</strong></td>
+			<td><strong>$aen_created</strong> <a id='aen_date' onclick='aenReorder(this);'>$orderby</a></td>
 			</tr>
 		");
 

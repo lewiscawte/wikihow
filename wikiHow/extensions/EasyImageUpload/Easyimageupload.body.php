@@ -245,13 +245,18 @@ class Easyimageupload extends UnlistedSpecialPage {
 			if (!empty($license)) {
 				$attrib = $wgRequest->getVal('attribution');
 				$comment = '{{' . $license . (!empty($attrib) ? '|' . $attrib : '') . '}}';
+				
+				if($license != ''){
+					$wgUser->setOption('image_license', $license);
+					$wgUser->saveSettings();
+				}
 			} else {
 				$comment = $wgRequest->getVal('ImageAttribution', '');
 			}
 		} else {
 			$comment = $image_comment;
 		}
-
+		
 		if (wfReadOnly()) {
 			return wfMsg('eiu-readonly');
 		}
@@ -616,6 +621,7 @@ class Easyimageupload extends UnlistedSpecialPage {
 					'height' => $file->height,
 					'upload_file' => $file,
 					'image_comment' => $comment,
+					'license' => $wgUser->getOption('image_license')
 				);
 
 				$html = EasyTemplate::html('eiu_image_details.tmpl.php', $props);
