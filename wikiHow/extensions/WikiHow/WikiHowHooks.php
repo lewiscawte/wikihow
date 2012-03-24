@@ -1,169 +1,208 @@
-<?
+<?php
 
 function getSearchKeyStopWords() {
 	global $wgMemc;
 
-	$cacheKey = wfMemcKey('stop_words');
-	$cacheResult = $wgMemc->get($cacheKey);
-	if ($cacheResult) {
+	$cacheKey = wfMemcKey( 'stop_words' );
+	$cacheResult = $wgMemc->get( $cacheKey );
+	if ( $cacheResult ) {
 		return $cacheResult;
 	}
 
-	$sql = "SELECT stop_words FROM stop_words limit 1;";
 	$stop_words = null;
-	$db =& wfGetDB( DB_SLAVE );
-	$res = $db->query( $sql, 'WH generateSearchKey' );
-	if ( $db->numRows( $res ) ) {
-		while ( $row = $db->fetchObject( $res ) ) {
-			$stop_words = split(", ", $row->stop_words);
+	$dbr = wfGetDB( DB_SLAVE );
+	$res = $dbr->select(
+		'stop_words',
+		'stop_words',
+		array(),
+		__FUNCTION__,
+		array( 'LIMIT' => 1 )
+	);
+	if ( $dbr->numRows( $res ) ) {
+		foreach ( $res as $row ) {
+			$stop_words = explode( ', ', $row->stop_words );
 		}
 	}
-	$db->freeResult( $res );
 
 	$s_index = array();
-	if (is_array($stop_words)) {
-		foreach ($stop_words as $s) {
-			$s_index[$s] = "1";
+	if ( is_array( $stop_words ) ) {
+		foreach ( $stop_words as $s ) {
+			$s_index[$s] = '1';
 		}
 	}
 
-	$wgMemc->set($cacheKey, $s_index);
+	$wgMemc->set( $cacheKey, $s_index );
 
 	return $s_index;
 }
 
-function generateSearchKey($text) {
+function generateSearchKey( $text ) {
 	$stopWords = getSearchKeyStopWords();
 
-	$text = strtolower($text);
-	$tokens = split(' ', $text);
+	$text = strtolower( $text );
+	$tokens = explode( ' ', $text );
 	$ok_words = array();
-	foreach ($tokens as $t) {
-		if ($t == '' || isset($stopWords[$t]) ) continue;
+	foreach ( $tokens as $t ) {
+		if ( $t == '' || isset( $stopWords[$t] ) ) {
+			continue;
+		}
 		$ok_words[] = $t;
 	}
-	sort($ok_words);
-	$key = join(' ', $ok_words);
-	$key = trim($key);
+	sort( $ok_words );
+	$key = join( ' ', $ok_words );
+	$key = trim( $key );
 
 	return $key;
 }
 
-function updateSearchIndex($new, $old) {
-	$dbw =& wfGetDB(DB_MASTER);
-	if ($new != null
-		&& ($new->getNamespace() == 0
-			|| $new->getNamespace() == 16) )
+function updateSearchIndex( $new, $old ) {
+	$dbw = wfGetDB( DB_MASTER );
+	if (
+		$new != null &&
+		( $new->getNamespace() == 0
+			|| $new->getNamespace() == 16 )
+	)
 	{
-		$dbw->delete( 'skey',
+		$dbw->delete(
+			'skey',
 			array(
 				'skey_title' => $new->getDBKey(),
-				'skey_namespace' => $new->getNamespace() ) );
-		$dbw->insert( 'skey',
+				'skey_namespace' => $new->getNamespace()
+			),
+			__FUNCTION__
+		);
+		$dbw->insert(
+			'skey',
 			array(
 				'skey_title' => $new->getDBKey(),
 				'skey_namespace' => $new->getNamespace(),
-				'skey_key' => generateSearchKey($new->getText()) ) );
+				'skey_key' => generateSearchKey( $new->getText() )
+			),
+			__FUNCTION__
+		);
 	}
 
-	if ($old != null) {
+	if ( $old != null ) {
 		$dbw->delete( 'skey',
 			array(
 				'skey_title' => $old->getDBKey(),
-				'skey_namespace' => $old->getNamespace() ) );
+				'skey_namespace' => $old->getNamespace()
+			),
+			__FUNCTION__
+		);
 	}
 }
 
-function wfTitleMoveComplete($title, &$newtitle, &$user, $oldid, $newid) {
-	updateSearchIndex($title, $newtitle);
+function wfTitleMoveComplete( $title, &$newTitle, &$user, $oldId, $newId ) {
+	updateSearchIndex( $title, $newTitle );
 	return true;
 }
-$wgHooks['TitleMoveComplete'][] = array('wfTitleMoveComplete');
+$wgHooks['TitleMoveComplete'][] = 'wfTitleMoveComplete';
 
-function wfArticleSaveComplete($p0, $title, $p2, $p3, $p5, $p6, $p7) {
-	updateSearchIndex($title->mTitle, null);
+function wfArticleSaveComplete( $p0, $title, $p2, $p3, $p5, $p6, $p7 ) {
+	updateSearchIndex( $title->mTitle, null );
 	wfMarkUndoneEditAsPatrolled();
 	return true;
 }
-$wgHooks['ArticleSaveComplete'][] = array('wfArticleSaveComplete');
+
+$wgHooks['ArticleSaveComplete'][] = 'wfArticleSaveComplete';
 
 function wfMarkUndoneEditAsPatrolled() {
 	global $wgRequest;
-	if ($wgRequest->getVal('wpUndoEdit', null) != null) {
-		$oldid = $wgRequest->getVal('wpUndoEdit');
-		$dbr = wfGetDB(DB_MASTER);
-		 $rcid = $dbr->selectField('recentchanges', 'rc_id', array("rc_this_oldid=$oldid") );
-		RecentChange::markPatrolled($rcid);
-		PatrolLog::record($rcid, false);
+	if ( $wgRequest->getVal( 'wpUndoEdit', null ) != null ) {
+		$oldid = $wgRequest->getVal( 'wpUndoEdit' );
+		$dbr = wfGetDB( DB_MASTER );
+		$rcid = $dbr->selectField(
+			'recentchanges',
+			'rc_id',
+			array( "rc_this_oldid = $oldid" ),
+			__FUNCTION__
+		);
+		RecentChange::markPatrolled( $rcid );
+		PatrolLog::record( $rcid, false );
 	}
 	return true;
 }
 
-function wfImageConvert($cmd) {
+function wfImageConvert( $cmd ) {
 	global $wgMemc;
-	$key = wfMemcKey("convert_" . md5($cmd));
-	if ($wgMemc->get($key)) {
+	$key = wfMemcKey( 'convert_' . md5( $cmd ) );
+	if ( $wgMemc->get( $key ) ) {
 		return false;
 	}
-	$wgMemc->set($key, 1, 3600);
+	$wgMemc->set( $key, 1, 3600 );
 	return true;
 }
-$wgHooks['ImageConvert'][] = array('wfImageConvert');
+$wgHooks['ImageConvert'][] = 'wfImageConvert';
 
-function wfUpdateCatInfoMask(&$article, &$user) {
+function wfUpdateCatInfoMask( &$article, &$user ) {
 	$t = $article->getTitle();
-	if ($t && $t->getNamespace() == NS_MAIN) {
+	if ( $t && $t->getNamespace() == NS_MAIN ) {
 		$mask = $t->getCategoryMask();
-		$dbw = wfGetDB(DB_MASTER);
-		$dbw->update('page', array('page_catinfo'=>$mask), array('page_id'=>$article->getID()));
+		$dbw = wfGetDB( DB_MASTER );
+		$dbw->update(
+			'page',
+			array( 'page_catinfo '=> $mask ),
+			array( 'page_id' => $article->getID() ),
+			__FUNCTION__
+		);
 	}
 	return true;
 }
-$wgHooks['ArticleSaveComplete'][] = array('wfUpdateCatInfoMask');
+$wgHooks['ArticleSaveComplete'][] = 'wfUpdateCatInfoMask';
 
-function wfUpdatePageFeaturedFurtherEditing($article, $user, $text, $summary, $flags) {
+function wfUpdatePageFeaturedFurtherEditing( $article, $user, $text, $summary, $flags ) {
 	$t = $article->getTitle();
-	if (!$t || $t->getNamespace() != NS_MAIN) {
+	if ( !$t || $t->getNamespace() != NS_MAIN ) {
 		return true;
 	}
 
-	$templates = split("\n", wfMsgForContent('templates_further_editing'));
+	$templates = explode( "\n", wfMsgForContent( 'templates_further_editing' ) );
 	$regexps = array();
-	foreach ($templates as $template) {
-		$template = trim($template);
-		if ($template == "") continue;
-		$regexps[] ='\{\{' . $template;
+	foreach ( $templates as $template ) {
+		$template = trim( $template );
+		if ( $template == '' ) {
+			continue;
+		}
+		$regexps[] = '\{\{' . $template;
 	}
-	$re = "@" . implode("|", $regexps) . "@i";
+	$re = '@' . implode( '|', $regexps ) . '@i';
 
 	$updates = array();
-	if (preg_match_all($re, $text, $matches)) {
+	if ( preg_match_all( $re, $text, $matches ) ) {
 		$updates['page_further_editing'] = 1;
-	}
-	else{
+	} else {
 		$updates['page_further_editing'] = 0; //added this to remove the further_editing tag if its no longer needed
 	}
-	if (preg_match("@\{\{fa\}\}@i", $text)) {
+	if ( preg_match( '@\{\{fa\}\}@i', $text ) ) {
 		$updates['page_is_featured'] = 1;
 	}
-	if (sizeof($updates) > 0) {
-		$dbw = wfGetDB(DB_MASTER);
-		$dbw->update('page', $updates, array('page_id'=>$t->getArticleID()));
+	if ( sizeof( $updates ) > 0 ) {
+		$dbw = wfGetDB( DB_MASTER );
+		$dbw->update(
+			'page',
+			$updates,
+			array( 'page_id' => $t->getArticleID() ),
+			__FUNCTION__
+		);
 	}
+
 	return true;
 }
-$wgHooks['ArticleSaveComplete'][] = array('wfUpdatePageFeaturedFurtherEditing');
+
+$wgHooks['ArticleSaveComplete'][] = 'wfUpdatePageFeaturedFurtherEditing';
 
 function wfSetPage404IfNotExists() {
 	global $wgTitle, $wgOut;
 	// Note: if namespace < 0, it's a virtual namespace like NS_SPECIAL
-	if ($wgTitle && $wgTitle->getNamespace() >= 0 && !$wgTitle->exists()) {
-		$wgOut->setStatusCode(404);
+	if ( $wgTitle && $wgTitle->getNamespace() >= 0 && !$wgTitle->exists() ) {
+		$wgOut->setStatusCode( 404 );
 	}
 	return true;
 }
-$wgHooks['OutputPageBeforeHTML'][] = array('wfSetPage404IfNotExists');
+// I'm pretty sure that MW does this by default nowadays...it didn't do it back
+// when MediaWiki 1.12 was new, of course
+//$wgHooks['OutputPageBeforeHTML'][] = 'wfSetPage404IfNotExists';
 
 // implemented in ArticleMetaInfo.class.php
-$wgHooks['ArticleSaveComplete'][] = array('ArticleMetaInfo::refreshMetaDataCallback');
-
+$wgHooks['ArticleSaveComplete'][] = 'ArticleMetaInfo::refreshMetaDataCallback';

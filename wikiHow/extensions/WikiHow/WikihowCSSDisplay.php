@@ -1,4 +1,4 @@
-<?
+<?php
 
 class WikihowCSSDisplay {
 	static $specialBackground = false;
@@ -7,9 +7,8 @@ class WikihowCSSDisplay {
 		return self::$specialBackground;
 	}
 
-	public static function setSpecialBackground($isSpecial) {
+	public static function setSpecialBackground( $isSpecial ) {
 		self::$specialBackground = $isSpecial;
 	}
 
 }
-
