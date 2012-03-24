@@ -1,82 +1,217 @@
-<?
-class CheckG extends UnlistedSpecialPage {
+<?php
 
-	function __construct() {
-		UnlistedSpecialPage::UnlistedSpecialPage( 'CheckG' );
+class CheckGoogle extends SpecialPage {
+
+	/**
+	 * Constructor -- set up the new special page
+	 */
+	public function __construct() {
+		parent::__construct( 'CheckGoogle', 'checkgoogle' );
 	}
 
-	function execute ($par) {
-		global $wgRequest, $wgOut, $wgUser;
-		
+	/**
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the special page or null
+	 */
+	public function execute( $par ) {
+		global $wgLang, $wgRequest, $wgOut, $wgUser, $wgServer;
+
+		// Check for the correct permission
+		if( !$wgUser->isAllowed( 'checkgoogle' ) ) {
+			$this->displayRestrictionError();
+			return false;
+		}
+
+		// Blocked through Special:Block? No access for you either!
+		if( $wgUser->isBlocked() ) {
+			$wgOut->blockedPage( false );
+			return false;
+		}
+
+		// Set the page title, robot policies, etc.
+		$this->setHeaders();
+
 		$target = isset( $par ) ? $par : $wgRequest->getVal( 'target' );
 		$createdate = $wgRequest->getVal( 'createdate' );
-	  	if ( !in_array( 'sysop', $wgUser->getGroups() ) ) {
-			$wgOut->errorpage( 'nosuchspecialpage', 'nospecialpagetext' );
-		 	return;
-	  	}
+		// This is like $wgServer, but without the protocol...I couldn't find
+		// a way to get the server URL _without_ the protocol.
+		// WebRequest::detectServer(), which is used to build the value of
+		// $wgServer in DefaultSettings.php, always returns the protocol.
+		$newServer = preg_replace( '~^(http|https)://~', '', $wgServer );
 
-		// get the averages
+		// Get the averages
+		$dbr = wfGetDB( DB_SLAVE );
+		$row = $dbr->selectRow(
+			'google_indexed',
+			array( 'AVG(gi_indexed) AS A', 'COUNT(*) AS C' ),
+			array( 'gi_times_checked > 0' ),
+			__METHOD__
+		);
+		$wgOut->addHTML(
+			wfMsg( 'checkgoogle-number-of-pages', $row->C ) . '<br />' .
+			wfMsg( 'checkgoogle-average', $wgLang->formatNum( $row->A * 100 ) ) .
+			'<br />'
+		);
 
-		$dbr = wfGetDB(DB_SLAVE);
-		$row = $dbr->selectRow('google_indexed', array('avg(gi_indexed) as A', 'count(*) as C' ),  array('gi_times_checked > 0'));
-		$wgOut->addHTML("Number of pages checked: {$row->C} <br/>Average of those indexed: " . number_format($row->A * 100, 2) . "%<br/>");	
+		$left = $dbr->selectField(
+			'google_indexed',
+			array( 'COUNT(*) AS C'),
+			array( 'gi_times_checked' => 0 ),
+			__METHOD__
+		);
+		$wgOut->addHTML( wfMsg(
+			'checkgoogle-unchecked-pages', $wgLang->formatNum( $left ) ) .
+			'<br /><br />'
+		);
 
-		$left = $dbr->selectField('google_indexed', array('count(*) as C'), array('gi_times_checked'=>0));
-		$wgOut->addHTML("Pages which have not been checked: " . number_format($left, 0, "", ",") . "<br/><br/>");
-
-
-		// do we have a target ? 
-		if ($createdate && $target) {
-			$sql = "select page_title, gl_err, gl_page, gl_pos, substr(gi_page_created, 1, 8) as createdate
-                    from google_indexed_log left join google_indexed on gi_page=gl_page left join page on page_id=gl_page
-					where substr(gi_page_created, 1, 8)='{$createdate}' and substr(gl_checked, 1, 8) = '{$target}';";
-			$res = $dbr->query($sql); 
-			$f = preg_replace("@([0-9]{4})([0-9]{2})([0-9]{2})@", "$1-$2-$3", $target);
-			$c = preg_replace("@([0-9]{4})([0-9]{2})([0-9]{2})@", "$1-$2-$3", $createdate);
-			$wgOut->addHTML("<h2>Detailed report for the {$f} check for pages created on {$c}</h2>
-					<table width='80%' align='center'>
-					<tr><td>Article</td><td>Indexed?</td><td>Error?</td><td>Check</td></tr>
-				");
-			while ($row = $dbr->fetchObject($res)) {
-				$t = Title::newFromDBKey($row->page_title);
-			    $query = $t->getText() . " site:wikihow.com";
-   				$url = "http://www.google.com/search?q=" . urlencode($query) . "&num=100";
-				$wgOut->addHTML("<tr><td><a href='{$t->getFullURL()}'>{$t->getText()}</td><td>{$row->gl_pos}</td><td>{$row->gl_err}</td><td><a href='{$url}' target='new'>Link</a></td></tr>");
+		// do we have a target?
+		if ( $createdate && $target ) {
+			// Due to the usage of SUBSTR function, we can't leave this to the
+			// Database class (the select function below)...
+			$safeCreateDate = $dbr->addQuotes( $createdate );
+			$safeTarget = $dbr->addQuotes( $target );
+			$res = $dbr->select(
+				array( 'google_indexed_log', 'google_indexed', 'page' ),
+				array(
+					'page_title', 'gl_err', 'gl_page', 'gl_pos',
+					'SUBSTR(gi_page_created, 1, 8) AS createdate'
+				),
+				array(
+					"SUBSTR(gi_page_created, 1, 8) = {$safeCreateDate}",
+					"SUBSTR(gl_checked, 1, 8) = {$safeTarget}"
+				),
+				__METHOD__,
+				array(),
+				array(
+					'google_indexed' => array( 'LEFT JOIN', 'gi_page = gl_page' ),
+					'page' => array( 'LEFT JOIN', 'page_id = gl_page' )
+				)
+			);
+			$f = preg_replace( '@([0-9]{4})([0-9]{2})([0-9]{2})@', "$1-$2-$3", $target );
+			$c = preg_replace( '@([0-9]{4})([0-9]{2})([0-9]{2})@', "$1-$2-$3", $createdate );
+			$wgOut->addHTML(
+				'<h2>' . wfMsg( 'checkgoogle-detailed-report', $f, $c ) . '</h2>
+					<table width="80%" align="center">
+						<tr>
+							<td>' . wfMsg( 'checkgoogle-page' ) . '</td>
+							<td>' . wfMsg( 'checkgoogle-indexed' ) . '</td>
+							<td>' . wfMsg( 'checkgoogle-error' ) . '</td>
+							<td>' . wfMsg( 'checkgoogle-check' ) . '</td>
+						</tr>'
+			);
+			foreach ( $res as $row ) {
+				$t = Title::newFromDBKey( $row->page_title );
+			    $query = $t->getText() . ' site:' . $newServer;
+   				$url = 'http://www.google.com/search?q=' . urlencode( $query ) . '&num=100';
+				$wgOut->addHTML(
+					"<tr>
+						<td><a href=\"{$t->getFullURL()}\">{$t->getText()}</td>
+						<td>{$row->gl_pos}</td>
+						<td>{$row->gl_err}</td>
+						<td><a href=\"{$url}\" target=\"new\">" .
+							wfMsg( 'checkgoogle-link' ) .
+						'</a></td>
+					</tr>'
+				);
 			}
-			$wgOut->addHTML("</table>");
-		} else if ($target) {
-			$sql = "select substr(gi_page_created, 1, 8) as D, count(*) as C, avg(gl_pos)  as A
-                    from google_indexed_log left join google_indexed on gi_page=gl_page                     
-					where gl_err = 0 group by D order by D desc;";
-			$f = preg_replace("@([0-9]{4})([0-9]{2})([0-9]{2})@", "$1-$2-$3", $target);
-			$wgOut->addHTML("<h2>Report for the {$f} check</h2>
-					<table width='80%' align='center'><tr><td>Page creation date</td><td># of pages checked</td><td>Average indexed</td></tr>");
-			$res = $dbr->query($sql); 
-			while ($row = $dbr->fetchObject($res)) {
-				$avg = number_format($row->A * 100, 2);
-				$count = number_format($row->C, 0, "", ",");
-				$f = preg_replace("@([0-9]{4})([0-9]{2})([0-9]{2})@", "$1-$2-$3", $row->D);
-				$wgOut->addHTML("<tr><td><a href='/Special:CheckG/$target?createdate={$row->D}'>$f</a></td><td>$count</td><td>$avg%</td></tr>");
+			$wgOut->addHTML( '</table>' );
+		} elseif ( $target ) {
+			$f = preg_replace( '@([0-9]{4})([0-9]{2})([0-9]{2})@', "$1-$2-$3", $target );
+			$wgOut->addHTML(
+				'<h2>' . wfMsg( 'checkgoogle-report', $f ) . '</h2>
+					<table width="80%" align="center">
+						<tr>
+							<td>' . wfMsg( 'checkgoogle-creationdate' ) . '</td>
+							<td>' . wfMsg( 'checkgoogle-checked-pages' ) . '</td>
+							<td>' . wfMsg( 'checkgoogle-average-indexed' ) . '</td>
+						</tr>'
+			);
+			$res = $dbr->select(
+				array( 'google_indexed_log', 'google_indexed' ),
+				array(
+					'SUBSTR(gi_page_created, 1, 8) AS D',
+					'COUNT(*) AS C',
+					'AVG(gl_pos) AS A'
+				),
+				array( 'gl_err' => 0 ),
+				__METHOD__,
+				array( 'GROUP BY' => 'D', 'ORDER BY' => 'D DESC' ),
+				array( 'google_indexed' => array( 'LEFT JOIN', 'gi_page = gl_page' ) )
+			);
+			foreach ( $res as $row ) {
+				$avg = $wgLang->formatNum( $row->A * 100 );
+				$count = $wgLang->formatNum( $row->C );
+				$f = preg_replace( '@([0-9]{4})([0-9]{2})([0-9]{2})@', "$1-$2-$3", $row->D );
+				$wgOut->addHTML(
+					'<tr>
+						<td>' . Linker::link( $this->getTitle( $target )->getFullURL(
+							array( 'createdate' => $row->D ) ), $f ) . "</td>
+						<td>$count</td>
+						<td>$avg%</td>
+					</tr>"
+				);
 			}
-			$wgOut->addHTML("</table>");
-			$errs = $dbr->selectField("google_indexed_log", array("count(*)"), array("gl_checked like '$target%'", "gl_err"=>1));
-			$wgOut->addHTML("<br/><br/>Number of errors occurred in this check: $errs<br/>");
-			
+			$wgOut->addHTML( '</table>' );
+
+			$likeString = $dbr->buildLike( $target, $dbr->anyString() );
+			$errs = $dbr->selectField(
+				'google_indexed_log',
+				array( 'COUNT(*)' ),
+				array( "gl_checked $likeString", 'gl_err' => 1 ),
+				__METHOD__
+			);
+			$wgOut->addHTML(
+				'<br /><br />' .
+				wfMsg( 'checkgoogle-number-of-errors', $errs ) . '<br />'
+			);
 		}
 
 		// list the individual reports we ran
-		$wgOut->addHTML("<br/><br/><h2>Individual reports</h2><ul>");
-		$sql = "select substr(gl_checked, 1, 8) as D from google_indexed_log group by D order by D desc;";
-		$res = $dbr->query($sql); 
-		while ($row = $dbr->fetchObject($res)) {
-			$f = preg_replace("@([0-9]{4})([0-9]{2})([0-9]{2})@", "$1-$2-$3", $row->D);
-			if ($target == $row->D) {
-				$wgOut->addHTML("<li>{$f} (you are looking at it)</li>\n");
+		$wgOut->addHTML(
+			'<br /><br /><h2>' . wfMsg( 'checkgoogle-individual-reports' ) .
+			'</h2><ul>'
+		);
+		$res = $dbr->select(
+			'google_indexed_log',
+			array( 'SUBSTR(gl_checked, 1, 8) AS D' ),
+			array(),
+			__METHOD__,
+			array( 'GROUP BY' => 'D', 'ORDER BY' => 'D DESC' )
+		);
+		foreach ( $res as $row ) {
+			$f = preg_replace( '@([0-9]{4})([0-9]{2})([0-9]{2})@', "$1-$2-$3", $row->D );
+			if ( $target == $row->D ) {
+				$lookingAtItMsg = wfMsg( 'checkgoogle-looking-at-it' );
+				$wgOut->addHTML( "<li>{$f} {$lookingAtItMsg}</li>\n" );
 			} else {
-				$wgOut->addHTML("<li><a href='/Special:CheckG/{$row->D}'>{$f}</a></li>\n");
+				$wgOut->addHTML(
+					'<li>' . Linker::link( $this->getTitle( $row->D ), $f ) .
+					"</li>\n"
+				);
 			}
-		}		
-		$wgOut->addHTML("</ul>");
+		}
+		$wgOut->addHTML( '</ul>' );
 	}
+
+	/**
+	 * Handler for the MediaWiki update script, update.php; this code is
+	 * responsible for creating the required tables in the database when
+	 * the user runs maintenance/update.php.
+	 *
+	 * @param $updater DatabaseUpdater
+	 * @return Boolean: true
+	 */
+	public static function createTablesInDB( $updater ) {
+		$dir = dirname( __FILE__ );
+
+		$updater->addExtensionUpdate( array(
+			'addTable', 'google_indexed', "$dir/google_tables.sql", true
+		) );
+		$updater->addExtensionUpdate( array(
+			'addTable', 'google_indexed_log', "$dir/google_tables.sql", true
+		) );
+
+		return true;
+ 	}
 }
-	
