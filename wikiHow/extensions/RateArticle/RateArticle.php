@@ -1,6 +1,6 @@
 <?php
-if ( ! defined( 'MEDIAWIKI' ) )
-	die();
+
+if ( !defined('MEDIAWIKI') ) die();
     
 /**#@+
  * An extension that allows users to rate articles. 
@@ -16,7 +16,6 @@ if ( ! defined( 'MEDIAWIKI' ) )
  */
 
 $wgShowRatings = false; // set this to false if you want your ratings hidden
-
 
 $wgExtensionCredits['specialpage'][] = array(
     'name' => 'RateArticle',
@@ -39,19 +38,30 @@ $wgSpecialPages['AccuracyPatrol'] = 'AccuracyPatrol';
 $wgAutoloadClasses['AccuracyPatrol'] = dirname( __FILE__ ) . '/RateArticle.body.php';
 
 function wfGetRatingForArticle($id, $minvotes) {
+	global $wgMemc;
+
+	$cachekey = wfMemcKey('rating-' . $id . '-' . $minvotes);
 	$ret = -1;
-	$dbr = wfGetDB(DB_SLAVE);
-	$res = $dbr->select('rating',
-			array('count(*) as C',
-				'avg(rat_rating) as A'
-			),
-			array('rat_isdeleted=0',
-				"rat_page={$id}"
-			)
-		);
-	if ($row = $dbr->fetchObject($res) ){
-		if ($row->C > $minvotes) $ret = $row->A;
+	$mres = $wgMemc->get($cachekey);
+	if ($mres === null) {
+		$dbr = wfGetDB(DB_SLAVE);
+		$res = $dbr->select('rating',
+				array('COUNT(*) AS C',
+					'AVG(rat_rating) AS A'
+				),
+				array('rat_isdeleted' => 0,
+					'rat_page' => $id
+				),
+				__FUNCTION__
+			);
+		if ($row = $dbr->fetchObject($res)) {
+			if ($row->C > $minvotes) $ret = $row->A;
+		}
+		$dbr->freeResult($res);
+		$wgMemc->set($cachekey, $ret);
+	} else {
+		$ret = $mres;
 	}
-	$dbr->freeResult($res);
 	return $ret;
 }
+

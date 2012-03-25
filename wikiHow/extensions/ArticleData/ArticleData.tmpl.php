@@ -35,7 +35,7 @@ $('#ct_button').live('click', function(e) {
 </div>
 <? } ?>
 <div class='ct_row'>
-<label for="ct_slow"><b>Include Slower Data (alt methods and article size)</b> </label><input type="checkbox" name="ct_slow" id="ct_slow" />
+<label for="ct_slow"><b>Include Slower Data (alt methods, images and article size)</b> </label><input type="checkbox" name="ct_slow" id="ct_slow" />
 </div>
 <div class='ct_row'>
 <label for="ct_introonly"><b>Intro Image only</b> </label><input type="checkbox" name="ct_introonly" id="ct_introonly" />

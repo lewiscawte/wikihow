@@ -931,7 +931,8 @@ function fireUpSlideShow(num_images) {
 	$("a[rel^='prettyPhoto']").prettyPhoto({'theme':'pp_wikihow','markup':markup,'show_title':false,'overlay_gallery':false,'deeplinking':false,'social_tools':false,'changepicturecallback':function(){pp_sharebuttons();}});
 	
 	//enough images to have a right arrow?
-	if (num_images > 9) {
+	//if (num_images > 9) {
+	if (num_images > 4) {
 		$('#pp_right_arrow').css('visibility','visible');
 	}
 	else {
@@ -940,8 +941,8 @@ function fireUpSlideShow(num_images) {
 	}
 	
 	$('#pp_right_arrow').click(function() {
-	
-		$('.pp_slides').animate({'left': '-=68px'}, 'slow', function() {
+		//$('.pp_slides').animate({'left': '-=68px'}, 'slow', function() {
+		$('.pp_slides').animate({'left': '-=42px'}, 'slow', function() {
 			
 			$endPosition = getEndPos();
 			
@@ -959,7 +960,8 @@ function fireUpSlideShow(num_images) {
 	
 	$('#pp_left_arrow').click(function() {
 		
-		$('.pp_slides').animate({'left': '+=68px'}, 'slow',function() {
+		//$('.pp_slides').animate({'left': '+=68px'}, 'slow',function() {
+		$('.pp_slides').animate({'left': '+=42px'}, 'slow',function() {
 		
 			$endPosition = getEndPos();
 			
@@ -974,8 +976,8 @@ function fireUpSlideShow(num_images) {
 	});	
 	
 	
-	var thefword = 'showit';
-	//var thefword = 'showitbig';
+	//var thefword = 'showit';
+	var thefword = 'showitbig';
 		
 	$('.gallery_link').click(function() {
 		var node = $('<script src="' + $(this).attr("href") + '&callback=$.prettyPhoto.' + thefword + '"></script>');

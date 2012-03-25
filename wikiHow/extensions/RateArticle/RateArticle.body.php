@@ -127,15 +127,19 @@ class RateArticle extends UnlistedSpecialPage {
 		if ($wgRequest->getVal('diff', null) != null) return;
 		/* use this only for (Main) namespace pages that are not the main page - feel free to remove this... */
 		$mainPageObj = Title::newMainPage();
-		if ($wgTitle->getNamespace() != NS_MAIN || $mainPageObj->getFullText() == $wgTitle->getFullText()) return;
+		if ($wgTitle->getNamespace() != NS_MAIN
+			|| $mainPageObj->getFullText() == $wgTitle->getFullText())
+		{
+			return;
+		}
 
-		$dbr =& wfGetDB(DB_SLAVE);
+		$dbr = wfGetDB(DB_SLAVE);
 
 		$images = array(0, 0, 0, 0, 0);
 
 		// change this if you don't want people seeing the ratings
 		if ($wgShowRatings) {
-			$res = $dbr->query("select avg(rat_rating) as R from rating where rat_page=$page_id;");
+			$res = $dbr->query("SELECT AVG(rat_rating) AS R FROM rating WHERE rat_page=$page_id", __METHOD__);
 			$avg = -1;
 				while ( $row = $dbr->fetchObject( $res ) ) {
 				$avg = $row->R;
@@ -315,13 +319,9 @@ class Clearratings extends SpecialPage {
 				$dbr->freeResult($res);
 
 				$res= $dbr->select( array ("rating"),
-						array ("count(*) as C",
-								"avg(rat_rating) as R"),
-						array ("rat_page" => $id,
-								"rat_isdeleted=0"
-							),
-						"wfSpecialClearratings"
-					);
+					array ("COUNT(*) AS C", "AVG(rat_rating) AS R"),
+					array ("rat_page" => $id, "rat_isdeleted" => "0"),
+					__METHOD__);
 				if ($row = $dbr->fetchObject($res))  {
 					$percent = $row->R * 100;
 					$wgOut->addHTML($sk->makeLinkObj($t, $t->getFullText()) . "<br/><br/>"  .
@@ -363,13 +363,13 @@ class ListRatings extends SpecialPage {
 		$wgOut->addHTML("<ol>");
 		$sk = $wgUser->getSkin();
 		//TODO add something for viewing ratings 51-100, 101-150, etc
-		$dbr =& wfGetDB( DB_SLAVE);
+		$dbr = wfGetDB(DB_SLAVE);
 		$res = $dbr->query("SELECT rat_page, AVG(rat_rating) AS R,
 								COUNT(*) AS C 
 							FROM rating
 							GROUP BY rat_page
 							ORDER BY R DESC
-							LIMIT 50");
+							LIMIT 50", __METHOD__);
 		 while ( $row = $dbr->fetchObject( $res ) ) {
 			 $t = Title::newFromID($row->rat_page);
 			 if ($t == null) continue; $wgOut->addHTML("<li>" . $sk->makeLinkObj($t, $t->getFullText() ) . " ({$row->C}, {$row->R})</li>");

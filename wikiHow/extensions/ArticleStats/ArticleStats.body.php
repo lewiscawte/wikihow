@@ -84,7 +84,7 @@ class ArticleStats extends SpecialPage {
 			$rev = Revision::newFromTitle( $tp );
 			$text = $rev->getText();
 			$matches = array();
-			preg_match( '/{{Featured.*}}/', $text, &$matches );
+			preg_match( '/{{Featured.*}}/', $text, $matches );
 			$fadate = $matches[0];
 			$fadate = str_replace( '{{Featured|', '', $fadate );
 			$fadate = str_replace( '}}', '', $fadate );

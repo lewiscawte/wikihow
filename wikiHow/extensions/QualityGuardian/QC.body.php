@@ -955,7 +955,7 @@ class QCRuleRollback extends QCRule {
 		// is this it them most recent revision? if so, we can roll it back
 		wfDebug("GOT " . print_r($a, true) . " {$last_rev->mId} vs {$result->qc_rev_id}\n");
 		if ($last_rev->mId == $result->qc_rev_id) {
-			$a->commitRollback($last_rev->mUserText, wfMsg('qc_editsummary_rollback', $last_rev->mUserText), false, &$result);
+			$a->commitRollback($last_rev->mUserText, wfMsg('qc_editsummary_rollback', $last_rev->mUserText), false, $result);
 		}
 		return true;
 	}

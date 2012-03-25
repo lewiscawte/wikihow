@@ -1,4 +1,3 @@
-		<div class="search_static"></div>
         <div class="search">
 			<!--
 			<form>

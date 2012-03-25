@@ -40,6 +40,7 @@
 			<a href="<?= $randomUrl ?>" class="surprise"><?= wfMsg('surprise-me') ?></a>
 		</div><!--end header_logo-->
 	</div>
+	<div class="search_static"></div>
 	<?= EasyTemplate::html('search-box.tmpl.php') ?>
 	<? if (@$showTagline): ?>
 	<div id="tagline">

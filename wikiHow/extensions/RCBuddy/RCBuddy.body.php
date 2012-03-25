@@ -103,7 +103,7 @@ class RCBuddy extends UnlistedSpecialPage {
 			$results['new_talk'] = 0;
 
 		$window = Patrolcount::getPatrolcountWindow();
-		$dbr =& wfGetDB( DB_SLAVE );
+		$dbr = wfGetDB( DB_SLAVE );
 		$count = $dbr->selectField('logging',
 			array('count(*)'),
 			array("log_user={$wgUser->getId()}",

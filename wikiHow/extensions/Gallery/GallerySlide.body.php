@@ -7,6 +7,7 @@ require_once("$IP/extensions/wikihow/Wikitext.class.php");
 class GallerySlide extends UnlistedSpecialPage {
 
 	var $bInline = false;
+	var $bNewLayout_02 = false;
 
 	function __construct() {
 		UnlistedSpecialPage::UnlistedSpecialPage( 'GallerySlide' );
@@ -22,6 +23,10 @@ class GallerySlide extends UnlistedSpecialPage {
 			
 			if ($wgRequest->getVal( 'big-show' )) {
 				$this->bInline = true;
+			}
+			
+			if ($wgRequest->getVal( 'article_layout' ) == '2') {
+				$this->bNewLayout_02 = true;
 			}
 		
 			$t = Title::newFromID($wgRequest->getVal('aid'));
@@ -45,7 +50,10 @@ class GallerySlide extends UnlistedSpecialPage {
 		$articleID = $vars[1];
 		
 		if ($vars[3] == 'inline') {
-			$bInline = true;
+			$this->bInline = true;
+		}
+		else if (substr($vars[3],0,10) == 'redesign02') {
+			$this->bNewLayout_02 = true;
 		}
 		
 		$t = Title::newFromID($articleID);
@@ -59,8 +67,11 @@ class GallerySlide extends UnlistedSpecialPage {
 		if ($image !== 'end') {
 			$image = Title::newFromText($image);
 			$file = wfFindFile($image);
-			
-			if ($bInline) {
+		
+			if ($this->bNewLayout_02) {
+				$lg_thumb = self::getLargeThumbnailObj3($file);
+			}
+			else if ($this->bInline) {
 				$lg_thumb = self::getLargeThumbnailObj2($file);
 			}
 			else {
@@ -70,7 +81,7 @@ class GallerySlide extends UnlistedSpecialPage {
 			$thumb_width = $lg_thumb->getWidth();
 			$thumb_height = $lg_thumb->getHeight();
 			
-			if (!$bInline) {
+			if (!$this->bInline) {
 				//make sure the image isn't too small
 				if ($thumb_width < 150) {
 					$paddingWidth = $thumb_width + 350;
@@ -113,7 +124,10 @@ class GallerySlide extends UnlistedSpecialPage {
 			
 			$tmpl->set_vars($params);
 			
-			if ($bInline) {
+			if ($this->bNewLayout_02) {
+				$html .= $tmpl->execute('galleryslide3.tmpl.php');
+			}
+			else if ($this->bInline) {
 				$html .= $tmpl->execute('galleryslide2.tmpl.php');
 			}
 			else {
@@ -121,9 +135,9 @@ class GallerySlide extends UnlistedSpecialPage {
 			}
 		}
 		
-		
 		//return JSON
-		$callback = $_GET['callback'];
+		//$callback = $_GET['callback'];
+		$callback = '$.prettyPhoto.showitbig';
 		if ($callback) {
 			$data = array('content' => $html,'width' => $width,'height' => $height);
 			$result = $callback . '(' . json_encode($data) . ');';
@@ -178,17 +192,23 @@ class GallerySlide extends UnlistedSpecialPage {
 				
 				$text = preg_replace("@\'\'\'@","",$text); //remove bold
 				$text = preg_replace("/http?:\/\/[^ ]+ /", " ", $text); //remove urls
-				$text = '<span>From Step '.$stepnum.'</span><br /><br />'.$text;
+				
+				if ($this->bNewLayout_02) {
+					$text = '<div id="gs_text">From Step '.$stepnum.'</div>';
+				}
+				else {
+					$text = '<span>From Step '.$stepnum.'</span><br /><br />'.$text;
+				}
 				break;
 			}
 		}
 	
-		if (!$text) {
+		if (!$text && !$this->bNewLayout_02) {
 			//oh, is this the intro image?
 			$intro = Wikitext::getIntro($the_text);
 			$image_name = preg_replace('@-@',' ',$image_name); 
 			if (stripos($intro,$image_name)) {
-				$text = Wikitext::flatten($intro);
+				//$text = Wikitext::flatten($intro);
 			}
 		}
 		
@@ -323,7 +343,7 @@ class GallerySlide extends UnlistedSpecialPage {
 		$revid = $title->getLatestRevID();
 		
 		$imageName = $title->getDBkey();
-		$result = $wgMemc->get(wfMemcKey("gs_pp_" . $imageName . "_" . $revid));
+//		$result = $wgMemc->get(wfMemcKey("gs_pp_" . $imageName . "_" . $revid));
 		if ($result) {
 			return $result;
 		}
@@ -381,6 +401,7 @@ class GallerySlide extends UnlistedSpecialPage {
 						return "";
 					}*/
 
+					//$thumb = $file->getThumbnail(60, -1, true, true);
 					$thumb = $file->getThumbnail(60, -1, true, true);
 					
 					$fileUrl[] = $image->getLocalURL();
@@ -408,7 +429,10 @@ class GallerySlide extends UnlistedSpecialPage {
 				'revid' => $revid
 			));
 
-			if ($this->bInline) {
+			if ($this->bNewLayout_02) {
+				$html .= $tmpl->execute('prettyPhoto3.tmpl.php');
+			}
+			else if ($this->bInline) {
 				$html .= $tmpl->execute('prettyPhoto2.tmpl.php');
 			}
 			else {
@@ -433,6 +457,13 @@ class GallerySlide extends UnlistedSpecialPage {
 	static function getLargeThumbnailObj2(&$file) {
 		if ($file->width > 400) {
 			$thumb = $file->getThumbNail(400, -1, false, true);
+		}
+		return $thumb ? $thumb : $file;
+	}
+	
+	static function getLargeThumbnailObj3(&$file) {
+		if ($file->width > 200) {
+			$thumb = $file->getThumbNail(200, -1, false, true);
 		}
 		return $thumb ? $thumb : $file;
 	}
