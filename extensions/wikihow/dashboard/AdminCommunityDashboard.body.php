@@ -74,7 +74,7 @@ class AdminCommunityDashboard extends UnlistedSpecialPage {
 			$result = array('error' => '', 'status' => $msg);
 		} elseif ($req == 'status') {
 			$cmd = "/usr/local/wikihow/control-dashboard-refresh.$req.sh";
-			exec($cmd, &$output);
+			exec($cmd, $output);
 			$result = array('error' => '', 'status' => join("\n", $output));
 		} else { exit; }
 
@@ -165,7 +165,7 @@ class AdminCommunityDashboard extends UnlistedSpecialPage {
 		$current = array();
 		$dbr = wfGetDB(DB_SLAVE);
 		foreach ($widgets as $widget) {
-			$current[$widget->getName()] = $widget->getCount(&$dbr);
+			$current[$widget->getName()] = $widget->getCount($dbr);
 		}
 
 		$wgOut->setHTMLTitle('Admin - Change Community Dashboard Settings - wikiHow');

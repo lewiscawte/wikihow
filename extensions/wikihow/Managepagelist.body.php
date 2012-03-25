@@ -1,11 +1,12 @@
 <?
+
 class Managepagelist extends UnlistedSpecialPage {
 
 	function __construct() {
 		UnlistedSpecialPage::UnlistedSpecialPage( 'Managepagelist' );
 	}
 
-	function execute ($par) {
+	function execute($par) {
 		global $wgOut, $wgRequest, $wgUser;
 
 		if ( !in_array( 'sysop', $wgUser->getGroups() ) ) {
@@ -30,7 +31,7 @@ class Managepagelist extends UnlistedSpecialPage {
 			if ($wgRequest->getVal('newlist')) {
 				$list = $wgRequest->getVal('newlist');
 				$mw = Title::makeTitle(NS_MEDIAWIKI, 'Pagelist_' . $wgRequest->getVal('newlist'));
-				$a = new Article(&$mw);
+				$a = new Article($mw);
 				$a->doEdit($wgRequest->getVal('newlistname'), "creating new page list");
 			}
 			if ($wgRequest->getVal('newtitle')) {

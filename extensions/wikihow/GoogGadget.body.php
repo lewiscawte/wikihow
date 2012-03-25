@@ -14,7 +14,7 @@ class GoogGadget extends UnlistedSpecialPage {
 		return $source;
 	}
 
-	function getRelatedWikihowsFromSource($title, $num) {
+	private function getRelatedWikihowsFromSource($title, $num) {
 		global $wgParser;
 		$r = Revision::newFromTitle($title);
 		if ($r) {
@@ -37,7 +37,7 @@ class GoogGadget extends UnlistedSpecialPage {
 		}
 	}
 
-	function getLastPatrolledRevision (&$title) {
+	function getLastPatrolledRevision($title) {
 		$a = null;
 		$dbr =& wfGetDB( DB_SLAVE );
 		$page_id = $title->getArticleID();
@@ -61,7 +61,7 @@ class GoogGadget extends UnlistedSpecialPage {
 			}
 		}
 		if ($a == null) {
-			$a = new Article(&$title);
+			$a = new Article($title);
 		}
 		return $a;
 	}
@@ -135,13 +135,13 @@ class GoogGadget extends UnlistedSpecialPage {
 					exit;
 				}
 				if ($title->getArticleID() > 0) {
-					$a = $this->getLastPatrolledRevision(&$title);
+					$a = $this->getLastPatrolledRevision($title);
 					$summary = $a->getContent(true);
 					$summary = preg_replace('/\{\{fa\}\}/', '', $summary);
 
 					global $wgParser;
 					$output = $wgParser->parse($summary, $title, new ParserOptions() );
-					$relatedArticles = $this->getRelatedWikihowsFromSource(&$title, 4);
+					$relatedArticles = $this->getRelatedWikihowsFromSource($title, 4);
 					$summary = $this->addTargetBlank($output->getText());
 					$summary = preg_replace('/href="\//', 'href="'.$wgServer.'/', $summary);
 					$summary = preg_replace('/src="\//', 'src="'.$wgServer.'/', $summary);
@@ -183,7 +183,7 @@ class GoogGadget extends UnlistedSpecialPage {
 			$featuredArticles = "";
 			$maxShow = 7;
 
-			$ggtmpl = new GoogleGadgetCanvas ();
+			$ggtmpl = new GoogleGadgetCanvas();
 			$ggtmpl->outHeader();
 
 			foreach( $feeds as $f ) {
@@ -212,13 +212,13 @@ class GoogGadget extends UnlistedSpecialPage {
 						exit;
 					}
 					if ($title->getArticleID() > 0) {
-						$a = $this->getLastPatrolledRevision(&$title);
+						$a = $this->getLastPatrolledRevision($title);
 						$summary = $a->getContent(true);
 						$summary = preg_replace('/\{\{.*\}\}/', '', $summary);
 
 						global $wgParser;
 						$output = $wgParser->parse($summary, $title, new ParserOptions() );
-						$relatedArticles = $this->getRelatedWikihowsFromSource(&$title, 4);
+						$relatedArticles = $this->getRelatedWikihowsFromSource($title, 4);
 						$summary = $this->addTargetBlank($output->getText());
 						$summary = preg_replace('/href="\//', 'href="'.$wgServer.'/', $summary);
 						$summary = preg_replace('/src="\//', 'src="'.$wgServer.'/', $summary);

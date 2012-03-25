@@ -87,30 +87,15 @@ class WikihowShare{
 
 		if (($title->getNamespace() == NS_MAIN) || ($title->getNamespace() == NS_CATEGORY) ) {
 			if ($title->getNamespace() == NS_MAIN) {
-				$r = Revision::newFromTitle($title);
-				if (!$r) return "";
-				$text = $r->getText();
-				if (preg_match("/^#REDIRECT \[\[(.*?)\]\]/", $text, $matches)) {
-					if ($matches[1]) {
-						$title = Title::newFromText($matches[1]);
-						$r = Revision::newFromTitle($title);
-						$text = $r->getText();
-					}
+				
+				$file = $sk->getTitleImage($title);
+				if($file && isset($file)) {
+					$url = wfGetPad("/images/" . $file->getRel());
+					$wgMemc->set($key, $url, 2* 3600); // 2 hours
+					return $url;
 				}
-
-				// Make sure to look for an appropriately namespaced image. Always check for "Image"
-				// as a lot of files are in the english image repository
-				$nsTxt = "(Image|" . $wgContLang->getNsText(NS_IMAGE) . ")";
-                if(preg_match("@\[\[" . $nsTxt . ":([^\|]+)[^\]]*\]\]@im", $text, $matches)) {
-					$matches[2] = str_replace(" ", "-", $matches[2]);
-                    $file = wfFindFile($matches[2]);
-						if ($file && isset($file)) {
-							$url = wfGetPad("/images/" . $file->getRel());
-							$wgMemc->set($key, $url, 2* 3600); // 2 hours
-							return $url;
-						}
-					}
-				}
+				
+			}
 
 			$catmap = array(
 				wfMsg("arts-and-entertainment") => "Image:Category_arts.jpg",

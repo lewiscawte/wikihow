@@ -358,8 +358,8 @@ class ArticleWrittenStandingsGroup extends StandingsGroup {
 	}
 
 	function getSQL($ts) {
-		$sql = "SELECT 'Newpages' as type,
-				count(*)as C,
+		$sql = "SELECT 'Newpages' AS type,
+				count(*) AS C,
 				rc_title AS title,
 				rc_cur_id AS cur_id,
 				rc_user AS \"user\",

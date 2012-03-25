@@ -105,19 +105,27 @@ class RobotPolicy {
 	 * Check to see whether certain templates are affixed to the article.
 	 */
 	private static function hasBadTemplate() {
-		global $wgTitle;
+		global $wgTitle, $wgMemc;
+		$result = 0;
 		if ($wgTitle) {
 			$articleID = $wgTitle->getArticleID();
 			if ($articleID) {
-				$dbr = self::getDB();
-				$sql = "SELECT COUNT(*) AS count FROM templatelinks WHERE tl_from = '" . $articleID . "' AND tl_title IN ('Speedy', 'Stub', 'Copyvio','Copyviobot','Copyedit','Cleanup')";
-				$res = $dbr->query($sql, __METHOD__);
-				if ($res && ($row = $res->fetchObject())) {
-					return $row->count > 0;
+				$cachekey = wfMemcKey('bad-tpl-' . $articleID);
+				$result = $wgMemc->get($cachekey);
+				if ($result === null) {
+					$dbr = self::getDB();
+					$sql = "SELECT COUNT(*) AS count FROM templatelinks WHERE tl_from = '" . $articleID . "' AND tl_title IN ('Speedy', 'Stub', 'Copyvio','Copyviobot','Copyedit','Cleanup','Accuracy-bot')";
+					$res = $dbr->query($sql, __METHOD__);
+					if ($res && ($row = $res->fetchObject())) {
+						$result = intval($row->count > 0);
+					} else {
+						$result = 0;
+					}
+					$wgMemc->set($cachekey, $result);
 				}
 			}
 		}
-		return false;
+		return $result;
 	}
 
 	/**

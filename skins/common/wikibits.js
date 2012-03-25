@@ -306,7 +306,7 @@ function button_click(obj) {
 	}
 
 	if (obj.id == "play_pause_button") {
-		if (jobj.attr('class').indexOf("play") >= 0) {
+		if (jobj.hasClass("play")) {
 			obj.style.backgroundPosition = "0 -130px";
 		}
 		else {
@@ -314,7 +314,8 @@ function button_click(obj) {
 		}
 	}
 
-	if (jobj.attr('class').indexOf("search_button") >= 0) {
+
+	if (jobj.hasClass("search_button")) {
 		obj.style.backgroundPosition = "0 -29px";
 	}
 }
@@ -338,23 +339,23 @@ function button_swap(obj) {
 	if (obj.id.indexOf("nav_") >= 0) {
 		obj.style.color = "#FFFFFF";
 		(obj.id == "nav_home") ? obj.style.backgroundPosition = "-102px -73px" : obj.style.backgroundPosition = "0 -73px";
-	} else if (jobj.attr('class').indexOf("disabled") >= 0) {
+	} else if (jobj.hasClass("disabled")) {
 		return false;
-	} else if(jobj.attr('class').indexOf("search_button_loggedout") >= 0){
+	} else if (jobj.hasClass("search_button_loggedout")){
 		obj.style.backgroundPosition = background_x_position + " -23px";
-	} else if (jobj.attr('class').indexOf("button136") >= 0) {
+	} else if (jobj.hasClass("button136")) {
 		obj.style.backgroundPosition = background_x_position + " -38px";
-	} else if (jobj.attr('class').indexOf("button190") >= 0) {
+	} else if (jobj.hasClass("button190")) {
 		obj.style.backgroundPosition = background_x_position + " -42px";
 	} else if (obj.id == "tab_admin") { //article admin tab
 		obj.style.backgroundPosition = background_x_position + " -111px";
-	} else if (jobj.attr('class').indexOf("search_button") >= 0) {
+	} else if (jobj.hasClass("search_button")) {
 		obj.style.backgroundPosition = background_x_position + " -29px";
-	} else if (jobj.attr('class').indexOf("expand_button") >= 0) {
+	} else if (jobj.hasClass("expand_button")) {
 		obj.style.backgroundPosition = "-20px 0";
-	} else if (jobj.attr('class').indexOf("contract_button") >= 0) {
+	} else if (jobj.hasClass("contract_button")) {
 		obj.style.backgroundPosition = "-20px -21px";
-	} else if (obj.id == "play_pause_button" && jobj.attr('class').indexOf('play') >= 0) {
+	} else if (obj.id == "play_pause_button" && jobj.hasClass('play')) {
 		obj.style.backgroundPosition = background_x_position + " -104px";
 	} else {
 		obj.style.backgroundPosition = background_x_position + " -26px";
@@ -378,11 +379,11 @@ function button_unswap(obj) {
 
 	if (obj.id == "arrow_right") {
 		obj.style.backgroundPosition = "-26px 0";
-	} else if(jobj.attr('class').indexOf("disabled") >= 0){
+	} else if(jobj.hasClass("disabled")){
 		return false;
-	} else if (jobj.attr('class').indexOf("contract_button") >= 0) {
+	} else if (jobj.hasClass("contract_button")) {
 		obj.style.backgroundPosition = background_x_position + " -21px";
-	} else if (obj.id == "play_pause_button" && jobj.attr('class').indexOf('play') >= 0) {
+	} else if (obj.id == "play_pause_button" && jobj.hasClass('play')) {
 		obj.style.backgroundPosition = background_x_position + " -78px";
 	} else if (obj.id == "tab_admin") { //article admin tab
 		obj.style.backgroundPosition = background_x_position + " -80px";
@@ -395,7 +396,7 @@ function button_unswap(obj) {
 		obj.style.color = "#514239";
 	}
 
-	if (jobj.attr('class').indexOf("white_button") >= 0) {
+	if (jobj.hasClass("white_button")) {
 		obj.style.color = "#018EAB";
 	}
 
@@ -1348,22 +1349,26 @@ $(document).ready(function(){
 		if ($('#slideshowdetect_mainpage').length) {
 			//homepage
 			$(window).bind('scroll', function(){
-				if (WH.isPageScrolledToFollowTable() && $('#sliderbox').css('right') == '-510px' && !$('#sliderbox').is(':animated')) {
-					slider.init();
-				}
-				if (!WH.isPageScrolledToFollowTable() && $('#sliderbox').css('right') == '0px' && !$('#sliderbox').is(':animated')) {
-					slider.closeSlider();
+				if  (!getCookie('sliderbox')) {
+					if (WH.isPageScrolledToFollowTable() && $('#sliderbox').css('right') == '-510px' && !$('#sliderbox').is(':animated')) {
+						slider.init();
+					}
+					if (!WH.isPageScrolledToFollowTable() && $('#sliderbox').css('right') == '0px' && !$('#sliderbox').is(':animated')) {
+						slider.closeSlider();
+					}
 				}
 			});
 		}
 		else {
 			//article page
 			$(window).bind('scroll', function(){
-				if (WH.isPageScrolledToWarningsORArticleInfo() && $('#sliderbox').css('right') == '-510px' && !$('#sliderbox').is(':animated')) {
-					slider.init();
-				}
-				if (!WH.isPageScrolledToWarningsORArticleInfo() && $('#sliderbox').css('right') == '0px' && !$('#sliderbox').is(':animated')) {
-					slider.closeSlider();
+				if  (!getCookie('sliderbox')) {
+					if (WH.isPageScrolledToWarningsORArticleInfo() && $('#sliderbox').css('right') == '-510px' && !$('#sliderbox').is(':animated')) {
+						slider.init();
+					}
+					if (!WH.isPageScrolledToWarningsORArticleInfo() && $('#sliderbox').css('right') == '0px' && !$('#sliderbox').is(':animated')) {
+						slider.closeSlider();
+					}
 				}
 			});
 		}

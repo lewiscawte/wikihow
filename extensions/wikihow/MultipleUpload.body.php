@@ -41,7 +41,7 @@ class MultipleUploadForm extends UploadForm {
 		global $wgMaxUploadFiles;
 
 		// call the parent constructor
-		parent::UploadForm(&$request);
+		parent::UploadForm($request);
 
 		// initialize 
 		$this->mUploadTempNameArray = $this->mUploadSizeArray = $this->mOnameArray = $this->mUploadError = $this->mDestFileArray = $this->mUploadDescriptionArray = array();

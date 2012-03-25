@@ -28,6 +28,12 @@ class DeadendPagesPage extends PageQueryPage {
 		return 1;
 	}
 
+	// XXCHANGED: Reuben made this a query page whose data is refreshed
+	// every night since it's really expensive to run.
+	function isCached() {
+		return true;
+	}
+
 	function isSyndicated() { return false; }
 
 	/**

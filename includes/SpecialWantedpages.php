@@ -24,6 +24,12 @@ class WantedPagesPage extends QueryPage {
 		return true;
 	}
 
+	// XXCHANGED: Reuben made this a query page whose data is refreshed
+	// every night since it's really expensive to run.
+	function isCached() {
+		return true;
+	}
+
 	function isSyndicated() { return false; }
 
 	function getSQL() {
@@ -127,19 +133,9 @@ function wfSpecialWantedpages( $par = null, $specialPage ) {
 		$nlinks = true;
 	}
 
-	// hack from Reuben to make this page faster by caching output for
-	// some number of minutes.  uses $wgMiserMode to do this.
-	//
-	// Note: $wpp->recache() needs to be called periodically to refresh the
-	// cache.
-	global $wgMiserMode;
-	$oldMode = $wgMiserMode;
-	$wgMiserMode = true;
-
 	$wpp = new WantedPagesPage( $inc, $nlinks );
-	$wpp->doQuery( $offset, $limit, !$inc );
 
-	$wgMiserMode = $oldMode;
+	$wpp->doQuery( $offset, $limit, !$inc );
 }
 
 

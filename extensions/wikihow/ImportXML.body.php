@@ -366,9 +366,9 @@ class ExportXML extends UnlistedSpecialPage {
 		$substeps = null;
 
 		while (sizeof($toks) > 0) {
-			$x = self::grabNextToken(&$toks);
+			$x = self::grabNextToken($toks);
 			while (!preg_match("@(^[#\*]+)@im", $x) && sizeof($toks) > 0)  {
-				$x = self::grabNextToken(&$toks);
+				$x = self::grabNextToken($toks);
 			}
 			if ($aresteps && preg_match("@^#[#\*]@", $x)) {
 				if ($substeps == null)
@@ -378,9 +378,9 @@ class ExportXML extends UnlistedSpecialPage {
 					$sec->appendChild($substeps);
 				$substeps = null;
 			}
-			$x = self::grabNextToken(&$toks);
+			$x = self::grabNextToken($toks);
 			$s = $dom->createElement($elem);
-			self::handleImages($x, &$dom, &$s);
+			self::handleImages($x, $dom, $s);
 			$t = $dom->createElement("text");
 			$x = self::cleanUpText($x);
 
@@ -545,7 +545,7 @@ END
 			$content = $dom->createElement("content");
 			$intro = Article::getSection($text, 0);
 			$i = $dom->createElement("introduction");
-			self::handleImages($intro, &$dom, &$i);
+			self::handleImages($intro, $dom, $i);
 			$intro = self::cleanupText($intro);
 			$n = $dom->createElement("text");
 			$n->appendChild($dom->createTextNode($intro));

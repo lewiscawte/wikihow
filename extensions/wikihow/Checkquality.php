@@ -62,7 +62,7 @@ function wfSpecialCheckquality( $par )
 		return;
 	}
 
-	$dbr = &wfGetDB(DB_SLAVE);
+	$dbr = wfGetDB(DB_SLAVE);
 
 	$related  = $dbr->selectField( "pagelinks",
 				"count(*)", 

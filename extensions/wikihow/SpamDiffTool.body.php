@@ -3,7 +3,7 @@
 class SpamDiffTool extends SpecialPage {
 
 	function __construct() {
-		SpecialPage::SpecialPage( 'SpamDiffTool' );
+		SpecialPage::SpecialPage('SpamDiffTool');
 	}
 
 	function getDiffLink($title) {
@@ -45,7 +45,7 @@ class SpamDiffTool extends SpecialPage {
 
 			if ($wgRequest->getVal('confirm', null) != null) {
 				$t = Title::newFromDBKey($wgSpamBlacklistArticle);
-				$a = new Article(&$t);
+				$a = new Article($t);
 				$text = $a->getContent();
 
 				// insert the before the <pre> at the bottom  if there is one
@@ -128,7 +128,7 @@ class SpamDiffTool extends SpecialPage {
 
 			// Get the last edit not by this guy
 			$current = Revision::newFromTitle( $title );
-			$dbw =& wfGetDB( DB_MASTER );
+			$dbw = wfGetDB(DB_MASTER);
 			$user = intval( $current->getUser() );
 			$user_text = $dbw->addQuotes( $current->getUserText() );
 			$s = $dbw->selectRow( 'revision',
@@ -154,7 +154,7 @@ class SpamDiffTool extends SpecialPage {
 			$ntext = $de->mNewtext;
 			$ota = explode( "\n", $wgContLang->segmentForDiff( $otext ) );
 			$nta = explode( "\n", $wgContLang->segmentForDiff( $ntext ) );
-			$diffs =& new Diff( $ota, $nta );
+			$diffs = new Diff($ota, $nta);
 			foreach ($diffs->edits as $edit) {
 				if ($edit->type != 'copy' && $edit->closing != "") {
 					$text .= implode("\n", $edit->closing) . "\n";

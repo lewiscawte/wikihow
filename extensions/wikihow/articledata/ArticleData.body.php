@@ -13,10 +13,10 @@ class ArticleData extends UnlistedSpecialPage {
 	}
 
 	function execute($par) {
-		global $wgUser, $wgOut, $wgRequest, $wgServer;
+		global $wgUser, $wgOut, $wgRequest, $wgServer, $isDevServer;
 
 		$userGroups = $wgUser->getGroups();
-		if ($wgServer != "http://spare1.wikihow.com" || $wgUser->isBlocked() || !in_array('staff', $userGroups)) {
+		if (($wgServer != "http://spare1.wikihow.com" && !$isDevServer) || $wgUser->isBlocked() || !in_array('staff', $userGroups)) {
 			$wgOut->setRobotpolicy('noindex,nofollow');
 			$wgOut->showErrorPage( 'nosuchspecialpage', 'nospecialpagetext' );
 			return;
@@ -89,13 +89,20 @@ class ArticleData extends UnlistedSpecialPage {
 	function hasImages(&$wikitext) {
 		if ($this->introOnly) {
 			$text = WikiText::getIntro($wikitext);
+			$firstImage = Wikitext::getFirstImageURL($text);
+			$hasImages = !empty($firstImage) ? "Yes" : "No";
 		}
 		else {
-			$text = WikiText::getStepsSection($wikitext);
-			$text = implode("", $text);
+			list($stepsText, ) = Wikitext::getStepsSection($wikitext, true);
+			if ($stepsText) {
+				// has steps section, so assume valid candidate for detailed title
+				$num_steps = preg_match_all('/^#[^*]/im', $stepsText, $matches);
+			}
+			$num_photos = preg_match_all('/\[\[Image:/im', $wikitext, $matches);
+			$hasImages = $num_photos > ($num_steps / 2) ? "Yes" : "No";
 		}
-		$firstImage = Wikitext::getFirstImageURL($text);
-		return !empty($firstImage) ? "Yes" : "No";
+
+		return $hasImages;
 	}
 
 	function hasAlternateMethods(&$wikitext) {
@@ -125,12 +132,12 @@ class ArticleData extends UnlistedSpecialPage {
 		foreach ($urls as $url) {
 			$t = Title::newFromText(str_replace("http://www.wikihow.com/", "", $url));
 			if ($t && $t->exists()) {
-				$wikitext = Wikitext::getWikitext($dbr, $t);
-				$imgs = $this->hasImages($wikitext);
-				$articles[$t->getArticleId()] = array ('url' => $url, 'imgs' => $imgs, 'alts'=> $hasAlts);
+				$articles[$t->getArticleId()] = array ('url' => $url);
 				if ($this->slowQuery) {
+					$wikitext = Wikitext::getWikitext($dbr, $t);
 					$articles[$t->getArticleId()]['alts'] = $this->hasAlternateMethods($wikitext) ? "Yes" : "No";
 					$articles[$t->getArticleId()]['size'] = $this->getArticleSize($t);
+					$articles[$t->getArticleId()]['imgs'] = $this->hasImages($wikitext);
 				}
 			}
 		}
@@ -148,12 +155,12 @@ class ArticleData extends UnlistedSpecialPage {
 	}
 
 	function getArticleReport(&$articles) {
-		$slowColumns = $this->slowQuery ? "\talt_methods\tbyte_size" : "";
-		$output = "url\timages\tviews$slowColumns\n";
+		$slowColumns = $this->slowQuery ? "\timages\talt_methods\tbyte_size" : "";
+		$output = "url\tviews$slowColumns\n";
 
 		foreach ($articles as $aid => $data) {
-			$slowData = $this->slowQuery ? "\t{$data['alts']}\t{$data['size']}" : "";
-			$output .= "{$data['url']}\t{$data['imgs']}\t{$data['cnt']}$slowData\n";
+			$slowData = $this->slowQuery ? "\t{$data['imgs']}\t{$data['alts']}\t{$data['size']}" : "";
+			$output .= "{$data['url']}\t{$data['cnt']}$slowData\n";
 		}
 		return $output;
 	}

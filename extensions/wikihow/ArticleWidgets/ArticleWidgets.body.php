@@ -8,30 +8,37 @@ class ArticleWidgets extends UnlistedSpecialPage {
 
 	function execute($par) {
 		global $wgOut, $wgRequest;
+		$html = '';
 		$target = isset( $par ) ? $par : $wgRequest->getVal( 'target' );
-		
 		$target = strtoupper($target);
-		$wgOut->setArticleBodyOnly(true);
 		
-		if ($target == 'BMI') {
-			$html = self::getBMICalculator();
-		}
+		$html = self::getCalculator($target);
 
+		$wgOut->setArticleBodyOnly(true);
 		$wgOut->addHTML($html);
 	}
 	
-	//BMI Calculator Widget
-	function getBMICalculator() {
-		$tmpl = new EasyTemplate( dirname(__FILE__) );
-		$html = $tmpl->execute('BMI/bmi.tmpl.php');
+	function getCalculator($widget) {
+		global $wgArticleWidgets;
+		
+		if (isset($wgArticleWidgets[$widget])) {
+			$tmpl = new EasyTemplate( dirname(__FILE__) );
+			$html = $tmpl->execute($widget.'/'.$widget.'.tmpl.php');
+		}
+		else {
+			$html = '';
+		}
 		return $html;
 	}
 	
 	function GrabWidget($widget_name) {
+		global $wgArticleWidgets;
 		$html = '';
 		
-		if ($widget_name == 'BMI') {
-			$html = '<iframe src="'.wfGetPad('/Special:ArticleWidgets/BMI').'" scrolling="no" frameborder="0" class="article_widget" allowTransparency="true"></iframe>';
+		if (isset($wgArticleWidgets[$widget_name])) {
+			$widget_height = $wgArticleWidgets[$widget_name];
+		
+			$html = '<iframe src="'.wfGetPad('/Special:ArticleWidgets/'.$widget_name).'" scrolling="no" frameborder="0" class="article_widget" style="height:'.$widget_height.'px" allowTransparency="true"></iframe>';
 			$html = '<div class="widget_br"></div>'.$html.'<div class="widget_br"></div>';
 		}
 		

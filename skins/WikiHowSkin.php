@@ -18,7 +18,6 @@ global $IP;
 require_once("$IP/includes/SkinTemplate.php");
 require_once("$IP/extensions/wikihow/ArticleMetaInfo.class.php");
 
-
 /**
  * Inherit main code from SkinTemplate, set the CSS and template filter.
  * @todo document
@@ -635,6 +634,51 @@ class SkinWikihowskin extends SkinTemplate {
 		return trim($firstline);
 	}
 	
+	function getTitleImage($title) {
+		global $wgContLang;
+		
+		$r = Revision::newFromTitle($title);
+		if (!$r) return "";
+		$text = $r->getText();
+		if (preg_match("/^#REDIRECT \[\[(.*?)\]\]/", $text, $matches)) {
+			if ($matches[1]) {
+				$title = Title::newFromText($matches[1]);
+				$r = Revision::newFromTitle($title);
+				$text = $r->getText();
+			}
+		}
+
+		//first check the intro
+		$intro = Wikitext::getIntro($text);
+		
+		// Make sure to look for an appropriately namespaced image. Always check for "Image"
+		// as a lot of files are in the english image repository
+		$nsTxt = "(Image|" . $wgContLang->getNsText(NS_IMAGE) . ")";
+		if(preg_match("@\[\[" . $nsTxt . ":([^\|]+)[^\]]*\]\]@im", $intro, $matches)) {
+			$matches[2] = str_replace(" ", "-", $matches[2]);
+
+			$file = wfFindFile($matches[2]);
+			if ($file && isset($file)) {
+				return $file;
+			}
+		}
+
+		//now check the steps
+		$steps = Wikitext::getStepsSection($text, true);
+		
+		if(preg_match_all("@\[\[" . $nsTxt . ":([^\|]+)[^\]]*\]\]@im", $steps[0], $matches)) {
+
+			//grab the last image that appears in the steps section
+			$last = count($matches[2]) - 1;
+			$imageName = str_replace(" ", "-", $matches[2][$last]);
+			$file = wfFindFile($imageName);
+			
+			if ($file && isset($file)) {
+				return $file;
+			}
+		}
+	}
+	
 	function getGalleryImage($title, $width, $height) {
 
 		global $wgMemc, $wgLanguageCode, $wgContLang;
@@ -647,35 +691,20 @@ class SkinWikihowskin extends SkinTemplate {
 
 		if (($title->getNamespace() == NS_MAIN) || ($title->getNamespace() == NS_CATEGORY) ) {
 			if ($title->getNamespace() == NS_MAIN) {
-				$r = Revision::newFromTitle($title);
-				if (!$r) return "";
-				$text = $r->getText();
-				if (preg_match("/^#REDIRECT \[\[(.*?)\]\]/", $text, $matches)) {
-					if ($matches[1]) {
-						$title = Title::newFromText($matches[1]);
-						$r = Revision::newFromTitle($title);
-						$text = $r->getText();
+				$file = self::getTitleImage($title);
+				
+				if ($file && isset($file)) {
+					$thumb = $file->getThumbnail($width, $height, true, true);
+					if ($thumb instanceof MediaTransformError) {
+						// we got problems!
+						print_r($thumb); exit;
+					} else {
+						$wgMemc->set($key, wfGetPad($thumb->url), 2* 3600); // 2 hours
+						return wfGetPad($thumb->url);
 					}
 				}
-
-				// Make sure to look for an appropriately namespaced image. Always check for "Image"
-				// as a lot of files are in the english image repository
-				$nsTxt = "(Image|" . $wgContLang->getNsText(NS_IMAGE) . ")";
-                if(preg_match("@\[\[" . $nsTxt . ":([^\|]+)[^\]]*\]\]@im", $text, $matches)) {
-					$matches[2] = str_replace(" ", "-", $matches[2]);
-                    $file = wfFindFile($matches[2]);
-						if ($file && isset($file)) {
-							$thumb = $file->getThumbnail($width, $height, true, true);
-							if ($thumb instanceof MediaTransformError) {
-								// we got problems!
-								print_r($thumb); exit;
-							} else {
-								$wgMemc->set($key, wfGetPad($thumb->url), 2* 3600); // 2 hours
-								return wfGetPad($thumb->url);
-							}
-						}
-					}
-				}
+				
+			}				
 
 			$catmap = array(
 				wfMsg("arts-and-entertainment") => "Image:Category_arts.jpg",
@@ -1713,9 +1742,9 @@ class WikiHowTemplate extends QuickTemplate {
 
 			list($details, ) = self::getTitleExtraInfo($wgTitle);
 			return wfMsg('pagetitle', $details);
+		}
 	}
-	}
-
+	
 	public static function getTitleExtraInfo($title) {
 		$r = Revision::newFromTitle($title);
 		if ($r == null) return '';
@@ -1934,198 +1963,6 @@ class WikiHowTemplate extends QuickTemplate {
 		'Make-Gluten-Free-Peanut-Butter-Cookies'
 	);
 	
-	static $watermark_array = array(
-		'Make-a-Boat-out-of-Clay',
-		'Scrunch-Hair',
-		'Prepare-a-Tuna-Melt',
-		'Make-Great-Curry',
-		'Make-Potato-Chips',
-		'Redecorate-Your-Room-Inexpensively-and-Creatively',
-		'Have-Fun-in-Bed-With-Your-Partner-Without-Sex',
-		'Look-Good-in-the-Winter',
-		'Convert-from-Decimal-to-Binary',
-		'Knit',
-		'Look-Good-for-a-School-Dance',
-		'Tame-Frizzy-Hair-Quickly',
-		'Make-Balloon-Animals',
-		'Make-a-Flaming-Dr.-Pepper',
-		'Text-on-an-iPod-Touch',
-		'Make-Mint-Chutney',
-		'Clean-a-Loofah-or-Natural-Sponge',
-		'Make-Apple-Cider',
-		'Prepare-Strawberry-Ice-Cream-Milkshake',
-		'Make-a-No-Bake-Birthday-Cake',
-		'Bread-Fish',
-		'Draw-a-Poodle',
-		'Make-a-CD-Mix',
-		'Make-Steamed-Rice',
-		'Spin-a-Pencil-Around-Your-Middle-Finger',
-		'Drain-the-Gas-Tank-of-Your-Car',
-		'Measure-Square-Footage',
-		'Hold-Hands',
-		'Lighten-Your-Skin',
-		'Make-Cayenne-Pepper',
-		'Fry-Chicken-Wings',
-		'Do-Side-Splits',
-		'Make-Pumpkin-Mousse',
-		'Make-Almond-Milk',
-		'Look-Cool',
-		'Make-Games-in-Excel',
-		'Save-an-iPod-from-Water',
-		'Infuse-Vodka-with-Flavor',
-		'Make-a-Quick-Greek-Goddess-Costume',
-		'Dye-Hair',
-		'Make-a-Cootie-Catcher',
-		'Find-a-Lost-Television-Remote',
-		'Annotate-a-Book',
-		'Paint-a-Bumblebee-Design-on-Your-Nails',
-		'Make-Cucumber-Water',
-		'Set-an-Alarm-on-an-iPhone-Clock',
-		'Shape-a-Beret',
-		'Retain-Information-when-You-Study-for-a-Test',
-		'Make-an-LED-Flashlight',
-		'Make-Chicken-Soup',
-		'Dress-to-Impress',
-		'Make-a-Sundae',
-		'Dress-in-the-American-1980s-Fashion',
-		'Get-Car-Loans-After-Bankruptcy',
-		'Wear-a-Halter-Dress',
-		'Lose-Weight-with-Vitamins',
-		'Make-a-Wire-Tree-Sculpture',
-		'Wear-Shoes-That-Are-Too-Big',
-		'Make-Vegan-Peanut-Butter-Chocolate-Bars',
-		'Draw-an-Elephant',
-		'Ash-Your-Cigarette',
-		'Make-a-Pocahontas-Costume',
-		'Get-and-Maintain-a-Healthy-Lawn',
-		'Safely-Pierce-Your-Own-Ear',
-		'Make-a-Whole-New-Wardrobe-by-Recycling-Your-Clothes',
-		'Make-a-Soap-Carving',
-		'Inverse-a-3X3-Matrix',
-		'Roast-Garlic',
-		'Add-5-Consecutive-Numbers-Quickly',
-		'Calculate-the-Volume-of-a-Cone',
-		'Buy-a-Digital-Camera',
-		'Win-at-Battleship',
-		'Find-Hot-People-to-Be-Friends-on-Facebook',
-		'Hard-Reset-an-iPhone',
-		'Make-Indonesian-Kopi-Tobruk',
-		'Get-a-Car-Dealer-License-to-Sell-Cars',
-		'Stop-Windshield-Wiper-Blades-from-Squeaking',
-		'Clean-Pennies',
-		'Grate-Cheese',
-		'Make-a-Beaded-Necklace',
-		'Make-a-Braid-Using-More-Than-Three-Strands',
-		'Remove-Mildew-Smell-from-Clothing',
-		'Make-Miso-Soup',
-		'Make-a-California-Roll',
-		'Save-Power-on-a-Laptop',
-		'Fill-out-a-Checking-Deposit-Slip',
-		'Make-a-Flapping-Paper-Airplane',
-		'Do-Emo-Makeup',
-		'Calculate-the-Volume-of-a-Sphere',
-		'Make-SIM-Card-Earrings',
-		'Cool-Yourself-in-a-Car-Without-Air-Conditioning',
-		'Broil-Steak',
-		'Style-a-Classic-Chignon-Hair-Style',
-		'Make-a-Kusudama-Flower',
-		'Wire-a-3-Way-Light-Switch',
-		'Wear-a-Short-Skirt-Without-Looking-Overexposed',
-		'Solder-Stained-Glass',
-		'Look-Good-at-a-Prom',
-		'Get-a-Loan-Even-With-Bad-Credit',
-		'Make-Homemade-Baked-Potato-Crisps',
-		'Make-Chicken-Marinade',
-		'Make-Chocolate-Vodka',
-		'Remove-Fruit-Juice-Stains-from-Carpet',
-		'Make-Chinese-Dumplings',
-		'Find-the-Median-of-a-Set-of-Numbers',
-		'Make-Hot-Cross-Buns',
-		'Make-an-Origami-Heart',
-		'Draw-an-Elf',
-		'Make-Tea',
-		'Zoom-In-or-Out-on-an-iPhone-or-iPod-Touch',
-		'Make-a-Milky-Way-Cake',
-		'Make-a-Shirt-out-of-a-One-Dollar-Bill',
-		'Play-3-Coin-Hockey',
-		'Fry-Pot-Stickers',
-		'Make-a-Sandwich',
-		'Wash-a-Vehicle-with-Micro-Fiber-Cloths',
-		'Find-the-Greatest-Common-Divisor-of-Two-Integers',
-		'Make-Chinese-Green-Tea',
-		'Make-a-Hemp-Necklace',
-		'Make-Strawberry-Lemonade',
-		'Make-a-Padlock-Shim',
-		'Draw-a-Sunset',
-		'Use-Quotation-Marks-Correctly',
-		'Finish-a-Crossword-Puzzle',
-		'Dress-to-Make-Yourself-Look-Skinnier',
-		'Write-a-Love-Letter',
-		'Make-KFC-Original-Fried-Chicken',
-		'Factor-a-Number',
-		'Roll-Sushi',
-		'Find-out-How-Much-Space-Is-Left-on-Your-iPod-Touch-or-iPhone',
-		'Make-a-Potato-Clock',
-		'Sew-a-Button',
-		'Explode-a-Grape-in-the-Microwave',
-		'Roll-a-Coin-on-Your-Knuckles',
-		'Convert-a-Percentage-into-a-4.0-Grade-Point-Average',
-		'Make-a-Bird-out-of-a-Plastic-Straw',
-		'Change-a-Word-Document-to-JPEG-Format',
-		'Make-a-Paper-Army-Tank',
-		'Calculate-the-Volume-of-a-Pyramid',
-		'Build-Credit-Without-Credit-Cards',
-		'Fold-a-Paper-Crane',
-		'Dispose-of-Unused-Medication',
-		'Drink-More-Water-Every-Day',
-		'Make-CD-Earrings',
-		'Make-Lumpia',
-		'Multiply',
-		'Make-Cat-Eyes-With-Eyeliner',
-		'Make-a-Pop-Up-Card',
-		'Use-a-Padlock-Shim',
-		'Eat-Properly',
-		'Fix-Your-iPod-Jack',
-		'Solve-Fraction-Questions-in-Math',
-		'Read-Nutrition-Facts-on-Food-Labels',
-		'Jump-Start-a-Car',
-		'Tie-a-Silk-Scarf',
-		'Make-a-Gift-Bag',
-		'Decode-a-Caesar-Box-Code',
-		'Make-Black-Icing',
-		'Make-Buttered-Noodles',
-		'Make-an-Origami-Balloon',
-		'Finger-Weave',
-		'Microwave-a-Peep',
-		'Convert-Grams-Into-Pounds',
-		'Turn-off-a-Normal-School-Calculator',
-		'Upload-Songs-to-an-iPod',
-		'Unclog-a-Kitchen-Sink',
-		'Make-a-Paper-Boat',
-		'Look-Feminine-With-Short-Hair',
-		'Do-Long-Multiplication',
-		'Fry-Cheese',
-		'Make-the-Chinese-Staircase-Bracelet',
-		'Play-Wall-Ball',
-		'Get-a-SIM-Card-out-of-an-iPhone',
-		'Multiply-Square-Roots',
-		'Follow-a-Clear-Liquid-Diet',
-		'Make-Cake-Pops',
-		'Make-a-No-Bake-Cherry-Cheesecake'
-	);
-	
-	static $Watermark = false;
-
-	public function checkForWatermark() {
-		global $wgTitle, $wgUser, $wgRequest;
-		if ($wgTitle->getNamespace() == NS_MAIN &&
-			in_array($wgTitle->getDBkey(),self::$watermark_array) &&
-			$wgRequest->getVal('oldid') == '' &&
-			($wgRequest->getVal('action') == '' || $wgRequest->getVal('action') == 'view')) {
-				self::$Watermark = true;
-		}
-	}
-	
 	/**
 		
 	 * Insert ad codes into the body of the article
@@ -2143,30 +1980,6 @@ class WikiHowTemplate extends QuickTemplate {
 		$body= "";
 		for ($i = 0; $i < sizeof($parts); $i++) {
 			if ($i == 0) {
-			
-				//check for the nointroimg template
-				if (self::$Watermark) {
-					//make the intro image big
-					preg_match("/Image:(.*)\">/", $parts[$i], $matches);
-					
-					if (count($matches) > 0) {
-						$img = $matches[1];
-						$img = preg_replace('@%27@',"'",$img);
-						$image = Title::makeTitle(NS_IMAGE, $img);
-						
-						if ($image) {
-							$file = wfFindFile($image);
-							if ($file) {
-								$thumb = $file->getThumbnail(625, -1, true, true);
-								$newintroimg = '<p style="text-align:center;"><img border="0" width="625" class="mwimage101" src="'.wfGetPad($thumb->url).'" alt=""><div class="wikihow_watermark" style="margin-top:-38px;"></div></p>';
-								$bImgFound = true;
-							}
-						}
-						
-						$parts[$i] = preg_replace('/<div class=\'mwimg\'>.*<\/div>\n<\/div>\n<p>/is','<p>',$parts[$i]);
-						$body = "<div class='article_inner editable'>" . $newintroimg.$parts[$i] . "</div>\n";
-					}
-				}
 			
 				if ($body == "") {
 					// if there is no alt tag for the intro image, so it to be the title of the page
@@ -2256,8 +2069,8 @@ class WikiHowTemplate extends QuickTemplate {
 						}
 					}
 					else {
-					$recipe_tag = "'";
-				}
+						$recipe_tag = "'";
+					}
 					$body .= "\n<div id=\"steps\" class='editable{$recipe_tag}>{$parts[$i]}</div>\n";
 				} else if ($rev != "") {
 					$body .= "\n<div id=\"{$rev}\" class='article_inner editable'>{$parts[$i]}</div>\n";
@@ -2268,7 +2081,7 @@ class WikiHowTemplate extends QuickTemplate {
 				$body .= $parts[$i];
 			}
 		}
-				
+		
 		#echo $body; exit;
 		$punct = "!\.\?\:"; # valid ways of ending a sentence for bolding
 		$i = strpos($body, '<div id="steps"');
@@ -2475,12 +2288,6 @@ class WikiHowTemplate extends QuickTemplate {
 					break;
 				}		
 			}
-		}
-		
-		//add watermarks
-		if (self::$Watermark) {
-			$watermark_div = '<div class="wikihow_watermark"></div>';
-			$body = preg_replace("@<div class=[\"|']corner bottom_right[\"|']></div>@im",'<div class="corner bottom_right"></div>'.$watermark_div,$body);
 		}
 
 		/// ads below tips, walk the sections and put them after the tips
@@ -2746,7 +2553,6 @@ class WikiHowTemplate extends QuickTemplate {
 		
 		//adding recipe microdata tags?
 		self::checkForRecipeMicrodata();
-		self::checkForWatermark();
 		
 		$isWikiHow = false;
 		if ($wgArticle != null && $wgTitle->getNamespace() == NS_MAIN)  {
@@ -2865,11 +2671,12 @@ class WikiHowTemplate extends QuickTemplate {
 
 		//XX AVATAR PROFILEBOX
 		$profileBox = "";
-		if (($wgTitle->getNamespace() == NS_USER ) &&
-			($wgRequest->getVal('action') != 'edit') &&
-			($wgRequest->getVal('action') != 'protect') &&
-			($wgRequest->getVal('action') != 'history') &&
-			($wgRequest->getVal('action') != 'delete')) {
+		if ($wgTitle->getNamespace() == NS_USER &&
+			$wgRequest->getVal('action') != 'edit' &&
+			$wgRequest->getVal('action') != 'protect' &&
+			$wgRequest->getVal('action') != 'history' &&
+			$wgRequest->getVal('action') != 'delete')
+		{
 			$name = $wgTitle->getDBKey();
 			if ($u = User::newFromName($wgTitle->getDBKey())) {
 				if ($u->getOption('profilebox_display') == 1 && $wgLanguageCode == 'en') {
@@ -2893,7 +2700,7 @@ class WikiHowTemplate extends QuickTemplate {
 			//&& $wgTitle->getPrefixedURL() != "Main-Page"
 			) {
 		}  else if ($wgTitle->getFullText() == $wgLang->getNsText(NS_SPECIAL).":Search"
-				|| $wgTitle->getFullText() == $wgLang->getNsText(NS_SPECIAL).":LSearch"){
+				|| $wgTitle->getFullText() == $wgLang->getNsText(NS_SPECIAL).":LSearch") {
 			$show_related = false;
 		}  else {
 			$show_related = false;
@@ -2978,9 +2785,15 @@ class WikiHowTemplate extends QuickTemplate {
 			}
 */
 
-			$dbr = wfGetDB(DB_SLAVE);
-			$revisions = $dbr->selectField('revision', array('count(*)'),
-							array('rev_page' => $wgTitle->getArticleID() ));
+			global $wgMemc;
+			$cachekey = wfMemcKey('rev-count-' . $wgTitle->getArticleID());
+			$revisions = $wgMemc->get($cachekey);
+			if ($revisions === null) {
+				$dbr = wfGetDB(DB_SLAVE);
+				$revisions = $dbr->selectField('revision', array('count(*)'),
+					array('rev_page' => $wgTitle->getArticleID() ));
+				$wgMemc->set($cachekey, $revisions);
+			}
 
 			if ($revisions <= 3) {
 				$sk->mGlobalChannels[] = "9483187321";
@@ -3363,7 +3176,7 @@ class WikiHowTemplate extends QuickTemplate {
 			$fa = '<p id="feature_star">' . wfMsg('featured_article') . '</p>';
 			$this->data['bodytext'] = preg_replace("@<div id=\"featurestar\">(.|\n)*<div style=\"clear:both\"></div>@mU", '', $this->data['bodytext']);
 		}
-		
+				
 		// munge the steps HTML to get the numbers working
 		if ($wgTitle->getNamespace() == NS_MAIN
 			&& $wgTitle->getText() != wfMsg('mainpage')

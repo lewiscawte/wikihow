@@ -10,7 +10,9 @@ $MAX_RESULTS = 1000000;
 
 $included = false;
 $nlinks = true;
-$wpp = new WantedPagesPage( $included, $links );
 
+$wpp = new WantedPagesPage( $included, $links );
 $wpp->recache($MAX_RESULTS);
 
+$wpp = new DeadendPagesPage( $included, $links );
+$wpp->recache($MAX_RESULTS);

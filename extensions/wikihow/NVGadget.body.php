@@ -35,9 +35,9 @@ class NVGadget extends UnlistedSpecialPage {
 		}
 	}
 
-	function getLastPatrolledRevision(&$title) {
+	function getLastPatrolledRevision($title) {
 		$a = null;
-		$dbr =& wfGetDB(DB_SLAVE);
+		$dbr = wfGetDB(DB_SLAVE);
 		$page_id = $title->getArticleID();
 
 		$sql =	"SELECT max(rc_this_oldid) as A from recentchanges
@@ -65,7 +65,7 @@ class NVGadget extends UnlistedSpecialPage {
 		}
 
 		if ($a == null) {
-			$a = new Article(&$title);
+			$a = new Article($title);
 		}
 		return $a;
 	}
@@ -122,7 +122,7 @@ class NVGadget extends UnlistedSpecialPage {
 				exit;
 			}
 			if ($title->getArticleID() > 0) {
-				$a = $this->getLastPatrolledRevision(&$title);
+				$a = $this->getLastPatrolledRevision($title);
 				$summary = Article::getSection($a->getContent(true), 0);
 
 				global $wgParser;

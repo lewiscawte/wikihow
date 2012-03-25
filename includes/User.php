@@ -3040,19 +3040,22 @@ class User {
 
 	public static function getBotIDs() {
 		global $wgMemc;
+		static $botsCached = null;
+
+		if ($botsCached) return $botsCached;
 
 		$key = wfMemcKey('bot_ids1');
 		$bots = $wgMemc->get($key);
 		if (!is_array($bots)) {
-			$expires = 5 * 60; // 5 minutes
 			$bots = array();
-			$dbr = wfGetDB(DB_MASTER); 
+			$dbr = wfGetDB(DB_SLAVE); 
 			$res = $dbr->select('user_groups', array('ug_user'), array('ug_group'=>'bot'));
 			while ($row = $dbr->fetchObject($res)) {
 				$bots[] = $row->ug_user; 	
 			}
-			$wgMemc->set($key, $bots, $expires);
+			$wgMemc->set($key, $bots);
 		}
+		$botsCached = $bots;
 		return $bots;
 	}
 }

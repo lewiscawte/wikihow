@@ -49,7 +49,8 @@ class WikiPhotoProcess {
 
 	static $debugArticleID = '',
 		$stepsMsg,
-		$imageExts = array('png', 'jpg');
+		$imageExts = array('png', 'jpg'),
+		$excludeUsers = array('old', 'backup');
 
 	/**
 	 * Generate a string of random characters
@@ -431,7 +432,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 		$dh1 = opendir(self::IMAGES_DIR);
 		while (false !== ($user = readdir($dh1))) {
 			$userDir = self::IMAGES_DIR . '/' . $user;
-			if ('old' == $user // don't process anything in the "old" directory
+			if (in_array($user, self::$excludeUsers) // don't process anything in excluded people
 				|| !is_dir($userDir) // only process directories
 				|| preg_match('@^[0-9]+$@', $user) // don't allow usernames that are all digits
 				|| preg_match('@^\.@', $user) // don't allow usernames that start with a '.'
@@ -524,7 +525,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 			$id = intval($id);
 			if (!$id) continue;
 
-			if ('old' == $user // don't process anything in the "old" directory
+			if (in_array($user, self::$excludeUsers) // don't process anything in excluded people
 				|| preg_match('@^[0-9]+$@', $user)) // don't allow usernames that are all digits
 			{
 				continue;

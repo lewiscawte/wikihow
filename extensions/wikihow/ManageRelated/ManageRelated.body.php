@@ -255,7 +255,7 @@ class PreviewPage extends UnlistedSpecialPage {
 			return;
 		}
 
-		$article = new Article(&$title);
+		$article = new Article($title);
 		$text = $article->getContent(true);
 		$snippet = $article->getSection($text, 0) . "\n"
 			. $article->getSection($text, 1);

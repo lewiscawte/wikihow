@@ -12,9 +12,9 @@ class Generatefeed extends UnlistedSpecialPage {
 		return $source;
 	}
 
-	public static function getLastPatrolledRevision(&$title) {
+	public static function getLastPatrolledRevision($title) {
 		$a = null;
-		$dbr =& wfGetDB( DB_SLAVE );
+		$dbr = wfGetDB(DB_SLAVE);
 		$page_id = $title->getArticleID();
 		$sql = "SELECT max(rc_this_oldid) as A from recentchanges WHERE rc_cur_id = $page_id and rc_patrolled = 1";
 		$res = $dbr->query($sql);
@@ -38,7 +38,7 @@ class Generatefeed extends UnlistedSpecialPage {
 			}
 		}
 		if ($a == null) {
-			$a = new Article(&$title);
+			$a = new Article($title);
 		}
 		return $a;
 	}

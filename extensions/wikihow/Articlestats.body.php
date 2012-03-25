@@ -74,7 +74,7 @@ class Articlestats extends SpecialPage {
 			$rev = Revision::newFromTitle($tp );
 			$text = $rev->getText();
 			$matches = array();
-			preg_match('/{{Featured.*}}/', $text, &$matches);
+			preg_match('/{{Featured.*}}/', $text, $matches);
 			$fadate = $matches[0];
 			$fadate = str_replace("{{Featured|", "", $fadate);
 			$fadate = str_replace("}}", "", $fadate);
@@ -125,7 +125,7 @@ class Articlestats extends SpecialPage {
 		$rating = number_format($rating * 100, 0, "", "");
 	
 	
-		$a = new Article(&$t);
+		$a = new Article($t);
 		$count = $a->getCount();
 		$pageviews = number_format($count, 0, "", ",");
 		

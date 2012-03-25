@@ -548,7 +548,7 @@ new Autocompleter.Local(\'category_search\', \'cat_search\', Category_list, {ful
 			}
 		}
 		if ($a == null) {
-			$a = new Article(&$title);
+			$a = new Article($title);
 		}
 		return $a;	
 	}
@@ -592,7 +592,7 @@ new Autocompleter.Local(\'category_search\', \'cat_search\', Category_list, {ful
 
 			if ($title->getArticleID() > 0) {
 				// we want the most recent version, don't want to overwrite changes
-				$a = new Article(&$title); 
+				$a = new Article($title); 
 				$text = $a->getContent();
 
 				$pattern = '/== .*? ==/';
