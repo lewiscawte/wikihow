@@ -23,4 +23,4 @@ $wgExtensionCredits['specialpage'][] = array(
 
 // Set up the new special page
 $wgAutoloadClasses['ToolbarHelper'] = dirname( __FILE__ ) . '/ToolbarHelper.body.php';
-$wgSpecialPages['ToolbarHelper'] = 'Toolbarhelper';
+$wgSpecialPages['ToolbarHelper'] = 'ToolbarHelper';

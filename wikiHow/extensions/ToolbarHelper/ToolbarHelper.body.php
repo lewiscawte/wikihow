@@ -6,7 +6,7 @@ class ToolbarHelper extends UnlistedSpecialPage {
 	 * Constructor -- set up the new special page
 	 */
 	public function __construct() {
-		parent::__construct( 'Toolbarhelper' );
+		parent::__construct( 'ToolbarHelper' );
 	}
 
 	/**
@@ -19,7 +19,7 @@ class ToolbarHelper extends UnlistedSpecialPage {
 
 		$wgOut->setArticleBodyOnly( true );
 
-		$go = $wgRequest->getVal( 'go', 'null');
+		$go = $wgRequest->getVal( 'go', 'null' );
 
 		if ( $go == 'talk' ) {
 			$t = $wgUser->getTalkPage();
