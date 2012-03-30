@@ -5,10 +5,13 @@
 	overflow-x: hidden;
 	padding: 25px 0;
 }
-#editfinder_preview_updated { padding-top: 0; }
+#editfinder_preview_updated {
+	padding-top: 0;
+}
 
 #editfinder_upper {
-	background: url(eraser.jpg) no-repeat top right;
+	/* @embed */
+	background: url(images/eraser.jpg) no-repeat top right;
 	height: 82px;
 	line-height: 82px;
 	margin-top: -50px;
@@ -35,11 +38,11 @@
 
 #editfinder_help {
 	font-size: .85em;
-	background: url(/skins/WikiHow/images/icon_help.jpg) 0 0 no-repeat;
+	/* @embed */
+	background: url(images/icon_help.jpg) 0 0 no-repeat;
 	padding-left: 15px;
 	margin-top: 5px;
 }
-
 
 #editfinder_options {
 	font-size: 1em;
@@ -50,13 +53,14 @@
 	float: right;
 }
 #editfinder_options #editfinder_skip {
-	float:right; 
+	float:right;
 	padding: 0 14px 0 0;
 	font-weight: bold;
-	line-height: 26px;	
+	line-height: 26px;
 }
 #editfinder_options #editfinder_skip_arrow {
-	background: url(./editfinder_yes.png) no-repeat scroll -165px 0 transparent;
+	/* @embed */
+	background: url(images/editfinder_yes.png) no-repeat scroll -165px 0 transparent;
 	width: 9px;
 	height: 10px;
 	float: right;
@@ -64,22 +68,31 @@
 }
 
 .editfinder_button_yes {
-	background:url(./editfinder_yes.png) no-repeat scroll left top transparent;
-	height:26px;
-	line-height:25px;
-	width:153px;
+	/* @embed */
+	background: url(images/editfinder_yes.png) no-repeat scroll left top transparent;
+	height: 26px;
+	line-height: 25px;
+	width: 153px;
 	padding-left: 10px;
 	font-size: .9em;
 }
-.editfinder_button_yes:hover { background-position: 0 -28px; }
-.editfinder_button_yes:active { background-position: 0 -57px; }
+.editfinder_button_yes:hover {
+	background-position: 0 -28px;
+}
+.editfinder_button_yes:active {
+	background-position: 0 -57px;
+}
 
 #efcc_choices {
 	text-align: right;
 	line-height: 27px;
-	}
-	#efcc_yes { margin-right: 8px; }
-	#efcc_no { float: right; }
+}
+#efcc_yes {
+	margin-right: 8px;
+}
+#efcc_no {
+	float: right;
+}
 
 #editfinder_title {
 	margin: 0 auto;
@@ -87,9 +100,9 @@
 	border: 1px solid #CDCDCD;
 	background-color: #F5F5F5;
 	-moz-border-radius: 10px 10px 0 0;
-    -webkit-border-radius: 10px 10px 0 0;
-    -khtml-border-radius: 10px 10px 0 0;
-    border-radius: 10px 10px 0 0;
+	-webkit-border-radius: 10px 10px 0 0;
+	-khtml-border-radius: 10px 10px 0 0;
+	border-radius: 10px 10px 0 0;
 }
 #editfinder_title h1 {
 	font-size: 1.5em;
@@ -123,30 +136,39 @@ h2 .editsectionbutton {
 	display: none;
 }
 
-div#article { padding-bottom: 0; }
+div#article {
+	padding-bottom: 0;
+}
 
-#drafts-list-box { display: none; }
-#wpDiff { display: none; }
-#othereditlink { display: none; }
+#drafts-list-box {
+	display: none;
+}
+#wpDiff {
+	display: none;
+}
+#othereditlink {
+	display: none;
+}
 
 .editfinder_stats table {
-    border-collapse: collapse;
-    color: #555555;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 2px;
-    width: 90%;
+	border-collapse: collapse;
+	color: #555555;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 2px;
+	width: 90%;
 }
 
-.editfinder_stats td {    
+.editfinder_stats td {
 	border-bottom: 1px dotted #A59983;
-    border-collapse: collapse;
-    padding: 2px;
+	border-collapse: collapse;
+	padding: 2px;
 }
 
-
-#editfinder_preview_updated { display: none; }
-#editfinder_preview_updated h2:first-child { 
+#editfinder_preview_updated {
+	display: none;
+}
+#editfinder_preview_updated h2:first-child {
 	background: #FDFCDE;
 	margin: 0;
 	padding-left: 20px;
@@ -171,7 +193,7 @@ a.clickfail {
 	cursor: default;
 	background-position: 0 -87px;
 }
-a.clickfail:hover { 
+a.clickfail:hover {
 	text-decoration: none;
-	background-position: 0 -87px; 
+	background-position: 0 -87px;
 }
