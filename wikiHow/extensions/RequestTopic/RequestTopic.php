@@ -1,36 +1,46 @@
 <?php
-if ( ! defined( 'MEDIAWIKI' ) )
-    die();
-
-/**#@+
- * An extension that allows users to rate articles. 
- * 
- * @package MediaWiki
- * @subpackage Extensions
+/**
+ * RequestTopic extension -- Provides a basic way of suggesting new topics to
+ * be added to the article base.
  *
- * @link http://www.mediawiki.org/wiki/SpamDiffTool_Extension Documentation
- *
- *
+ * @file
+ * @ingroup Extensions
+ * @version 1.0
  * @author Travis Derouin <travis@wikihow.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU General Public License 2.0 or later
  */
 
+if ( !defined( 'MEDIAWIKI' ) ) {
+	die();
+}
+
+// Extension credist that will show up on Special:Version
 $wgExtensionCredits['specialpage'][] = array(
-    'name' => 'Request Topic',
-    'author' => 'Travis Derouin',
-    'description' => 'Provides a basic way of suggesting new topics to be added to the article base.',
-	'url' => 'none.'
+	'name' => 'Request Topic',
+	'version' => '1.0',
+	'author' => 'Travis Derouin',
+	'description' => 'Provides a basic way of suggesting new topics to be added to the article base',
 );
 
+// Register the JS with ResourceLoader
+$wgResourceModules['ext.requestTopic'] = array(
+	'scripts' => 'RequestTopic.js',
+	'messages' => array( 'requesttopic-choose-category' ),
+ 	'localBasePath' => dirname( __FILE__ ),
+	'remoteExtPath' => 'RequestTopic'
+);
 
+// Set up the new special pages
+$dir = dirname( __FILE__ ) . '/';
+$wgExtensionMessagesFiles['RequstTopic'] = $dir . 'RequestTopic.i18n.php';
+$wgExtensionMessagesFiles['RequstTopicNamespaces'] = $dir . 'RequestTopic.namespaces.php';
+$wgAutoloadClasses['Request'] = $dir . 'Request.php';
+$wgAutoloadClasses['RequestTopic'] = $dir . 'RequestTopic.body.php';
+$wgAutoloadClasses['ListRequestedTopics'] = $dir . 'RequestTopic.body.php';
 $wgSpecialPages['RequestTopic'] = 'RequestTopic';
 $wgSpecialPages['ListRequestedTopics'] = 'ListRequestedTopics';
-$wgAutoloadClasses['RequestTopic'] = dirname( __FILE__ ) . '/RequestTopic.body.php';
-$wgAutoloadClasses['ListRequestedTopics'] = dirname( __FILE__ ) . '/RequestTopic.body.php';
 
-define('NS_ARTICLE_REQUEST', 16);
-define('NS_ARTICLE_REQUEST_TALK', 17);
-$wgExtraNamespaces[NS_ARTICLE_REQUEST] = "Request";
-$wgExtraNamespaces[NS_ARTICLE_REQUEST_TALK] = "Request_talk";
-$wgHooks['ArticleSaveComplete'][] = array("RequestTopic::notifyRequests");
-$wgHooks['ArticleDelete'][] = array("RequestTopic::uncategorizeRequest"); 
+// Hooked functions
+$wgHooks['ArticleSaveComplete'][] = 'RequestTopic::notifyRequests';
+$wgHooks['ArticleDelete'][] = 'RequestTopic::uncategorizeRequest';
+$wgHooks['CanonicalNamespaces'][] = 'RequestTopic::registerCanonicalNamespaces';

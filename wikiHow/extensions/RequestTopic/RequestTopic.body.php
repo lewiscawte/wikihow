@@ -2,338 +2,401 @@
 
 class RequestTopic extends SpecialPage {
 
-	function __construct() {
-		global $wgHooks;
-		SpecialPage::SpecialPage( 'RequestTopic' );
+	/**
+	 * Constructor -- set up the new special page
+	 */
+	public function __construct() {
+		parent::__construct( 'RequestTopic' );
 	}
 
-	function uncategorizeRequest($article, $user, $reason) {
+	function uncategorizeRequest( $article, $user, $reason ) {
 		global $wgContLang, $wgOut;
 
-		// is the article brandnew
+		$categoryNamespaceName = $wgContLang->getNsText( NS_CATEGORY );
+		// Is the article brand new?
 		$t = $article->getTitle();
-		if ($t->getNamespace() == NS_MAIN) {
-			$dbr = wfGetDB(DB_SLAVE);
-			$r = Title::makeTitle(NS_ARTICLE_REQUEST, $t->getText() );
-			if ($r->getArticleID() < 0) {
-				$r = Title::makeTitle(NS_ARTICLE_REQUEST, EditPageWrapper::formatTitle($t->getText()));
+		if ( $t->getNamespace() == NS_MAIN ) {
+			$answeredCategoryName = wfMessage( 'requesttopic-answered-category' )->inContentLanguage()->plain();
+			$dbr = wfGetDB( DB_SLAVE );
+			$r = Title::makeTitle( NS_ARTICLE_REQUEST, $t->getText() );
+
+			if ( $r->getArticleID() < 0 ) {
+				$r = Title::makeTitle( NS_ARTICLE_REQUEST, EditPageWrapper::formatTitle( $t->getText() ) );
 			}
 
-			if ($r->getArticleID() > 0) {
-				$res = $dbr->select('revision',
-					array('rev_id'),
-					array('rev_page=' . $r->getArticleId()),
-					"wfUncategorizeRequest",
-					array('ORDER BY' => 'rev_id DESC')
+			if ( $r->getArticleID() > 0 ) {
+				$res = $dbr->select(
+					'revision',
+					array( 'rev_id' ),
+					array( 'rev_page' => $r->getArticleId() ),
+					__METHOD__,
+					array( 'ORDER BY' => 'rev_id DESC' )
 				);
-				$answered .= "[[" . $wgContLang->getNSText ( NS_CATEGORY ) . ":" . wfMsg('answered-requests') . "]]";
+				$answered .= '[[' . $categoryNamespaceName . ':' . $answeredCategoryName . ']]';
 				$origcat = '';
-				while ($row = $dbr->fetchObject($res)) {
-					$rev = Revision::newFromId($row->rev_id);
+
+				foreach ( $res as $row ) {
+					$rev = Revision::newFromId( $row->rev_id );
 					$text = $rev->getText();
 					// does it match answered?
-					if (strpos($text, $answered) === false) {
-						preg_match('/\[\[' . $wgContLang->getNSText ( NS_CATEGORY ) . '[^\]]*\]\]/', $text, $matches);
-						if (sizeof($matches[0]) > 0) {
+					if ( strpos( $text, $answered ) === false ) {
+						preg_match( '/\[\[' . $categoryNamespaceName . '[^\]]*\]\]/', $text, $matches );
+						if ( sizeof( $matches[0] ) > 0 ) {
 							$origcat = $matches[0];
 						}
 						break;
 					}
 				}
 
-				if ($origcat != null) {
-					$revision = Revision::newFromTitle($r);
+				if ( $origcat != null ) {
+					$revision = Revision::newFromTitle( $r );
 					$text = $revision->getText();
-					if (strpos($text, wfMsg('answered-requests')) !== false) {
-						$ra = new Article($r);
-						$text = ereg_replace("[\[]+" . $wgContLang->getNSText ( NS_CATEGORY ) . "\:([- ]*[.]?[a-zA-Z0-9_/-?&%])*[]]+", "", $text);
+					if ( strpos( $text, $answeredCategoryName ) !== false ) {
+						$ra = new Article( $r );
+						// @todo FIXME: ereg_* functions are deprecated since PHP 5.3+
+						$text = ereg_replace( "[\[]+" . $categoryNamespaceName . "\:([- ]*[.]?[a-zA-Z0-9_/-?&%])*[]]+", '', $text );
 						$text .= "\n$origcat";
-						$ra->updateArticle($text, wfMsg('request-no-longer-answered'), true, false);
-						$wgOut->redirect('');
+						$ra->doEdit(
+							$text,
+							wfMessage( 'requesttopic-request-no-longer-answered' )->inContentLanguage()->plain(),
+							EDIT_MINOR
+						);
+						$wgOut->redirect( '' );
 					}
 				}
-				$dbr->freeResult($res);
 			}
 		}
+
 		return true;
 	}
 
-	function notifyRequests($article, $user, $text, $summary, $p5, $p6, $p7) {
+	function notifyRequests( $article, $user, $text, $summary, $p5, $p6, $p7 ) {
 		global $wgContLang;
-		require_once('Request.php');
 
-		notifyRequester($article, $user, $user, $text, $summary);
+		Request::notifyRequester( $article, $user, $user, $text, $summary );
 
-		// is the article brandnew
+		$answeredCategoryName = wfMessage( 'requesttopic-answered-category' )->inContentLanguage()->plain();
+		$categoryNamespaceName = $wgContLang->getNsText( NS_CATEGORY );
+		// Is the article brand new?
 		$t = $article->getTitle();
-		if ($t->getNamespace() == NS_MAIN) {
-			$dbr = wfGetDB(DB_SLAVE);
-			$num_revisions = $dbr->selectField('revision', 'count(*)', array('rev_page=' . $article->getId()));
-			if ($num_revisions == 1) {
+
+		if ( $t->getNamespace() == NS_MAIN ) {
+			$dbr = wfGetDB( DB_SLAVE );
+			$num_revisions = $dbr->selectField(
+				'revision',
+				'COUNT(*)',
+				array( 'rev_page' => $article->getId() ),
+				__METHOD__
+			);
+			if ( $num_revisions == 1 ) {
 				// new article
-				$r = Title::makeTitle(NS_ARTICLE_REQUEST, $t->getText() );
-				if ($r->getArticleID() < 0) {
-					$r = Title::makeTitle(NS_ARTICLE_REQUEST, EditPageWrapper::formatTitle($t->getText()));
+				$r = Title::makeTitle( NS_ARTICLE_REQUEST, $t->getText() );
+				if ( $r->getArticleID() < 0 ) {
+					$r = Title::makeTitle(
+						NS_ARTICLE_REQUEST,
+						EditPageWrapper::formatTitle( $t->getText() )
+					);
 				}
 
-				if ($r->getArticleID() > 0) {
-					$revision = Revision::newFromTitle($r);
+				if ( $r->getArticleID() > 0 ) {
+					$revision = Revision::newFromTitle( $r );
 					$text = $revision->getText();
-					if (strpos($text, wfMsg('answered-requests')) === false) {
-						$ra = new Article($r);
-						$text = ereg_replace("[\[]+Category\:([- ]*[.]?[a-zA-Z0-9_/-?&%])*[]]+", "", $text);
-						$text .= "\n[[" . $wgContLang->getNSText ( NS_CATEGORY ) . ":" . wfMsg('answered-requests') . "]]";
-						$ra->updateArticle($text, wfMsg('request-now-answered'), true, false);
+					if ( strpos( $text, $answeredCategoryName ) === false ) {
+						$ra = new Article( $r );
+						// @todo FIXME: ereg_* functions are deprecated since PHP 5.3+
+						$text = ereg_replace( "[\[]+$categoryNamespaceName\:([- ]*[.]?[a-zA-Z0-9_/-?&%])*[]]+", '', $text );
+						$text .= "\n[[" . $categoryNamespaceName . ':' . $answeredCategoryName . ']]';
+						$ra->doEdit(
+							$text,
+							wfMessage( 'requesttopic-request-now-answered' )->inContentLanguage()->plain(),
+							EDIT_MINOR
+						);
 					}
 				}
 			}
 		}
+
 		return true;
 	}
 
-	function getCategoryOptions($default = "") {
+	function getCategoryOptions( $default = '' ) {
 		global $wgUser;
 
 		// only do this for logged in users
-		$t = Title::newFromDBKey("WikiHow:" . wfMsg('requestcategories') );
-		$r = Revision::newFromTitle($t);
-		if (!$r) return '';
-		$cat_array = split("\n", $r->getText());
-		$s = "";
-		foreach($cat_array as $line) {
-			$line = trim($line);
-			if ($line == "" || strpos($line, "[[") === 0) continue;
-			$tokens = split(":", $line);
-			$val = "";
-			$val = trim($tokens[sizeof($tokens) - 1]);
-			$s .= "<OPTION VALUE=\"" . $val . "\">" . $line . "</OPTION>\n";
+		$t = Title::newFromDBKey( wfMessage( 'requesttopic-requestcategories-page' )->inContentLanguage()->plain() );
+		$r = Revision::newFromTitle( $t );
+		if ( !$r ) {
+			return '';
 		}
-		$s = str_replace("\"$default\"", "\"$default\" SELECTED", $s);
+
+		$cat_array = explode( "\n", $r->getText() );
+		$s = '';
+
+		foreach( $cat_array as $line ) {
+			$line = trim( $line );
+			if ( $line == '' || strpos( $line, '[[' ) === 0 ) {
+				continue;
+			}
+			$tokens = explode( ':', $line );
+			$val = '';
+			$val = trim( $tokens[sizeof( $tokens ) - 1] );
+			$s .= '<option value="' . $val . '">' . $line . "</option>\n";
+		}
+
+		$s = str_replace( "\"$default\"", "\"$default\" selected=\"selected\"", $s );
 
 		return $s;
 	}
 
-	function getForm ($hidden = false) {
+	function getForm( $hidden = false ) {
 		global $wgOut, $wgUser, $wgScriptPath, $wgLang;
 
-		$topic =  $details =  $override = $name = $email = $category = "";
+		$topic =  $details = $override = $name = $email = $category = '';
 
-		if (isset($_POST['topic'])) {
-			$topic = htmlspecialchars($_POST['topic']);
-			$override = "<input type=hidden name=override value='yes'>";
+		if ( isset( $_POST['topic'] ) ) {
+			$topic = htmlspecialchars( $_POST['topic'] );
+			$override = '<input type="hidden" name="override" value="yes">';
 		}
-		if (isset($_POST['details'])) $details = htmlspecialchars($_POST['details']);
-		if (isset($_POST['email'])) $email = htmlspecialchars($_POST['email']);
-		if (isset($_POST['name'])) $name = htmlspecialchars($_POST['name']);
-		if (isset($_POST['category'])) $category = $_POST['category'];
+		if ( isset( $_POST['details'] ) ) {
+			$details = htmlspecialchars( $_POST['details'] );
+		}
+		if ( isset( $_POST['email'] ) ) {
+			$email = htmlspecialchars( $_POST['email'] );
+		}
+		if ( isset( $_POST['name'] ) ) {
+			$name = htmlspecialchars( $_POST['name'] );
+		}
+		if ( isset( $_POST['category'] ) ) {
+			$category = $_POST['category'];
+		}
 
-		$me = Title::newFromText("RequestTopic", NS_SPECIAL);
-		$action = $me->getFullURL();
+		$action = $this->getTitle()->getFullURL();
 
-		$onsubmit = '';
+		$onsubmit = 'false';
 		$dropdown = '';
 		$categories = $this->getCategoryOptions();
-		if ($categories != '') {
-			$onsubmit = "return checkForm();";
-			$dropdown = "<SELECT name=\"category\">
-						<OPTION VALUE=\"\">" . wfMsg('categorizerequest') . ":</OPTION>
+		if ( $categories != '' ) {
+			$onsubmit = 'true';
+			$dropdown = '<select name="category">
+					<option value="">' . wfMessage( 'requesttopic-categorize-request' )->plain() . "</option>
 					{$categories}
-						  </SELECT>";
+				</select>";
 		}
+
+		// Add JS, which is active when the $onsubmit variable is 'true'
+		$wgOut->addModules( 'ext.requestTopic' );
 
 		// add the form HTML
-		$wgOut->addHTML ( "
-			<script type='text/javascript'>
-				function checkForm() {
-					if (document.requesttopic.category.value == '') {
-						alert (\"" . htmlspecialchars(wfMsg('request_choose_category')) . "\");
-						return false;
-					}
-					return true;
-				}
-			</script>
+		$wgOut->addHTML(
+			"<form id=\"requesttopic\" name=\"requesttopic\" method=\"post\" action=\"{$action}\" data-onsubmit=\"{$onsubmit}\">{$override}"
+		);
 
-			<form id=\"requesttopic\" name=\"requesttopic\" method=\"post\" action=\"{$action}\" onsubmit='{$onsubmit}'>{$override}");
-
-		if ($hidden) {
+		if ( $hidden ) {
 			$mainPageObj = Title::newMainPage();
-			$wgOut->addHTML("<input type=hidden name=topic value=\"$topic\">
-					<input type=hidden name=details value=\"$details\">
-					<input type=hidden name=name value=\"$name\">
-					<input type=hidden name=email value=\"$email\">
-					<input type=hidden name=category value=\"$category\">
-					<input tabindex='11' type='button' name=\"nosubmit\"
-						value=\"".wfMsg('dont-submit')."\" class=\"btn\" onmouseover=\"this.className='btn btnhov'\" onmouseout=\"this.className='btn'\"
-						onclick='window.location.href=\"" . $mainPageObj->escapeLocalURL() . "\"'/>
-					".wfMsg('page-covers-request')." <br/><br/>
-					<input tabindex='11' type='submit' name=\"submit\"
-						value='".wfMsg('submit-anyway')."' class=\"btn\" onmouseover=\"this.className='btn btnhov'\" onmouseout=\"this.className='btn'\" >
-					".wfMsg('request-unique-topic')."
-					</form>
-				");
+			$wgOut->addHTML(
+				"<input type=\"hidden\" name=\"topic\" value=\"$topic\">
+					<input type=\"hidden\" name=\"details\" value=\"$details\">
+					<input type=\"hidden\" name=\"name\" value=\"$name\">
+					<input type=\"hidden\" name=\"email\" value=\"$email\">
+					<input type=\"hidden\" name=\"category\" value=\"$category\">
+					<input tabindex=\"11\" type=\"button\" name=\"nosubmit\"
+						value=\"" . wfMessage( 'requesttopic-dont-submit' )->plain() .
+						"\" class=\"btn\" onmouseover=\"this.className='btn btnhov'\" onmouseout=\"this.className='btn'\"
+						onclick='window.location.href=\"" . $mainPageObj->escapeLocalURL() . "\"' />
+					" . wfMessage( 'requesttopic-page-covers-request' )->plain() . " <br /><br />
+					<input tabindex=\"11\" type=\"submit\" name=\"submit\"
+						value='" . wfMessage( 'requesttopic-submit-anyway' )->plain() .
+						"' class=\"btn\" onmouseover=\"this.className='btn btnhov'\" onmouseout=\"this.className='btn'\" />
+					" . wfMessage( 'requesttopic-unique-topic' )->plain() .
+				'</form>'
+			);
 			return;
 		}
-		$wgOut->addHTML("
-				<table border=\"0\">
+
+		$wgOut->addHTML(
+				'<table border="0">
 				<tr>
-					<td><b>\"".wfMsg('howto','')." <input type=text size=\"40\" name=\"topic\" value=\"$topic\" >\"</font></td>
+					<td><b>"' . wfMsg( 'howto', '' ) . " <input type=text size=\"40\" name=\"topic\" value=\"$topic\" >\"</td>
 				</tr>
 				<tr>
-					  <td>
+					<td>
 					{$dropdown}
-				</td>
+					</td>
 				</tr>
 				<tr>
-					<td colspan=\"4\"><br/><b>".wfMsg('optionalinformation').":</b></td>
-				</tr>");
+					<td colspan=\"4\"><br /><b>" . wfMessage( 'requesttopic-optional-information' )->plain() . '</b></td>
+				</tr>'
+		);
 
 		// do this if the user isn't logged in
-		$login = Title::makeTitle(NS_SPECIAL, "Userlogin");
+		$login = SpecialPage::getTitleFor( 'Userlogin' );
 
-		if ($wgUser->getID() <= 0) {
-			$wgOut->addHTML ("
-					<tr>
-						<td colspan=\"4\" bgcolor=\"#cccccc\"  >
-							<TABLE bgcolor=white width='100%'>
-								<TR>
-									<TD>
-										<input type=checkbox name=login value=false checked=true>
-										<FONT face=\"Arial, Helvetica, sans-serif\" size=2>
-											".wfMsg('emailuponarticlewritten')."<br/>
-
-
-										</FONT>
-									</TD>
-								</TR>
-								<TR>
-									<TD valign=top WIDTH='50%'>
-										<TABLE cellpadding=2>
-											<TR>
-												<TD><FONT face=\"Arial, Helvetica, sans-serif\" size=2>".wfMsg('name').":</FONT></TD>
-												<TD><input id=input type=\"text\" name=\"name\" value=\"$name\"></TD>
-											</TR>
-											<TR>
-												<TD colspan=2><FONT face=\"Arial, Helvetica, sans-serif\" size=-2 color='#666666'>
-													".wfMsg('optional-blank-anonymous')."
-													</FONT>
-												</TD>
-											<TR>
-												<TD><FONT face=\"Arial, Helvetica, sans-serif\" size=2>".wfMsg('email').":</font></TD>
-												<TD><input id=input type=\"text\" name=\"email\" value=\"$email\"></TD>
-											</TR>
-											<TR>
-												<TD colspan=2><FONT face=\"Arial, Helvetica, sans-serif\" size=-2 color='#666666'>
-													".wfMsg('optional-email-notify')."
-												</FONT>
-												</TD>
-										</TABLE>
-					 </TD>
-								</TR>
-								<TR>
-								<TD>
-											 ".wfMsg('or-login-here',$login->getFullURL() ."?returnto=" . $wgLang->getNsText(NS_SPECIAL).":RequestTopic")."
-											</TD>
-								</TR>
-							</TABLE>
-						</td>
-						</tr>");
+		if ( $wgUser->getID() <= 0 ) {
+			$wgOut->addHTML(
+					'<tr>
+						<td colspan="4" bgcolor="#cccccc">
+							<table bgcolor="white" width="100%">
+								<tr>
+									<td>
+										<input type="checkbox" name="login" value="false" checked="true" />
+										<font face="Arial, Helvetica, sans-serif" size="2">' .
+											wfMessage( 'requesttopic-email-upon-article-written' )->plain() . '<br />
+										</font>
+									</td>
+								</tr>
+								<tr>
+									<td valign="top" width="50%">
+										<table cellpadding="2">
+											<tr>
+												<td><font face="Arial, Helvetica, sans-serif" size="2">' .
+													wfMessage( 'requesttopic-name' )->plain() . "</font></td>
+												<td><input id=\"input\" type=\"text\" name=\"name\" value=\"$name\"></td>
+											</tr>
+											<tr>
+												<td colspan=\"2\">
+													<font face=\"Arial, Helvetica, sans-serif\" size=\"-2\" color=\"#666666\">" .
+													wfMessage( 'requesttopic-optional-blank-anonymous' )->parse() .
+													'</font>
+												</td>
+											<tr>
+												<td><font face="Arial, Helvetica, sans-serif" size="2">' .
+													wfMessage( 'requesttopic-email' )->plain() .
+												"</font></td>
+												<td><input id=input type=\"text\" name=\"email\" value=\"$email\"></td>
+											</tr>
+											<tr>
+												<td colspan=\"2\"><font face=\"Arial, Helvetica, sans-serif\" size=\"-2\" color=\"#666666\">" .
+													wfMessage( 'requesttopic-optional-email-notify' )->plain() .
+												'</font>
+												</td>
+										</table>
+									</td>
+								</tr>
+							<tr>
+								<td>' .
+									wfMsg( 'requesttopic-or-login-here', $login->getFullURL( array(
+										'returnto' => $this->getTitle()->getPrefixedDBkey() ) ) ) .
+								'</td>
+							</tr>
+						</table>
+					</td>
+				</tr>'
+			);
 		}
 
-		$wgOut->addHTML ("<tr>
-					<td colspan=\"4\"><br/>".wfMsg('additionaltopicdetails').":</td>
-				</tr><tr>
-					<td colspan=\"4\"><TEXTAREA rows=\"5\" cols=\"55\" name=\"details\">$details</TEXTAREA></td>
-				</tr><tr>
-					<TD colspan=\"4\"><INPUT type=\"submit\" value=\"".wfMsg('submit')."\"></td>
-				</tr>
-									<TR>
-						<TD colspan\"2\"><br/><br/>
-							".wfMsg('clickhere-requestedtopics',"$wgScriptPath/".$wgLang->getNsText(NS_SPECIAL).":ListRequestedTopics")."
-						</TD>
-						</TR>
-				</table>
-			</form>");
+		$wgOut->addHTML(
+			'<tr>
+				<td colspan="4"><br />' . wfMessage( 'requesttopic-additional-topic-details' )->parse() . "</td>
+			</tr>
+			<tr>
+				<td colspan=\"4\"><textarea rows=\"5\" cols=\"55\" name=\"details\">$details</textarea></td>
+			</tr>
+			<tr>
+				<td colspan=\"4\"><input type=\"submit\" value=\"" . wfMsg( 'requesttopic-submit' ) . '" /></td>
+			</tr>
+			<tr>
+				<td colspan="2"><br /><br />' .
+					wfMessage( 'requesttopic-view-suggested' )->parse() .
+				'</td>
+			</tr>
+			</table>
+		</form>'
+		);
 	}
 
-	function execute($par) {
-		global $wgUser, $wgOut, $wgLang, $wgTitle, $wgMemc, $wgDBname;
-		global $wgRequest, $wgSitename, $wgLanguageCode, $IP;
-		global $wgScript, $wgParser, $wgFilterCallback, $wgScriptPath;
+	/**
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the special page or null
+	 */
+	public function execute( $par ) {
+		global $wgUser, $wgOut, $wgLang, $wgContLang, $wgRequest, $wgParser;
+		global $wgLanguageCode, $wgFilterCallback;
 
-		$fname = "wfSpecialRequestTopic";
-		$action = "";
-
-		if ($wgUser->isBlocked()) {
+		// Blocked users can't make any new requests, obviously
+		if ( $wgUser->isBlocked() ) {
 			$wgOut->blockedPage();
 			return;
 		}
 
-		if (!$wgRequest->wasPosted()) {
-			$wgOut->addHTML ("<b>" . wfMsg('lookingforhow') . "</b> <br/> " .wfMsg('requestarticleexdog')."<br/><br/> ");
+		if ( !$wgRequest->wasPosted() ) {
+			$wgOut->addHTML(
+				'<b>' . wfMessage( 'requesttopic-looking-for-how' )->parse() .
+				'</b> <br /> ' . wfMessage( 'requesttopic-request-article-ex-dog' )->parse() .
+				'<br /><br /> '
+			);
 			$this->getForm();
 		} else {
 			// this is a post, accept the POST data and create the
 			// Request article
-			$topic = $wgRequest->getVal('topic');
-			$details = $wgRequest->getVal('details');
+			$topic = $wgRequest->getVal( 'topic' );
+			$details = $wgRequest->getVal( 'details' );
 
-			if ($wgUser->getID() == 0 && preg_match("@http://@i", $details)) {
-				$wgOut->addHTML("Error: anonymous users are not allowed to include links in requests.");
+			if ( $wgUser->getID() == 0 && preg_match( '@http://@i', $details ) ) {
+				$wgOut->addWikiMsg( 'requesttopic-error-anon-no-links' );
 				return;
 			}
 
-			if (!isset($_POST['override']) && $wgLanguageCode == 'en') {
+			if ( !isset( $_POST['override'] ) && $wgLanguageCode == 'en' ) {
 				$l = new LSearch();
-				$titles = $l->googleSearchResultTitles($topic, 0,5);
-				if (sizeof($titles) > 0) {
-					$wgOut->addHTML(wfMsg('already-related-topics')."<br>
-					<ul id=Things_You27ll_Need>");
+				$titles = $l->googleSearchResultTitles( $topic, 0, 5 );
+				if ( sizeof( $titles ) > 0 ) {
+					$wgOut->addHTML(
+						wfMessage( 'requesttopic-already-related-topics' )->parse() . '<br />
+						<ul id="Things_You27ll_Need">'
+					);
 					$count = 0;
-					foreach ($titles as $t) {
-						if ($count == 10) break;
-						if ($t == null) continue;
-						$wgOut->addHTML("<li style='margin-bottom: 0px'><a href=" . $t->getFullURL() . ">How to " . $t->getText() . "</a></li>");
+					foreach ( $titles as $t ) {
+						if ( $count == 10 ) {
+							break;
+						}
+						if ( $t == null ) {
+							continue;
+						}
+						$wgOut->addHTML(
+							'<li style="margin-bottom: 0px"><a href="' .
+								$t->getFullURL() . '">' .
+								wfMessage( 'howto', $t->getText() )->parse() .
+							'</a></li>'
+						);
 						$count++;
 					}
-					$wgOut->addHTML("</ul>");
-					$wgOut->addHTML(wfMsg('no-submit-existing-topic'));
-					$this->getForm(true);
+					$wgOut->addHTML( '</ul>' );
+					$wgOut->addWikiMsg( 'requesttopic-no-submit-existing-topic' ) );
+					$this->getForm( true );
 					return;
 				}
 			}
 
 			// cut off extra ?'s or whatever
-			if ($wgLanguageCode == 'en') {
-				while (!ereg('[a-zA-Z0-9)\"]$', $topic)) {
-					$topic = substr($topic, 0, strlen($topic) - 1);
+			if ( $wgLanguageCode == 'en' ) {
+				// @todo FIXME: ereg_* functions are deprecated since PHP 5.3+
+				while ( !ereg( '[a-zA-Z0-9)\"]$', $topic ) ) {
+					$topic = substr( $topic, 0, strlen( $topic ) - 1 );
 				}
 			}
-			if ($wgLanguageCode == 'en') {
-				require_once('EditPageWrapper.php');
-				$topic = EditPageWrapper::formatTitle($topic);
+			if ( $wgLanguageCode == 'en' ) {
+				$topic = EditPageWrapper::formatTitle( $topic );
 			}
-			$title = Title::newFromText($topic, NS_ARTICLE_REQUEST);
+			$title = Title::newFromText( $topic, NS_ARTICLE_REQUEST );
 
-			$category = $wgRequest->getVal("category", "");
-			if ($category == "") {
-				$category = "Other";
+			$category = $wgRequest->getVal( 'category', '' );
+			if ( $category == '' ) {
+				$category = wfMessage( 'requesttopic-category-other' )->inContentLanguage()->plain();
 			}
 
-			$details .= "\n[[Category:$category Requests]]";
+			$categoryNamespaceName = $wgContLang->getNsText( NS_CATEGORY );
+			$categoryName = wfMessage( 'requesttopic-request-category', $category )->inContentLanguage()->plain();
+			$details .= "\n[[$categoryNamespaceName:$categoryName]]";
 
 			// check if we can do this
-
-			if ( $wgUser->isBlocked() ) {
-				$wgOut->addWikiText(wfMsg('blocked-ip'));
-				return;
-			}
 			if ( $wgUser->pingLimiter() ) {
 				$wgOut->rateLimited();
 				return;
 			}
 
-			if ($wgFilterCallback
-				&& $wgFilterCallback( $title, $details, $tmp) )
+			if ( $wgFilterCallback
+				&& $wgFilterCallback( $title, $details, $tmp ) )
 			{
 				// Error messages or other handling should be performed by
 				// the filter function
@@ -342,165 +405,239 @@ class RequestTopic extends SpecialPage {
 
 			// create a user
 			$user = null;
-			if ($wgUser->getID() == 0) {
-				if ($wgRequest->getVal('email', null) ) {
-					$user = User::createTemporaryUser($wgRequest->getVal('name'), $wgRequest->getVal('email'));
+			if ( $wgUser->getID() == 0 ) {
+				if ( $wgRequest->getVal( 'email', null ) ) {
+					$user = User::createTemporaryUser(
+						$wgRequest->getVal( 'name' ),
+						$wgRequest->getVal( 'email' )
+					);
 					$wgUser = $user;
 				}
 			}
 
-			if ($title->getArticleID() <= 0) {
+			if ( $title->getArticleID() <= 0 ) {
 				// not yet created. good.
-				$article = new Article($title);
-				$ret = $article->insertNewArticle($details, "", false, false, false, $user);
-				wfRunHooks('ArticleSaveComplete', array(&$article, &$user, $details, "", false, false, NULL));
+				$article = new Article( $title );
+				//$ret = $article->insertNewArticle( $details, '', false, false, false, $user );
+				$ret = $article->doEdit( $details, '' );
+				wfRunHooks(
+					'ArticleSaveComplete',
+					// @todo FIXME: this is horrible. I don't know how I should
+					// implement the additional parameters added in later versions
+					// of MediaWiki, so I just made them null/false, but that
+					// probably breaks something...
+					array( &$article, &$user, $details, '', false, false, null, null, false, false, false )
+				);
 
-				//clear the redirect that is set by insertNewArticle
-				$wgOut->redirect('');
+				// clear the redirect that is set by doEdit
+				$wgOut->redirect( '' );
 
 				$options = ParserOptions::newFromUser( $wgUser );
-				$wgParser->parse($details, $title, $options);
-
+				$wgParser->parse( $details, $title, $options );
 			} else {
 				// TODO: what to do here? give error / warning? append details?
 				// this question has already been asked, if you want to ask
 				// a slightly different question, go here:
 			}
 
-			$wgOut->addWikiText(wfMsg('thank-you-requesting-topic'));
+			$wgOut->addWikiMsg( 'requesttopic-thank-you-requesting-topic' );
 			$wgOut->returnToMain( false );
 		}
 	}
 
+	/**
+	 * Register the canonical names for our custom namespaces and their talkspaces.
+	 *
+	 * @param $list Array: array of namespace numbers with corresponding
+	 *                     canonical names
+	 * @return Boolean: true
+	 */
+	public static function registerCanonicalNamespaces( &$list ) {
+		$list[NS_ARTICLE_REQUEST] = 'Request';
+		$list[NS_ARTICLE_REQUEST_TALK] = 'Request_talk';
+		return true;
+	}
 }
 
 class ListRequestedTopics extends SpecialPage {
 
-	function __construct() {
-		SpecialPage::SpecialPage( 'ListRequestedTopics' );
+	/**
+	 * Constructor -- set up the new special page
+	 */
+	public function __construct() {
+		parent::__construct( 'ListRequestedTopics' );
 	}
 
-	function execute () {
-		global $wgUser, $wgOut, $wgLang, $wgTitle, $wgMemc, $wgDBname;
-		global $wgRequest, $wgSitename, $wgLanguageCode;
-		global $wgScript, $wgScriptPath, $wgLang;
+	/**
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the special page or null
+	 */
+	public function execute( $par ) {
+		global $wgLang, $wgOut, $wgRequest, $wgScript, $wgUser;
 
-		$fname = "wfSpecialListRequestedTopics";
-
-		$offset = $wgRequest->getText("offset", "0");
+		$offset = $wgRequest->getInt( 'offset', 0 );
 		$numPerPage = 50;
-		$sql = "SELECT count(*) as A from page where page_namespace = 16 and page_is_redirect = 0;";
-		$dbr =& wfGetDB( DB_SLAVE );
+		$dbr = wfGetDB( DB_SLAVE );
 
-		$total = $dbr->selectField( 'page',
-			'count(*)',
-			array ('page_namespace=' . NS_USER_KUDOS,
-					'page_is_redirect=0'
-				)
+		$total = $dbr->selectField(
+			'page',
+			'COUNT(*)',
+			array(
+				'page_namespace' => NS_ARTICLE_REQUEST,
+				'page_is_redirect' => 0
+			)
+		);
+
+		$wgOut->addWikiMsg( 'listrequestedtopics-about' );
+		$wgOut->addHTML( '<br /><br />' );
+		$wgOut->addWikiMsg( 'listrequestedtopics-request-topic-here' );
+		$wgOut->addHTML( '<br /><br />' );
+		$wgOut->addWikiMsg( 'listrequestedtopics-browse' );
+		$wgOut->addHTML( '<table style="padding-left: 20px; margin-top:30px;" width="100%" cellpadding="0">' );
+
+		$res = $dbr->query(
+			"SELECT p1.page_title AS page_title, p1.page_touched AS page_touched, p2.page_title AS article_title FROM
+				{$dbr->tableName( 'page' )} p1 LEFT OUTER JOIN {$dbr->tableName( 'page' )} p2 ON p1.page_title=p2.page_title AND p2.page_namespace = " . NS_MAIN .
+				' WHERE p1.page_namespace = ' . NS_ARTICLE_REQUEST .
+				" AND p1.page_is_redirect = 0 ORDER BY page_touched DESC LIMIT $offset, $numPerPage",
+			__METHOD__
+		);
+
+		if ( $dbr->numRows( $res ) == 0 ) {
+			$wgOut->addHTML(
+				'<tr><td colspan="4">' .
+				wfMessage( 'listrequestedtopics-no-topics' )->parse() .
+				'<br /></td></tr>'
 			);
-
-		$wgOut->addHTML(wfMsg('list_requested_topics') . "<br/><br/>");
-		$wgOut->addHTML(wfMsg('request_topic_here') . "<br/><br/>");
-		$wgOut->addWikiText(wfMsg('Browse_requests_category'));
-		$wgOut->addHTML("<table style=\"padding-left: 20px; margin-top:30px;\" width=\"100%\" cellpadding=\"0\">");
-
-		$res = $dbr->query ("SELECT p1.page_title as page_title, p1.page_touched as page_touched, p2.page_title as article_title FROM
-				page p1 LEFT OUTER JOIN page p2 on p1.page_title=p2.page_title and p2.page_namespace = " . NS_MAIN .
-				" WHERE p1.page_namespace = " . NS_ARTICLE_REQUEST .
-				" AND p1.page_is_redirect = 0 ORDER BY page_touched desc LIMIT $offset, $numPerPage ");
-
-		if ( 0 ==$dbr->numRows($res ) ) {
-			$wgOut->addHTML("<tr><td colspan=\"4\">" . wfMsg('Requests_no_topics') . "<br/></td></tr>");
 		}
 
 		$parity = 0;
 		$count = 0;
-		$datestr = "";
-		while ( $row = $dbr->fetchObject( $res ) ) {
+		$datestr = '';
 
-			$year = substr($row->page_touched, 0, 4);
-			$month = $wgLang->getMonthName(substr($row->page_touched, 4, 2));
+		foreach ( $res as $row ) {
+			$year = substr( $row->page_touched, 0, 4 );
+			$month = $wgLang->getMonthName( substr( $row->page_touched, 4, 2 ) );
 
 			$str = "$month $year";
 
-			if ($count == 0) {
-				$wgOut->addHTML("<tr><td style=\"padding-left: 0px\"><b>$str</b></td>
-						<TD></td>
+			if ( $count == 0 ) {
+				$wgOut->addHTML(
+					"<tr><td style=\"padding-left: 0px\"><b>$str</b></td>
+						<td></td>
 					</tr>
 					<tr><td colspan=\"3\">&nbsp;</td></tr>
-					</tr>");
+					</tr>"
+				);
 				$datestr = $str;
 			}
 
-			if ($datestr != $str) {
-				$wgOut->addHTML("<tr><td colspan=\"3\">&nbsp;</td></tr>
-						<tr><td style=\"padding-left: 0px\"><b>$str</b></td><td><font size=-2></td>
-						<TD></td>
+			if ( $datestr != $str ) {
+				$wgOut->addHTML(
+					"<tr><td colspan=\"3\">&nbsp;</td></tr>
+					<tr>
+						<td style=\"padding-left: 0px\"><b>$str</b></td><td><font size=-2></td>
+						<td></td>
 					</tr>
 					<tr><td colspan=\"3\">&nbsp;</td></tr>
-					</tr>");
+					</tr>"
+				);
 				$datestr = $str;
 			}
 
-			$bgcolor = "#eeeeee";
-			if ($count % 2 == 0) {
-				$bgcolor = "#ffffff";
+			$bgcolor = '#eeeeee';
+			if ( $count % 2 == 0 ) {
+				$bgcolor = '#ffffff';
 			}
 
 			$request = Title::makeTitle( NS_ARTICLE_REQUEST, $row->page_title );
 			$title = null;
-			if ($row->article_title) {
+			if ( $row->article_title ) {
 				$title = Title::makeTitle( NS_MAIN, $row->page_title );
 			}
 
-			if (!$request) {
+			if ( !$request ) {
 				continue;
 			}
 
 			$found = false;
-			$sk = $wgUser->getSkin();
-			if ($title) {
+			if ( $title ) {
 				// article is answered
 				$found = true;
-				$wgOut->addHTML( "<tr ><td bgcolor=\"$bgcolor\" width=\"60%\">");
-				$wgOut->addHTML($sk->makeLinkObj($title, $title->getText()));
-				$wgOut->addHTML("<sup><font color='#339900'>Answered!</font></sup>");
-				$wgOut->addHTML("<TD bgcolor=\"$bgcolor\">" . $sk->makeLinkObj($title, wfMsg('requests_view_article')));
+				$wgOut->addHTML( "<tr><td bgcolor=\"$bgcolor\" width=\"60%\">" );
+				$wgOut->addHTML( Linker::link( $title, $title->getText() ) );
+				$wgOut->addHTML(
+					'<sup><span style="color: #339900">' .
+						wfMessage( 'requesttopic-answered' )->parse() .
+					'</span></sup>'
+				);
+				$wgOut->addHTML(
+					"<td bgcolor=\"$bgcolor\">" .
+					Linker::link( $title, wfMessage( 'listrequestedtopics-view-article' )->plain() )
+				);
 			} else {
 				// article is NOT answered
-				$wgOut->addHTML( "<tr ><td bgcolor=\"$bgcolor\" width=\"60%\">");
-				$wgOut->addHTML($sk->makeBrokenLinkObj($request, $request->getText()));
+				$wgOut->addHTML( "<tr><td bgcolor=\"$bgcolor\" width=\"60%\">" );
+				$wgOut->addHTML( Linker::link( $request, $request->getText() ) );
 
-				$wgOut->addHTML("<TD width=25% bgcolor=\"$bgcolor\"><a id='gatCreateArticle' href=\"$wgScript?title=" . $request->getDBKey() . "&action=edit&requested=" . $request->getDBKey() . "\">" . wfMsg('write_article') . "</a>");
+				$wgOut->addHTML(
+					"<td width=\"25%\" bgcolor=\"$bgcolor\"><a id=\"gatCreateArticle\" href=\"$wgScript?title=" .
+						$request->getDBkey() . '&action=edit&requested=' .
+						$request->getDBkey() . '">' .
+						wfMessage( 'listrequestedtopics-write-article' )->plain() .
+						'</a>'
+				);
 			}
 
-			if ($wgUser->isSysop()) {
-				$wgOut->addHTML (" <br/>- " . $sk->makeLinkObj($request,wfMsg('delete'),"action=delete" ));
-				if (!$found) {
-					$wgOut->addHTML(" - " . $sk->makeLinkObj(SpecialPage::getTitleFor( 'Movepage' ),
-						wfMsg( 'edit_title' ), 'target=' . $request->getPrefixedURL() ));
+			if ( $wgUser->isAllowed( 'delete' ) ) {
+				$wgOut->addHTML( ' <br />- ' . Linker::link(
+					$request,
+					wfMsg( 'delete' ),
+					array(),
+					array( 'action' => 'delete' )
+				) );
+				if ( !$found ) {
+					$wgOut->addHTML( ' - ' . Linker::link(
+						SpecialPage::getTitleFor( 'Movepage' ),
+						wfMsg( 'edit_title' ),
+						array(),
+						array( 'target' => $request->getPrefixedURL() )
+					) );
 				}
 			}
-			$wgOut->addHTML(" </td> </tr> \n");
+			$wgOut->addHTML( " </td> </tr> \n" );
 
 			$count++;
 		}
 
-		$dbr->freeResult($res);
-
 		// next links
-		$me = Title::makeTitle(NS_SPECIAL, "ListRequestedTopics");
-		$wgOut->addHTML("<tr><td><br/><br/>");
-		if ($offset > 0) {
-			$wgOut->addHTML("(" . $sk->makeLinkObj($me, wfMsg('prevn', $numPerPage), "offset=". ($offset-$numPerPage) ) . ")");
+		$me = $this->getTitle();
+		$wgOut->addHTML( '<tr><td><br /><br />' );
+		if ( $offset > 0 ) {
+			$wgOut->addHTML(
+				'(' . Linker::link(
+					$me,
+					wfMsg( 'prevn', $numPerPage ),
+					array(),
+					array( 'offset' => ( $offset - $numPerPage ) )
+				) . ')'
+			);
 		}
-		if ($offset + $numPerPage < $total) {
+		if ( $offset + $numPerPage < $total ) {
 			$offset += $numPerPage;
-			$wgOut->addHTML(" (" . $sk->makeLinkObj($me, wfMsg('nextn', $numPerPage), "offset=$offset") . ")");
+			$wgOut->addHTML(
+				' (' . Linker::link(
+					$me,
+					wfMsg( 'nextn', $numPerPage ),
+					array(),
+					array( 'offset' => $offset )
+				) . ')'
+			);
 		}
-		$wgOut->addHTML("</td><tr/></table><br/><br/>");
+
+		$wgOut->addHTML( '</td></tr></table><br /><br />' );
 		$wgOut->returnToMain( false );
 	}
 
 }
-
