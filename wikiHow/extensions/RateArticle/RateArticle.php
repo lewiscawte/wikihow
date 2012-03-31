@@ -1,67 +1,106 @@
 <?php
-
-if ( !defined('MEDIAWIKI') ) die();
-    
-/**#@+
- * An extension that allows users to rate articles. 
- * 
- * @package MediaWiki
- * @subpackage Extensions
+/**
+ * An extension that allows users to rate articles.
  *
- * @link http://www.wikihow.com/WikiHow:RateArticle-Extension Documentation
- *
- *
+ * @file
+ * @ingroup Extensions
  * @author Travis Derouin <travis@wikihow.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU General Public License 2.0 or later
  */
 
+if ( !defined( 'MEDIAWIKI' ) ) {
+	die();
+}
+
 $wgShowRatings = false; // set this to false if you want your ratings hidden
 
+// Extension credits that will show up on Special:Version
 $wgExtensionCredits['specialpage'][] = array(
-    'name' => 'RateArticle',
-    'author' => 'Travis <travis@wikihow.com>',
+	'name' => 'RateArticle',
+	'version' => '1.0',
+	'author' => 'Travis Derouin',
 	'description' => 'Provides a basic article ratings system',
 );
 
-$wgExtensionMessagesFiles['RateArticle'] = dirname(__FILE__) . '/RateArticle.i18n.php';
+// Set up the new log type
+$wgLogTypes[] = 'accuracy';
+$wgLogNames['accuracy'] = 'accuracylogpage';
+$wgLogHeaders['accuracy'] = 'accuracylogtext';
+
+// Hooked functions
+$wgHooks['AfterArticleDisplayed'][] = 'RateArticle::showForm';
+$wgHooks['ArticleDelete'][] = 'RateArticle::clearRatingsOnDelete';
+
+// Set up all the new special pages
+$dir = dirname( __FILE__ ) . '/';
+$wgExtensionMessagesFiles['RateArticle'] = $dir . 'RateArticle.i18n.php';
 
 $wgSpecialPages['RateArticle'] = 'RateArticle';
-$wgAutoloadClasses['RateArticle'] = dirname( __FILE__ ) . '/RateArticle.body.php';
+$wgAutoloadClasses['RateArticle'] = $dir . 'RateArticle.body.php';
 
 $wgSpecialPages['ListRatings'] = 'ListRatings';
-$wgAutoloadClasses['ListRatings'] = dirname( __FILE__ ) . '/RateArticle.body.php';
+$wgAutoloadClasses['ListRatings'] = $dir . 'RateArticle.body.php';
 
-$wgSpecialPages['Clearratings'] = 'Clearratings';
-$wgAutoloadClasses['Clearratings'] = dirname( __FILE__ ) . '/RateArticle.body.php';
+$wgSpecialPages['ClearRatings'] = 'ClearRatings';
+$wgAutoloadClasses['ClearRatings'] = $dir . 'RateArticle.body.php';
 
-$wgSpecialPages['AccuracyPatrol'] = 'AccuracyPatrol';
-$wgAutoloadClasses['AccuracyPatrol'] = dirname( __FILE__ ) . '/RateArticle.body.php';
+$wgAutoloadClasses['ListAccuracyPatrol'] = $dir . 'RateArticle.body.php';
+$wgSpecialPages['AccuracyPatrol'] = 'ListAccuracyPatrol';
 
-function wfGetRatingForArticle($id, $minvotes) {
+// update.php handler
+$wgHooks['LoadExtensionSchemaUpdates'][] = 'wfRateArticleCreateTables';
+
+/**
+ * Handler for the MediaWiki update script, update.php; this code is
+ * responsible for creating the rating and rating_low tables in the database
+ * when the user runs maintenance/update.php.
+ *
+ * @param $updater DatabaseUpdater
+ * @return Boolean: true
+ */
+function wfRateArticleCreateTables( $updater ) {
+	$dir = dirname( __FILE__ );
+
+	$updater->addExtensionUpdate( array(
+		'addTable', 'rating', "$dir/rating_tables.sql", true
+	) );
+	$updater->addExtensionUpdate( array(
+		'addTable', 'rating_low', "$dir/rating_tables.sql", true
+	) );
+
+	return true;
+}
+
+function wfGetRatingForArticle( $id, $minVotes ) {
 	global $wgMemc;
 
-	$cachekey = wfMemcKey('rating-' . $id . '-' . $minvotes);
+	$cacheKey = wfMemcKey( 'rating-' . $id . '-' . $minVotes );
 	$ret = -1;
-	$mres = $wgMemc->get($cachekey);
-	if ($mres === null) {
-		$dbr = wfGetDB(DB_SLAVE);
-		$res = $dbr->select('rating',
-				array('COUNT(*) AS C',
-					'AVG(rat_rating) AS A'
-				),
-				array('rat_isdeleted' => 0,
-					'rat_page' => $id
-				),
-				__FUNCTION__
-			);
-		if ($row = $dbr->fetchObject($res)) {
-			if ($row->C > $minvotes) $ret = $row->A;
+	$mres = $wgMemc->get( $cacheKey );
+	if ( $mres === null ) {
+		$dbr = wfGetDB( DB_SLAVE );
+		$res = $dbr->select(
+			'rating',
+			array(
+				'COUNT(*) AS C',
+				'AVG(rat_rating) AS A'
+			),
+			array(
+				'rat_isdeleted' => 0,
+				'rat_page' => $id
+			),
+			__FUNCTION__
+		);
+		$row = $dbr->fetchObject( $res );
+		if ( $row ) {
+			if ( $row->C > $minVotes ) {
+				$ret = $row->A;
+			}
 		}
-		$dbr->freeResult($res);
-		$wgMemc->set($cachekey, $ret);
+		$wgMemc->set( $cacheKey, $ret );
 	} else {
 		$ret = $mres;
 	}
+
 	return $ret;
 }
-
