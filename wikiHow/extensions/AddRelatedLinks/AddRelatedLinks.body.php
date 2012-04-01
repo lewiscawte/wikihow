@@ -1,172 +1,207 @@
-<?
+<?php
 
 class AddRelatedLinks extends UnlistedSpecialPage {
 
-	public static $ignore_cats = array(
-        "Nominations for Deletion",
-        "NFD (Accuracy)",
-        "NFD (Advertisement)",
-        "NFD (Below Character Article Standards)",
-        "Copyright Problems",
-        "NFD (Dangerous)",
-        "NFD (Drug Focused)",
-        "NFD (Duplicate)",
-        "NFD (Hate or Racist Based)",
-        "NFD (Impossible Instructions)",
-        "NFD (Incomplete)",
-        "NFD (Invalid or Expired Datestamp)",
-        "NFD (Joke)",
-        "NFD (Mean Spirited)",
-        "NFD (Not a How to)",
-        "NFD (Other)",
-        "NFD (Political Opinion)",
-        "NFD (Sarcastic)",
-        "NFD (Sexually Charged)",
-        "NFD (Societal Instructions)",
-        "Speedy",
-        "Speedy Image Deletion",
-        "NFD (Universally Illegal)",
-        "NFD (Vanity)",
-        "Copyedit",
-        "Pages Needing Attention",
-        "Stub",
-        "Merge",
-        "Format",
-        "Accuracy",
-        "Cleanup",
-        "Pictures",
-        "Featured Articles",
-        "Character",
-        "Personal",
-        "Title",
-        "Summarization",
-        "Unclear Articles",
-        "Articles in Need of Sources",
-        "Articles Needing Video",
-        "Articles to be Split",
-        "Gender Biased Pages",
-        "RLtesting",
-        "Subjective Articles",
-        "Very Long Articles",
-	);
-
-	function __construct() {
-		UnlistedSpecialPage::UnlistedSpecialPage( 'AddRelatedLinks' );
+	/**
+	 * Constructor -- set up the new special page
+	 */
+	public function __construct() {
+		parent::__construct( 'AddRelatedLinks', 'addrelatedlinks' );
 	}
 
-	function addLinkToRandomArticleInSameCategory($t, $summary =  "Weaving the web of links", $linktext = null) {
-		global $wgOut;
-		$cats = array_keys($t->getParentCategories());
+	function addLinkToRandomArticleInSameCategory( $t, $summary = null, $linktext = null ) {
+		global $wgLang, $wgOut;
+
+		if ( $summary == null ) {
+			$summary = wfMessage( 'addrelatedlinks-edit-summary' )->inContentLanguage()->text();
+		}
+
+		$localizedCategoryName = $wgLang->getNsText( NS_CATEGORY );
+		$cats = array_keys( $t->getParentCategories() );
 		$found = false;
-		while (sizeof($cats) > 0) {
-			$cat = array_shift($cats);
-			$cat = preg_replace("@^Category:@", "", $cat);
-			$cat = Title::newFromText($cat);
-			if (in_array($cat->getText(), self::$ignore_cats)) {
-				#echo "ignoring cat {$cat->getText()}\n";
-				continue;		
-			}
-			#echo "using cat {$cat->getText()} for {$t->getFullText()}\n";
-			$dbr = wfGetDB(DB_SLAVE);
-			$id  = $dbr->selectField(array('categorylinks', 'page'), 
-					array('cl_from'), 
-					array('cl_to'=>$cat->getDBKey(), 'page_id = cl_from', 'page_namespace'=>NS_MAIN, 'page_is_redirect'=>0),
-					"AddRelatedLinks::execute", 
-					array("ORDER BY"=>"rand()", "LIMIT"=>1));
-			if (!$id) {
-				$wgOut->addHTML("<li>Couldn't get a category/enough results for <b>{$t->getText()}</b></li>\n");
+		$categoriesToIgnore = explode( "\n",
+			wfMessage( 'addrelatedlinks-categories-to-ignore' )->inContentLanguage()->text()
+		);
+
+		while ( sizeof( $cats ) > 0 ) {
+			$cat = array_shift( $cats );
+			$cat = preg_replace( "@^$localizedCategoryName:@", '', $cat );
+			$cat = Title::newFromText( $cat );
+			if ( in_array( $cat->getText(), $categoriesToIgnore ) ) {
 				continue;
 			}
-			$src = Title::newFromID($id);
-			#$wgOut->addHTML("<li>Linked from <b>{$src->getText()}</b> to <b>{$t->getText()}</b> by picking a random article from the same category</li>\n");
-			#kecho("Linked from {$src->getText()} to {$t->getText()} by picking a random article from the same category</li>\n");
-			MarkRelated::addRelated($src, $t, $summary, true, $linktext);
+			$dbr = wfGetDB( DB_SLAVE );
+			$id = $dbr->selectField(
+				array( 'categorylinks', 'page' ),
+				array( 'cl_from' ),
+				array(
+					'cl_to' => $cat->getDBKey(),
+					'page_id = cl_from',
+					'page_namespace' => NS_MAIN,
+					'page_is_redirect' => 0
+				),
+				__METHOD__,
+				array( 'ORDER BY' => 'RAND()', 'LIMIT' => 1 )
+			);
+
+			if ( !$id ) {
+				$errorMessage = wfMessage( 'addrelatedlinks-error', $t->getText() )->parse();
+				$wgOut->addHTML( "<li>$errorMessage</li>\n" );
+				continue;
+			}
+
+			$src = Title::newFromID( $id );
+			MarkRelated::addRelated( $src, $t, $summary, true, $linktext );
 			$found = true;
 			return $src;
 		}
-		#if (!$found)
-			#echo "Count'd find anything for {$t->getFullText()} " . print_r(array_keys($t->getParentCategories()), true) . "\n";
+
 		return null;
 	}
 
-	function execute($par) {
-		global $wgRequest, $wgUser, $wgOut, $wgEmbedVideoServiceList;
+	/**
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the special page or null
+	 */
+	public function execute( $par ) {
+		global $wgRequest, $wgUser, $wgOut, $wgServer;
 
-		$fname = "AddRelatedLinks::execute";
-		wfProfileIn($fname); 
-		if (!in_array('staff', $wgUser->getGroups())) {
-			$wgOut->errorpage( 'nosuchspecialpage', 'nospecialpagetext' );
+		wfProfileIn( __METHOD__ );
+
+		// Check permissions
+		if ( !$wgUser->isAllowed( 'addrelatedlinks' ) ) {
+			$this->displayRestrictionError();
 			return;
 		}
+
+		// Show a message if the database is in read-only mode
+		if ( wfReadOnly() ) {
+			$wgOut->readOnlyPage();
+			return;
+		}
+
+		// If the user is blocked, they don't need to access this page
+		if ( $wgUser->isBlocked() ) {
+			$wgOut->blockedPage();
+			return;
+		}
+
+		// Perform a few basic checks before anything else
+		if ( !class_exists( 'LSearch' ) ) {
+			$wgOut->addWikiMsg( 'addrelatedlinks-error-no-lsearch' );
+			return;
+		}
+
+		if ( !class_exists( 'MarkRelated' ) ) {
+			$wgOut->addWikiMsg( 'addrelatedlinks-error-no-nab' );
+			return;
+		}
+
+		// Output the form
+		$action = $this->getTitle()->getFullURL();
+		$instructions = wfMsg( 'addrelatedlinks-instructions' );
+		$submit = wfMsg( 'addrelatedlinks-submit' );
 		$wgOut->addHTML(<<<END
-			<form action='/Special:AddRelatedLinks' method='post' enctype="multipart/form-data" >
-			Pages to add links to (Urls) : <textarea name='xml'></textarea>
-			<input type='submit'>
+			<form action="{$action}" method="post" enctype="multipart/form-data">
+				{$instructions} <textarea name="xml"></textarea>
+				<input type="submit" value="{$submit}" />
 			</form>
 END
 		);
-	
-		if (!$wgRequest->wasPosted()) {
-			wfProfileOut($fname);
-			return; 
+
+		if ( !$wgRequest->wasPosted() ) {
+			wfProfileOut( __METHOD__ );
+			return;
 		}
 
-		set_time_limit(3000); 
+		// We need a higher time limit than the default because this can be
+		// a time-consuming operation
+		set_time_limit( 3000 );
 
-		require_once('Newarticleboost.body.php');
- 	
-		$dbr = wfGetDB(DB_SLAVE);
-		$urls = array_unique(split("\n", $wgRequest->getVal('xml')));
+		$dbr = wfGetDB( DB_SLAVE );
+		$urls = array_unique( explode( "\n", $wgRequest->getVal( 'xml' ) ) );
 
-		$olduser = $wgUser;
-		$wgUser = User::newFromName("Wendy Weaver");
+		// Switch the user
+		$oldUser = $wgUser;
+		$wgUser = User::newFromName( 'Wendy Weaver' );
 
-		$wgOut->addHTML("Started at " . date("r") . "<ul>");
-		foreach ($urls as $url) {
-			$url = trim($url);
-			if ($url == "") continue;
-			$url = preg_replace("@http://www.wikihow.com/@im", "", $url);
-			$t = Title::newFromURL($url); 
-			if (!$t) {
-				$wgOut->addHTML("<li>Can't make title out of {$url}</li>\n");
-				continue;	
+		// Start doing stuff!
+		$wgOut->addHTML( wfMsg( 'addrelatedlinks-started', date( 'r' ) ) . '<ul>' );
+		foreach ( $urls as $url ) {
+			$url = trim( $url );
+			if ( $url == '' ) {
+				continue;
 			}
-			$r = Revision::newFromTitle($t);
-			if (!$r) {	
-				$wgOut->addHTML("<li>Can't make revision out of {$url}</li>\n");
-				continue;	
+			$url = preg_replace( "@$wgServer/@im", '', $url );
+			$t = Title::newFromURL( $url );
+			if ( !$t ) {
+				$wgOut->addHTML( '<li>' . wfMsg( 'addrelatedlinks-error-title', $url ) . "</li>\n" );
+				continue;
+			}
+			$r = Revision::newFromTitle( $t );
+			if ( !$r ) {
+				$wgOut->addHTML( '<li>' . wfMsg( 'addrelatedlinks-error-revision', $url ) . "</li>\n" );
+				continue;
 			}
 			$text = $r->getText();
 			$search = new LSearch();
-			$results = $search->googleSearchResultTitles($t->getText(), 0, 30, 7);
+			$results = $search->googleSearchResultTitles( $t->getText(), 0, 30, 7 );
 			$good = array();
-			foreach ($results as $r) {
-				if ($r->getText() == $t->getText())
+			foreach ( $results as $r ) {
+				if ( $r->getText() == $t->getText() ) {
 					continue;
-				if ($r->getNamespace() != NS_MAIN) 
+				}
+				if ( $r->getNamespace() != NS_MAIN ) {
 					continue;
-				if (preg_match("@\[\[{$t->getText()}@", $text))
+				}
+				if ( preg_match( "@\[\[{$t->getText()}@", $text ) ) {
 					continue;
+				}
 				$good[] = $r;
-				if (sizeof($good) >= 4) break;
+				if ( sizeof( $good ) >= 4 ) {
+					break;
+				}
 			}
 
-			if (sizeof($good) == 0)  {
-				$src = self::addLinkToRandomArticleInSameCategory($t);	
-				if ($src) {
-					$wgOut->addHTML("<li>Linked from <b><a href='{$src->getFullURL()}?action=history' target='new'>{$src->getText()}</a></b> to <b><a href='{$t->getFullURL()}' target='new'>{$t->getText()}</a></b> (random)</li>\n");	
+			if ( sizeof( $good ) == 0 ) {
+				$src = self::addLinkToRandomArticleInSameCategory( $t );
+				if ( $src ) {
+					$wgOut->addHTML(
+						'<li>' . wfMsg(
+							'addrelatedlinks-linked-random',
+							$src->getFullURL(), $src->getText(),
+							$t->getFullURL(), $t->getText()
+						) . "</li>\n"
+					);
 				} else {
-					$wgOut->addHTML("<li>Could not find appropriate links for <b><a href='{$t->getFullURL()}' target='new'>{$t->getText()}</a></b></li>\n");	
+					$wgOut->addHTML(
+						'<li>' . wfMsg(
+							'addrelatedlinks-error-no-appropriate-links',
+							$t->getFullURL(), $t->getText()
+						) . "</li>\n"
+					);
 				}
 			} else {
-				$x = rand(0, min(4, sizeof($good) - 1));
+				$x = rand( 0, min( 4, sizeof( $good ) - 1 ) );
 				$src = $good[$x];
-				$wgOut->addHTML("<li>Linked from <b><a href='{$src->getFullURL()}?action=history' target='new'>{$src->getText()}</a></b> to <b><a href='{$t->getFullURL()}' target='new'>{$t->getText()}</a></b> (search)</li>\n");
-				MarkRelated::addRelated($src, $t, "Weaving the web of links", true);
+				$wgOut->addHTML(
+					'<li>' . wfMsg(
+						'addrelatedlinks-linked-search',
+						$src->getFullURL(), $src->getText(),
+						$t->getFullURL(), $t->getText()
+					) . "</li>\n"
+				);
+				$editSummary = wfMessage( 'addrelatedlinks-edit-summary' )->inContentLanguage()->text();
+				MarkRelated::addRelated( $src, $t, $editSummary, true );
 			}
 		}
-		$wgOut->addHTML("</ul>Finished at " . date("r") );
-		wfProfileOut($fname);
+
+		// Restore the user
+		$wgUser = $oldUser;
+
+		$wgOut->addHTML( '</ul>' . wfMsg( 'addrelatedlinks-finished', date( 'r' ) ) );
+		wfProfileOut( __METHOD__ );
 		return;
 	}
 }
