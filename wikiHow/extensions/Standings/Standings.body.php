@@ -1,30 +1,39 @@
-<?
+<?php
 
 class Standings extends UnlistedSpecialPage {
 
-	function __construct() {
-		UnlistedSpecialPage::UnlistedSpecialPage( 'Standings' );
+	/**
+	 * Constructor -- set up the new special page
+	 */
+	public function __construct() {
+		parent::__construct( 'Standings' );
 	}
 
-	function execute($par) {
+	/**
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the special page or null
+	 */
+	public function execute( $par ) {
 		global $wgRequest, $wgOut, $wgUser;
-		$target = isset($par) ? $par : $wgRequest->getVal('target');
-		$wgOut->disable(); 
+
+		$target = isset( $par ) ? $par : $wgRequest->getVal( 'target' );
+		$wgOut->disable();
 		$result = array();
-		if ($target) {
-			$rc = new ReflectionClass($target);
-			$allowedParents = array("StandingsIndividual", "StandingsGroup");
+
+		if ( $target ) {
+			$rc = new ReflectionClass( $target );
+			$allowedParents = array( 'StandingsIndividual', 'StandingsGroup' );
 			$parentClass = $rc->getParentClass();
 			$parentClass = $parentClass->name;
-			if (in_array($parentClass, $allowedParents)) {
+			if ( in_array( $parentClass, $allowedParents ) ) {
 				$c = new $target();
 				$result['html'] = $c->getStandingsTable();
 			}
 		} else {
-			$result['error'] = "No target specified.";
+			$result['error'] = wfMessage( 'standings-no-target' )->text();
 		}
-		print json_encode($result);
+
+		echo json_encode( $result );
 	}
-
 }
-

@@ -1,108 +1,106 @@
-<?
+<?php
 
-// Extend this class for an individual stats wiget
+// Extend this class for an individual stats widget
 abstract class StandingsIndividual {
 
 	var $mLeaderboardKey = null;
 	var $mStats = null;
 
-	/** 
-	 *  Gets the raw table, useful for ajax calls that just want the innards
-	 * 
-	 */ 
+	/**
+	 * Gets the raw table, useful for AJAX calls that just want the innards
+	 */
 	function getStandingsTable() {
+		global $wgLang;
+
 		$this->fetchStats();
 
 		$rank = $this->mStats['standing'];
-		if ($rank == 0) {
-			$rank = "N/A";
+		if ( $rank == 0 ) {
+			$rank = 'N/A';
 		}
 
-
-		$today 	= number_format($this->mStats['today'], 0, '.', ",");
-		$week 	= number_format($this->mStats['week'], 0, '.', ",");  
-		$all	= number_format($this->mStats['all'], 0, '.', ",");  
-		wfLoadExtensionMessages('Standings');
+		$today 	= $wgLang->formatNum( $this->mStats['today'] );
+		$week 	= $wgLang->formatNum( $this->mStats['week'] );
+		$all	= $wgLang->formatNum( $this->mStats['all'] );
 
 		$table = "<table>
 		<tr>
-			<td><a href='/Special:Leaderboard/{$this->mLeaderboardKey}'>" . wfMsg('iia_stats_today_label') . "</a></td>
+			<td><a href='/Special:Leaderboard/{$this->mLeaderboardKey}'>" . wfMsg( 'iia_stats_today_label' ) . "</a></td>
 			<td class='stats_count' id='iia_stats_today_{$this->mLeaderboardKey}'>{$today}</td>
 		</tr>
 		<tr>
-			<td><a href='/Special:Leaderboard/{$this->mLeaderboardKey}?period=7'>" . wfMsg('iia_stats_week_label') . "</a></td>
+			<td><a href='/Special:Leaderboard/{$this->mLeaderboardKey}?period=7'>" . wfMsg( 'iia_stats_week_label' ) . "</a></td>
 			<td class='stats_count' id='iia_stats_week_{$this->mLeaderboardKey}'>{$week}</td>
 		</tr>";
-		if ($this->showTotal()) {
+		if ( $this->showTotal() ) {
 			$table .= "<tr>
-					<td><a href='/Special:Leaderboard/{$this->mLeaderboardKey}'>" . wfMsg('iia_stats_total_label') . "</a></td>
+					<td><a href='/Special:Leaderboard/{$this->mLeaderboardKey}'>" . wfMsg( 'iia_stats_total_label' ) . "</a></td>
 					<td class='stats_count' id='iia_stats_all_{$this->mLeaderboardKey}'>{$all}</td></tr>";
 		}
 		$table .= "<tr>
-			<td><a href='/Special:Leaderboard/{$this->mLeaderboardKey}'>" . wfMsg('iia_stats_rank_label') . "</a></td>
+			<td><a href='/Special:Leaderboard/{$this->mLeaderboardKey}'>" . wfMsg( 'iia_stats_rank_label' ) . "</a></td>
 			<td class='stats_count' id='iia_stats_standing_{$this->mLeaderboardKey}'>{$rank}</td>
 		</tr>
 		</table>";
 		return $table;
 	}
 
-	/** 
-	 *  Sometimes it doesn't make sense to show the total of all time
-	 *  such as quick edits because we are only looking at the RC table
-	 *  Subclasses can override this.
+	/**
+	 * Sometimes it doesn't make sense to show the total of all time
+	 * such as quick edits because we are only looking at the RC table
+	 * Subclasses can override this.
 	 *
+	 * @return Boolean
 	 */
 	function showTotal() {
 		return true;
 	}
 
-	/** 
-	 * addStatsWidget
-	 * add stats widget to right rail
-	 **/
+	/**
+	 * Add stats widget to right rail
+	 */
 	function addStatsWidget() {
 		global $wgUser;
-		$fname = "StandingsIndividual::addStatsWidget";
-		wfProfileIn($fname);
+
+		wfProfileIn( __METHOD__ );
 		$sk = $wgUser->getSkin();
 
-		$display = "<div class='iia_stats'>
+		$display = "<div class=\"iia_stats\">
 		<h3>{$this->getTitle()}</h3>
-		<div id='iia_individual_table_{$this->mLeaderboardKey}'>" . $this->getStandingsTable() . 
-		"</div></div>";
+		<div id=\"iia_individual_table_{$this->mLeaderboardKey}\">" . $this->getStandingsTable() .
+		'</div></div>';
 
 		$sk->addWidget( $display );
-		wfProfileOut($fname);
+		wfProfileOut( __METHOD__ );
 	}
 
-	/** 
-	 * fetchStats
-	 * get the stats in an array
-	 **/
+	/**
+	 * Get the stats in an array
+	 */
 	function fetchStats() {
 		global $wgUser, $wgMemc, $wgLang;
-		$fname = "StandingsIndividual::fetchStats";
-		wfProfileIn($fname);
 
-		$dbr = wfGetDB(DB_SLAVE);
+		wfProfileIn( __METHOD__ );
 
-		$ts_today = date('Ymd',strtotime('today')) . '000000';
-		$ts_week = date('Ymd',strtotime('7 days ago')) . '000000';
+		$dbr = wfGetDB( DB_SLAVE );
+
+		$ts_today = date( 'Ymd', strtotime( 'today' ) ) . '000000';
+		$ts_week = date( 'Ymd', strtotime( '7 days ago' ) ) . '000000';
 
 		$timecorrection = $wgUser->getOption( 'timecorrection' );
 		$ts_today = $wgLang->userAdjust( $ts_today, $timecorrection );
 		$ts_week = $wgLang->userAdjust( $ts_week, $timecorrection );
 
-		$tbl = $this->getTable(); 
+		$tbl = $this->getTable();
 
-		$today 	= $dbr->selectField($tbl, 'count(*)',  $this->getOpts($ts_today));
-		$week 	= $dbr->selectField($tbl, 'count(*)',  $this->getOpts($ts_week));
-		
-		if ($this->showTotal()) {
-			$all = $dbr->selectField($tbl, 'count(*)',  $this->getOpts()); 
+		$today 	= $dbr->selectField( $tbl, 'COUNT(*)', $this->getOpts( $ts_today ) );
+		$week 	= $dbr->selectField( $tbl, 'COUNT(*)', $this->getOpts( $ts_week ) );
+
+		if ( $this->showTotal() ) {
+			$all = $dbr->selectField( $tbl, 'COUNT(*)', $this->getOpts() );
 		}
 
-		$standing = $this->getStanding($wgUser);
+		$standing = $this->getStanding( $wgUser );
 
 		$s_arr = array(
 			'today' => $today,
@@ -112,18 +110,18 @@ abstract class StandingsIndividual {
 		);
 
 		$this->mStats = $s_arr;
-		wfProfileOut($fname);
+		wfProfileOut( __METHOD__ );
 		return $this->mStats;
 	}
 
-	function getStanding($user) {
-		$group = $this->getGroupStandings(); 
-		return $group->getStanding($user); 
+	function getStanding( $user ) {
+		$group = $this->getGroupStandings();
+		return $group->getStanding( $user );
 	}
 
-	public abstract function getTitle(); 
-	public abstract function getOpts($ts = null);
-	public abstract function getGroupStandings(); 
+	public abstract function getTitle();
+	public abstract function getOpts( $ts = null );
+	public abstract function getGroupStandings();
 
 }
 
@@ -133,148 +131,162 @@ abstract class StandingsGroup {
 	var $mCacheKey = null;
 
 	// how long should the standings array be in the cache? 5min default
-	var $mCacheExpiry = 300; 
+	var $mCacheExpiry = 300;
 	var $mLeaderboardKey = null;
 
-	/**	
-	 * getStandingsTable
-	 * returns just the raw table for the standings, useful for ajax calls
-	 **/
+	/**
+	 * returns just the raw table for the standings, useful for AJAX calls
+	 */
 	function getStandingsTable() {
 		global $wgUser;
-		$fname = "StandingsGroup::getStandingsTable";
-		wfProfileIn($fname);
+
+		wfProfileIn( __METHOD__ );
 
 		$sk = $wgUser->getSkin();
-		$display = "<table>";
+		$display = '<table>';
 
-		$startdate = strtotime('7 days ago');
-		$starttimestamp = date('YmdG',$startdate) . floor(date('i',$startdate)/10) . '00000';
+		$startdate = strtotime( '7 days ago' );
+		$starttimestamp = date( 'YmdG', $startdate ) . floor( date( 'i', $startdate ) / 10 ) . '00000';
 
-		$data = $this->getStandingsFromCache() ;
+		$data = $this->getStandingsFromCache();
 		$count = 0;
-		foreach($data as $key => $value) {
+		foreach ( $data as $key => $value ) {
 			$u = new User();
-			$u->setName($key);
-			if (($value > 0) && ($key != '')) {
+			$u->setName( $key );
 
-				$img = Avatar::getPicture($u->getName(), true);
-				if ($img == '') {
-					$img = Avatar::getDefaultPicture();
+			if ( ( $value > 0 ) && ( $key != '' ) ) {
+				$img = '';
+				if ( class_exists( 'Avatar' ) ) {
+					$img = Avatar::getPicture( $u->getName(), true );
+					if ( $img == '' ) {
+						$img = Avatar::getDefaultPicture();
+					}
 				}
 
-				$id = "";
-				if ($wgUser->getName() == $u->getName()) {
-					$id = "id='iia_stats_group'";
-				}	
-				$display .="<tr><td class='leader_image'>{$img}</td><td class='leader_name'>"
-						. $sk->makeLinkObj($u->getUserPage(), $u->getName()) . "</td><td class='leader_count' {$id}>{$value}</td></tr>";
+				$id = '';
+				if ( $wgUser->getName() == $u->getName() ) {
+					$id = ' id="iia_stats_group"';
+				}
+				$display .="<tr><td class=\"leader_image\">{$img}</td><td class=\"leader_name\">" .
+						Linker::link( $u->getUserPage(), $u->getName() ) .
+						"</td><td class=\"leader_count\"{$id}>{$value}</td></tr>";
 				$count++;
 			}
-			if ($count > 5) {break;}
-	
+
+			if ( $count > 5 ) {
+				break;
+			}
 		}
 
-		$display .= "
-		</table>";
-		wfProfileOut($fname);
+		$display .= '
+		</table>';
+		wfProfileOut( __METHOD__ );
 		return $display;
 	}
 
-	/**  	
-	 * 	This returns an array of users, in order for their standings.
-	 *	If it's no in the cache, it builds it and puts it in the cache.
+	/**
+	 * This returns an array of users, in order for their standings.
+	 * If it's not in the cache, it builds it and puts it in the cache.
 	 */
 	function getStandingsFromCache() {
 		global $wgMemc;
-		$fname = "StandingsGroup::getStandingsFromCache";
-		wfProfileIn($fname);
-		$standings = $wgMemc->get($this->mCacheKey);
-		if (!$standings) {
-			$dbr = wfGetDB(DB_SLAVE);
-			$ts = wfTimestamp(TS_MW, time() - 7 * 24 * 3600);
-			$sql = $this->getSQL($ts);
-			$res = $dbr->query($sql);
+
+		wfProfileIn( __METHOD__ );
+
+		$standings = $wgMemc->get( $this->mCacheKey );
+		if ( !$standings ) {
+			$dbr = wfGetDB( DB_SLAVE );
+			$ts = wfTimestamp( TS_MW, time() - 7 * 24 * 3600 );
+			$sql = $this->getSQL( $ts );
+			$res = $dbr->query( $sql, __METHOD__ );
 			$standings = array();
 			$field = $this->getField();
-			while ($row = $dbr->fetchObject($res)) {
+			foreach ( $res as $row ) {
 				$standings[$row->$field] = $row->C;
 			}
-			$wgMemc->set($this->mCacheKey, $standings, $this->mCacheExpiry);
-			wfDebug("Standings: didn't get the cache set {$this->mCacheKey} {$this->mCacheExpiry} " . print_r($standings, true) . "\n");
+			$wgMemc->set( $this->mCacheKey, $standings, $this->mCacheExpiry);
+			wfDebugLog( 'Standings',
+				"didn't get the cache set {$this->mCacheKey} {$this->mCacheExpiry} " .
+				print_r( $standings, true ) . "\n"
+			);
 		} else {
-			wfDebug("Standings: DID get the cache\n");
+			wfDebugLog( 'Standings', 'DID get the cache' );
 		}
-		wfProfileOut($fname);
+
+		wfProfileOut( __METHOD__);
 		return $standings;
 	}
 
-	/** 
-	 * 	Returns where a particular users stands in this group
-	 *  0 if they aren't in the top X
+	/**
+	 * Returns where a particular users stands in this group
+	 * 0 if they aren't in the top X
 	 *
+	 * @param $user User
+	 * @return Integer
 	 */
-	function getStanding($user) {	
-		$fname = "StandingsGroup::getStanding";
-		wfProfileIn($fname);
+	function getStanding( $user ) {
+		wfProfileIn( __METHOD__ );
 		$standings = $this->getStandingsFromCache();
 		$index = 1;
-		foreach ($standings as $s => $c) {
-			if ($s == $user->getName()) {
-				wfProfileOut($fname);
+		foreach ( $standings as $s => $c ) {
+			if ( $s == $user->getName() ) {
+				wfProfileOut( __METHOD__ );
 				return $index;
 			}
-			$index++;	
+			$index++;
 		}
-		wfProfileOut($fname);
+		wfProfileOut( __METHOD__ );
 		return 0;
 	}
 
-	/** 
-	 * addStandingsWidget
+	/**
 	 * Generates the actual HTML for the widget, and adds the necessary CSS to the skin
-	 *	
-	 **/
+	 */
 	function addStandingsWidget() {
 		global $wgUser, $wgOut;
-		$fname = "StandingsGroup::addStandingsWidget";
-		wfProfileIn($fname);
+
+		wfProfileIn( __METHOD__ );
 
 		$sk = $wgUser->getSkin();
-		$wgOut->addScript("<style type='text/css' media='all'>/*<![CDATA[*/ @import '" . wfGetPad('/extensions/min/f/extensions/wikihow/Leaderboard.css?rev=') . WH_SITEREV . "'; /*]]>*/</style>");
+		$wgOut->addScript(
+			"<style type='text/css' media='all'>/*<![CDATA[*/ @import '" .
+			wfGetPad('/extensions/min/f/extensions/wikihow/Leaderboard.css?rev=') .
+			WH_SITEREV . "'; /*]]>*/</style>"
+		);
 
-		$display = "
-		<div class='iia_stats'>
-		<h3>".$this->getTitle() . "</h3>
-		<div id='iia_standings_table'>
-		".$this->getStandingsTable()."
-		</div> " . $this->getUpdatingMessage() . "
-		</div>";
+		$display = '
+		<div class="iia_stats">
+		<h3>' . $this->getTitle() . '</h3>
+		<div id="iia_standings_table">
+		"' . $this->getStandingsTable() . '
+		</div> ' . $this->getUpdatingMessage() . '
+		</div>';
 
 		$sk->addWidget( $display );
-		wfProfileOut($fname);
+		wfProfileOut( __METHOD__ );
 	}
 
-	
-	public abstract function getSQL($ts); 
-	public abstract function getField(); 
+	public abstract function getSQL( $ts );
+	public abstract function getField();
 	public abstract function getTitle();
 
 	/**
-	 *
 	 * Takes a row number and returns the count for that row.
 	 * If there are not enough rows, returns the count for the
 	 * last row that exists.
 	 * If there are NO rows, returns 0
-	 * 
+	 *
+	 * @param $rowNum Integer
+	 * @return Integer
 	 */
-	public function getStandingByIndex($rowNum){
+	public function getStandingByIndex( $rowNum ) {
 		$standings = $this->getStandingsFromCache();
 		$index = 1;
 		$c = 0;
-		foreach ($standings as $s => $c) {
-			if($index == $rowNum)
+		foreach ( $standings as $s => $c ) {
+			if( $index == $rowNum ) {
 				return $c;
+			}
 			$index++;
 		}
 
@@ -282,16 +294,15 @@ abstract class StandingsGroup {
 	}
 
 	/**
-	 * You can override this if you don't want your standings widget to update 
+	 * You can override this if you don't want your standings widget to update
 	 * automatically
 	 */
 	function getUpdatingMessage() {
-		$msg = "<p class='bottom_link' style='text-align:center; padding-top:5px'>
-		Updating in <span id='stup'>10</span> minutes
-		</p>";
+		$msg = '<p class="bottom_link" style="text-align:center; padding-top:5px">' .
+			wfMessage( 'standings-updating-minutes', 10 )->parse() .
+		'</p>';
 		return $msg;
 	}
-
 
 }
 
@@ -302,11 +313,11 @@ class IntroImageStandingsGroup extends StandingsGroup {
 	}
 
 	function getSQL($ts) {
-		$sql = "SELECT rc_user_text, count(*) as C from recentchanges WHERE 
+		$sql = "SELECT rc_user_text, count(*) as C from recentchanges WHERE
 			rc_timestamp > '{$ts}' and rc_comment='Edit via [[Special:IntroImageAdder|Image Picker]]: Added an image'
-			group by rc_user_text order by C desc limit 25;";	
+			group by rc_user_text order by C desc limit 25;";
 		return $sql;
-	}		
+	}
 
 	function getField() {
 		return "rc_user_text";
@@ -433,15 +444,15 @@ class QCStandingsGroup extends StandingsGroup  {
 	function getSQL($ts) {
 		$sql = "
 			SELECT user_name, SUM(C) as C FROM
-				( (SELECT user_name, count(*) as C from qc_vote left join wiki_shared.user on qcv_user=user_id 
+				( (SELECT user_name, count(*) as C from qc_vote left join wiki_shared.user on qcv_user=user_id
 					WHERE qc_timestamp > '{$ts}' group by qcv_user order by C desc limit 25)
 				UNION
-				(SELECT user_name, count(*) as C from qc_vote_archive left join wiki_shared.user on qcv_user=user_id 
+				(SELECT user_name, count(*) as C from qc_vote_archive left join wiki_shared.user on qcv_user=user_id
 					WHERE qc_timestamp > '{$ts}' group by qcv_user order by C desc limit 25) ) t1
-			group by user_name order by C desc limit 25";	
+			group by user_name order by C desc limit 25";
 
 		return $sql;
-	}		
+	}
 
 	function getField() {
 		return "user_name";
@@ -484,14 +495,14 @@ class QuickEditStandingsGroup extends StandingsGroup  {
 			"WHERE rc_comment like 'Quick edit while patrolling' and rc_timestamp >= '$ts' ".
 			"GROUP BY rc_user_text ORDER by C desc limit 25";
 		return $sql;
-	}		
+	}
 
 	function getField() {
 		return "rc_user_text";
 	}
 
 	function getTitle() {
-		return wfMsg('rcpatrolstats_leaderboard_title'); 
+		return wfMsg('rcpatrolstats_leaderboard_title');
 	}
 }
 
@@ -506,14 +517,14 @@ class RCPatrolStandingsGroup extends StandingsGroup  {
 			"WHERE log_type = 'patrol' and log_timestamp >= '$ts' ".
 			"GROUP BY user_name ORDER by C desc limit 25";
 		return $sql;
-	}		
+	}
 
 	function getField() {
 		return "user_name";
 	}
 
 	function getTitle() {
-		return wfMsg('rcpatrolstats_leaderboard_title'); 
+		return wfMsg('rcpatrolstats_leaderboard_title');
 	}
 }
 
@@ -528,14 +539,14 @@ class SpellcheckerStandingsGroup extends StandingsGroup  {
 			"WHERE log_type = 'spellcheck' and log_timestamp >= '$ts' ".
 			"GROUP BY user_name ORDER by C desc limit 25";
 		return $sql;
-	}		
+	}
 
 	function getField() {
 		return "user_name";
 	}
 
 	function getTitle() {
-		return wfMsg('spellcheckerstats_leaderboard_title'); 
+		return wfMsg('spellcheckerstats_leaderboard_title');
 	}
 }
 
@@ -555,7 +566,7 @@ class QuickEditStandingsIndividual extends StandingsIndividual {
 	}
 
 	function getTitle() {
-		return wfMsg('quickedits_stats'); 
+		return wfMsg('quickedits_stats');
 	}
 
 	function getOpts($ts = null) {
@@ -570,7 +581,7 @@ class QuickEditStandingsIndividual extends StandingsIndividual {
 	}
 
 	function getGroupStandings() {
-		return new QuickEditStandingsGroup(); 
+		return new QuickEditStandingsGroup();
 	}
 
 }
@@ -586,7 +597,7 @@ class RCPatrolStandingsIndividual extends StandingsIndividual {
 	}
 
 	function getTitle() {
-		return wfMsg('rcpatrolstats_currentstats'); 
+		return wfMsg('rcpatrolstats_currentstats');
 	}
 
 	function getOpts($ts = null) {
@@ -617,7 +628,7 @@ class SpellcheckerStandingsIndividual extends StandingsIndividual {
 	}
 
 	function getTitle() {
-		return wfMsg('spellcheckerstats_currentstats'); 
+		return wfMsg('spellcheckerstats_currentstats');
 	}
 
 	function getOpts($ts = null) {
@@ -660,9 +671,9 @@ class IntroImageStandingsIndividual extends StandingsIndividual {
 		}
 		return $opts;
 	}
-	
+
 	function getGroupStandings() {
-		return new IntroImageStandingsGroup(); 
+		return new IntroImageStandingsGroup();
 	}
 
 }
@@ -753,9 +764,9 @@ class QCStandingsIndividual extends StandingsIndividual {
 		}
 		return $opts;
 	}
-	
+
 	function getGroupStandings() {
-		return new QCStandingsGroup(); 
+		return new QCStandingsGroup();
 	}
 
 }
@@ -804,7 +815,7 @@ class EditFinderStandingsIndividual extends StandingsIndividual {
 	}
 
 	function getTitle() {
-		return wfMsg('ef_statind_title')." - ".ucfirst(wfMsg('statind_'.$this->mEFType)); 
+		return wfMsg('ef_statind_title')." - ".ucfirst(wfMsg('statind_'.$this->mEFType));
 	}
 
 	function getOpts($ts = null) {
@@ -842,14 +853,14 @@ class EditFinderStandingsGroup extends StandingsGroup  {
 			"WHERE log_type = 'EF_".$this->mEFType."' and log_timestamp >= '$ts' ".
 			"GROUP BY user_name ORDER by C desc limit 25";
 		return $sql;
-	}		
+	}
 
 	function getField() {
 		return "user_name";
 	}
 
 	function getTitle() {
-		return wfMsg('editfinder_leaderboard_title'); 
+		return wfMsg('editfinder_leaderboard_title');
 	}
 }
 
