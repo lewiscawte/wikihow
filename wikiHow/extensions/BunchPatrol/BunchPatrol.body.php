@@ -52,7 +52,7 @@ class BunchPatrol extends SpecialPage {
 					'GROUP BY' => 'rc_user_text',
 					'HAVING' => 'C > 2',
 					'ORDER BY' => 'C DESC'
-				),
+				)
 			);
 			$wgOut->addHTML( '<table width="85%" align="center">' );
 			while ( ( $row = $dbr->fetchObject( $res ) ) != null ) {
