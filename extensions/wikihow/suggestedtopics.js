@@ -18,7 +18,7 @@ jQuery(document).ready(function(){
 			})
 			jQuery('#check_all_cats').click(function(){
 				var cats = jQuery('form input:checkbox');
-				var bChecked = jQuery(this).attr('checked');
+				var bChecked = jQuery(this).prop('checked');
 				for (i=0;i<cats.length;i++) {
 					var catid = cats[i].id.replace('check_','');
 					choose_cat(catid,bChecked);
@@ -112,13 +112,13 @@ function checkSTForm() {
  		e.removeClass('not_chosen');
  		e.addClass('chosen');
  		document.suggest_cats.cats.value += ", " + key;
-		jQuery('#check_' + safekey).attr('checked', true);
+		jQuery('#check_' + safekey).prop('checked', true);
  	} else {
  		e.removeClass('chosen');
  		e.addClass('not_chosen');
  		var reg = new RegExp (key, "g");
  		document.suggest_cats.cats.value = document.suggest_cats.cats.value.replace(reg, '');
-		jQuery('#check_' + safekey).attr('checked', false);
+		jQuery('#check_' + safekey).prop('checked', false);
  	}
  }
 

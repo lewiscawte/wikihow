@@ -259,14 +259,24 @@ function rcwLoadUrl(url) {
 		url += '?' + wgWikihowSiteRev;
 	}
 	if (rcExternalPause) return false;
+	var activateWidget = true;
 	if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)){ //test for MSIE x.x;
-		var ieversion=new Number(RegExp.$1) // capture x.x portion and store as a number
-		//don't activate rcwidget for IE6
-		if(ieversion >= 7)
-			$('#rcwidget_divid').after( $('<script src="' + url + '"></script>') );
+		var ieversion = new Number(RegExp.$1) // capture x.x portion and store as a number
+		// don't activate rcwidget for IE6
+		if (ieversion < 7) {
+			activateWidget = false;
+		}
 	}
-	else
+
+	if (activateWidget) {
+		// We need to change ajax caching to true so that jQuery won't append
+		// the _ timestamp param to files loaded (which busts our cache).
+		//
+		// from: http://bugs.jquery.com/ticket/4898
+		$.ajaxSetup( {cache: true} ); 
 		$('#rcwidget_divid').after( $('<script src="' + url + '"></script>') );
+		$.ajaxSetup( {cache: false} ); 
+	}
 }
 
 function rcwOnLoadData(data) {

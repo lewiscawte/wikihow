@@ -27,7 +27,7 @@ function checkAllArticles() {
 
     $dbr = wfGetDB(DB_SLAVE);
     $dbw = wfGetDB(DB_MASTER);
-    $res = $dbr->select('page', 'page_id', array('page_namespace' => 0, 'page_is_redirect' => 0 ));
+    $res = $dbr->select('page', 'page_id', array('page_namespace' => 0, 'page_is_redirect' => 0 ), __FUNCTION__);
 	
 	echo "SQL query done at " . microtime(true) . "\n";
 
@@ -61,7 +61,7 @@ function checkDirtyArticles() {
 	
 	$dbr = wfGetDB(DB_SLAVE);
 	$dbw = wfGetDB(DB_MASTER);
-	$res = $dbr->select('spellchecker', 'sc_page', array('sc_dirty' => 1));
+	$res = $dbr->select('spellchecker', 'sc_page', array('sc_dirty' => 1), __FUNCTION__);
 	
 	$articles = array();
 	
@@ -93,7 +93,7 @@ function checkDirtyArticles() {
 function spellCheckArticle (&$dbw, $articleId, &$pspell, &$capsString) {
 	
 	//first remove all mistakes from the mapping table
-	$dbw->delete('spellchecker_page', array('sp_page' => $articleId));
+	$dbw->delete('spellchecker_page', array('sp_page' => $articleId), __FUNCTION__);
 	
 	$title = Title::newFromID($articleId);
 	
@@ -138,10 +138,10 @@ function spellCheckArticle (&$dbw, $articleId, &$pspell, &$capsString) {
 		if ($foundErrors) {
 			$sql = "INSERT INTO spellchecker (sc_page, sc_timestamp, sc_dirty, sc_errors) VALUES (" . 
 					$articleId . ", " . wfTimestampNow() . ", 0, 1) ON DUPLICATE KEY UPDATE sc_dirty = '0', sc_errors = '1', sc_timestamp = " . wfTimestampNow();
-			$dbw->query($sql);
+			$dbw->query($sql, __FUNCTION__);
 		}
 		else {
-			$dbw->update('spellchecker', array('sc_errors' => 0, 'sc_dirty' => 0), array('sc_page' => $articleId));
+			$dbw->update('spellchecker', array('sc_errors' => 0, 'sc_dirty' => 0), array('sc_page' => $articleId), __FUNCTION__);
 		}
 
 	}

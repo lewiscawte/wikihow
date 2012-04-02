@@ -118,7 +118,7 @@ function setContentInner(html, fade) {
 	setRCLinks();
 	addBackLink();
 	if (rev) {
-		$("#reverse").attr('checked', true);
+		$("#reverse").prop('checked', true);
 	} else {
 	}
 	$("#namespace").val(ns);

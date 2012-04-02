@@ -15,7 +15,7 @@ return array(
 
 	// big web JS
 	'whjs' => array(
-		'//extensions/wikihow/common/jquery-1.4.1.min.js',
+		'//extensions/wikihow/common/jquery-1.7.1.min.js',
 		'//skins/common/highlighter-0.6.js',
 		'//skins/common/wikibits.js',
 		'//skins/common/stu.js',
@@ -35,7 +35,7 @@ return array(
 	'ppj' => array('//extensions/wikihow/gallery/prettyPhoto-3.12/src/jquery.prettyPhoto.js'),
 	'ads' => array('//extensions/wikihow/wikihowAds/wikihowAds.js'),
 	'stu' => array(
-		'//extensions/wikihow/common/jquery-1.4.1.min.js',
+		'//extensions/wikihow/common/jquery-1.7.1.min.js',
 		'//skins/common/stu.js'
 	),
 
@@ -50,11 +50,12 @@ return array(
 	'ppc' => array('//extensions/wikihow/gallery/prettyPhoto-3.12/src/prettyPhoto.css'),
 
 	// mobile JS
-	'mjq' => array('//extensions/wikihow/mobile/jquery-1.4.1.min.js'),
+	'mjq' => array('//extensions/wikihow/common/jquery-1.7.1.min.js'),
 	'mwh' => array('//extensions/wikihow/mobile/mobile.js'),
 	'mga' => array('//skins/common/ga.js'),
 	'mah' => array('//extensions/wikihow/mobile/add2home/add2home.js'),
 	'mqg' => array('//extensions/wikihow/mqg/mqg.js'),
+	'cm' => array('//extensions/wikihow/checkmarks/checkmarks.js'),
 
 	// mobile CSS
 	'mwhc' => array('//extensions/wikihow/mobile/mobile.css'),

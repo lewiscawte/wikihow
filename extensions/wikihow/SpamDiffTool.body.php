@@ -24,14 +24,14 @@ class SpamDiffTool extends SpecialPage {
 		return $link;
 	}
 
-	function execute ($par) {
+	function execute($par) {
 		global $wgRequest, $wgContLang, $wgOut, $wgSpamBlacklistArticle, $wgUser, $wgScript;
 		$title = Title::newFromDBKey($wgRequest->getVal('target'));
 		$diff = $wgRequest->getVal( 'diff2' );
 		$rcid = $wgRequest->getVal( 'rcid' );
 		$rdfrom = $wgRequest->getVal( 'rdfrom' );
 
-		$wgOut->setHTMLTitle('Spam Tool - wikiHow');
+		$wgOut->setHTMLTitle(wfMsg('pagetitle', 'Spam Tool'));
 
 		// can the user even edit this?
 		$sb = Title::newFromDBKey($wgSpamBlacklistArticle);

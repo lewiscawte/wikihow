@@ -232,7 +232,7 @@ $tmpl = <<<EOHTML
 (function($) {
 	$(document).ready(function() {
 		$('#pages-go')
-			.attr('disabled', '')
+			.prop('disabled', false)
 			.click(function () {
 				var form = $('#images-resize').serializeArray();
 				$('#pages-result').html('loading ...');
@@ -251,24 +251,24 @@ $tmpl = <<<EOHTML
 
 		$('#rd-enlarge').click(function () {
 			$('#pixels')
-				.attr('disabled', '')
+				.prop('disabled', false)
 				.focus()
 				.val('{$defaultEnlargePixels}');
 		});
 
 		$('#rd-center').click(function () {
 			$('#pixels')
-				.attr('disabled', '')
+				.prop('disabled', false)
 				.val('{$defaultCenterPixels}');
 		});
 
 		$('.intro-check').click(function () {
 			if ($('#rd-intro:checked').length) {
 				$('#intro-pixels')
-					.attr('disabled', '')
+					.prop('disabled', false)
 					.focus();
 			} else {
-				$('#intro-pixels').attr('disabled', 'disabled');
+				$('#intro-pixels').prop('disabled', true);
 			}
 		});
 	});

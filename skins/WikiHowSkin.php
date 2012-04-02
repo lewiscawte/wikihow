@@ -1293,23 +1293,28 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 	
 	function loadAuthors() {
-		global $wgUser, $wgTitle;
-		if (is_array($this->mAuthors)) {
-			return;
-		}
+		global $wgTitle, $wgMemc;
+
+		if (is_array($this->mAuthors)) return;
+
+		$articleID = $wgTitle->getArticleID();
+		$cachekey = wfMemcKey('ld-auth-' . $articleID);
+		$this->mAuthors = $wgMemc->get($cachekey);
+		if (is_array($this->mAuthors)) return;
+
 		$this->mAuthors = array();
 		$dbr = wfGetDB(DB_SLAVE);
 		// filter out bots
 		$bad = User::getBotIDs();
 		$bad[] = 0;  // filter out anons too, as per Jack
-		$opts = array('rev_page'=> $wgTitle->getArticleID());
+		$opts = array('rev_page'=> $articleID);
 		if (sizeof($bad) > 0) {
 			$opts[]  = 'rev_user NOT IN (' . $dbr->makeList($bad) . ')';
 		}
 		$res = $dbr->select('revision',
 			array('rev_user', 'rev_user_text'),
 			$opts,
-			"wikihowskin::loadAuthors",
+			__METHOD__,
 			array('ORDER BY' => 'rev_timestamp')
 		);
 		while ($row = $dbr->fetchObject($res)) {
@@ -1319,6 +1324,8 @@ class SkinWikihowskin extends SkinTemplate {
 				$this->mAuthors[$row->rev_user_text] = 1;
 			}
 		}
+
+		$wgMemc->set($cachekey, $this->mAuthors);
 	}
 	
 	function isQuickBounceUrl($mwMsg = 'clicky_urls') {

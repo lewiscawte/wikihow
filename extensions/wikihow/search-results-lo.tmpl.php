@@ -21,8 +21,8 @@
 		<div class="sr_for lo_for">
 			<?= wfMsgForContent('lsearch_results_for', $enc_q) ?>
 		</div>
+		<?= wfMsg('Adunit_search_top', $enc_q); ?>
 		<?= wfMsg('Adunit_search_right'); ?>
-		<?= wfMsg('Adunit_search_top'); ?>
 	<? endif; ?>
 
 	<? if ($suggestionLink): ?>

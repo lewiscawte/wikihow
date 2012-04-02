@@ -84,14 +84,14 @@
 		$('tr.out:even').addClass('odd');
 
 		$('.save')
-			.attr('disabled', '')
+			.prop('disabled', false)
 			.click(function () {
 				var checked = $('table input:checkbox').filter(':checked');
 				if (checked.length > 3) {
 					alert('You must choose 3 or fewer community priorities');
 					return false;
 				}
-				$('.save').attr('disabled', 'disabled');
+				$('.save').prop('disabled', true);
 				$.post('/Special:AdminCommunityDashboard/save-settings',
 					{ settings: serializeSettings() },
 					function(data) {
@@ -99,7 +99,7 @@
 							// reload page
 							window.location.href = window.location.href;
 						} else {
-							$('.save').attr('disabled', '');
+							$('.save').prop('disabled', false);
 							var err = data ? data['error'] : 'network error';
 							alert('saving error: ' + err);
 						}

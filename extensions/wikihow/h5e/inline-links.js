@@ -44,7 +44,7 @@ jQuery.extend(WH.h5e, (function ($) {
 			$('#h5e-link-article').val(article);
 
 			var isExternal = article.match(/^http:\/\//);
-			$('#h5e-link-article').attr('disabled', isExternal);
+			$('#h5e-link-article').prop('disabled', isExternal);
 			var showHide = isExternal ? 'inline' : 'none';
 			var msg = isExternal ? wfMsg('h5e-external-link-editing-disabled') : '';
 			$('.h5e-external-link-editing-disabled span')
@@ -224,7 +224,7 @@ jQuery.extend(WH.h5e, (function ($) {
 
 				$('#h5e-link-article').removeClass('h5e-url-warning');
 				var article = $.trim( $('#h5e-link-article').val() );
-				if (!$('#h5e-link-article').attr('disabled') &&
+				if (!$('#h5e-link-article').prop('disabled') &&
 					article.indexOf('/') >= 0 && article.indexOf(' ') < 0)
 				{
 					$('#h5e-link-article')

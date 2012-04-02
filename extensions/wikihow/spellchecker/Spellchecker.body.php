@@ -171,14 +171,14 @@ class Spellchecker extends UnlistedSpecialPage {
 			$articleId = $title->getArticleID();
 		}
 		else if ($skippedIds) {
-			$articleId = $dbr->selectField('spellchecker', 'sc_page', array('sc_errors' => 1, 'sc_dirty' => 0, "sc_checkout < '{$expired}'", "sc_page NOT IN ('" . implode("','", $skippedIds) . "')"), __FUNCTION__, array("limit" => 1, "ORDER BY" => "RAND()"));
+			$articleId = $dbr->selectField('spellchecker', 'sc_page', array('sc_errors' => 1, 'sc_dirty' => 0, "sc_checkout < '{$expired}'", "sc_page NOT IN ('" . implode("','", $skippedIds) . "')"), __METHOD__, array("limit" => 1, "ORDER BY" => "RAND()"));
 		}
 		else
-			$articleId = $dbr->selectField('spellchecker', 'sc_page', array('sc_errors' => 1, 'sc_dirty' => 0, "sc_checkout < '{$expired}'"), __FUNCTION__, array("limit" => 1, "ORDER BY" => "RAND()"));
+			$articleId = $dbr->selectField('spellchecker', 'sc_page', array('sc_errors' => 1, 'sc_dirty' => 0, "sc_checkout < '{$expired}'"), __METHOD__, array("limit" => 1, "ORDER BY" => "RAND()"));
 
 		if ($articleId) {
 			$sql = "SELECT * from `spellchecker_page` JOIN `spellchecker_word` ON sp_word = sw_id WHERE sp_page = {$articleId}"; 
-			$res =  $dbr->query($sql);
+			$res =  $dbr->query($sql, __METHOD__);
 
 			$words = array();
 			$corrections = array();
@@ -284,11 +284,13 @@ class Spellchecker extends UnlistedSpecialPage {
 	 *
 	 * Removes wrapping spans and paragraph tags which are not included
 	 * in the raw wikitext.
+	 * 
+	 * Also removes font tags
 	 *
 	 */
 	function removeWordWraps($text) {
-		$articleText = preg_replace('@<[/]?(span|p|[ovwxp]:\w+)[^>]*?>@', '', $text);
-		$articleText = preg_replace('@<[/]?(SPAN|P|[ovwxp]:\w+)[^>]*?>@', '', $articleText); //IE
+		$articleText = preg_replace('@<[/]?(span|font|p|[ovwxp]:\w+)[^>]*?>@', '', $text);
+		$articleText = preg_replace('@<[/]?(SPAN|FONT|P|[ovwxp]:\w+)[^>]*?>@', '', $articleText); //IE
 
 		return $articleText;
 	}
@@ -357,13 +359,13 @@ class Spellchecker extends UnlistedSpecialPage {
 		
 		$sql = "INSERT INTO spellchecker (sc_page, sc_timestamp, sc_dirty, sc_errors) VALUES (" . 
 					$id . ", " . wfTimestampNow() . ", 1, 0) ON DUPLICATE KEY UPDATE sc_dirty = '1', sc_timestamp = " . wfTimestampNow();
-		$dbw->query($sql);
+		$dbw->query($sql, __METHOD__);
 	}
 	
 	static function markAsIneligible($id) {
 		$dbw = wfGetDB(DB_MASTER);
 		
-		$dbw->update('spellchecker', array('sc_errors' => 0, 'sc_dirty' => 0), array('sc_page' => $id));
+		$dbw->update('spellchecker', array('sc_errors' => 0, 'sc_dirty' => 0), array('sc_page' => $id), __METHOD__);
 	}
 	
 }
@@ -397,7 +399,7 @@ class Spellcheckerwhitelist extends UnlistedSpecialPage {
 		
 		$dbr = wfGetDB(DB_SLAVE);
 		
-		$res = $dbr->select(wikiHowDictionary::CAPS_TABLE, "*");
+		$res = $dbr->select(wikiHowDictionary::CAPS_TABLE, "*", '', __METHOD__);
 
 		$caps = array();
 		while($row = $dbr->fetchObject($res)) {
@@ -448,7 +450,7 @@ class wikiHowDictionary{
 			return false;
 		
 		$dbw = wfGetDB(DB_MASTER);
-		$dbw->insert(self::TEMP_TABLE, array(self::WORD_FIELD => $word));
+		$dbw->insert(self::TEMP_TABLE, array(self::WORD_FIELD => $word), __METHOD__);
 		
 		return true;
 	}
@@ -462,7 +464,7 @@ class wikiHowDictionary{
 	static function batchAddWordsToDictionary() {
 		$dbr = wfGetDB(DB_SLAVE);
 		
-		$res = $dbr->select(self::TEMP_TABLE, '*');
+		$res = $dbr->select(self::TEMP_TABLE, '*', '', __METHOD__);
 		$words = array();
 		while($row = $dbr->fetchObject($res)) {
 			$words[] = $row->st_word;
@@ -480,24 +482,24 @@ class wikiHowDictionary{
 			//check to see if its an ALL CAPS word
 			if ( !preg_match('@[^A-Z]@', $word) ) {
 				$sql = "INSERT IGNORE INTO " . self::CAPS_TABLE . " value ('" . $word . "')";
-				$dbw->query($sql);
+				$dbw->query($sql, __METHOD__);
 			}
 			else
 				pspell_add_to_personal($pspell, $word);
 			
 			//now go through and check articles that contain that word.
 			$sql = "SELECT * FROM `" . self::WORD_TABLE . "` JOIN `spellchecker_page` ON `sp_word` = `sw_id` WHERE sw_word = " . $dbr->addQuotes($word);
-			$res = $dbr->query($sql);
+			$res = $dbr->query($sql, __METHOD__);
 			
 			while($row = $dbr->fetchObject($res)) {
 				$page_id = $row->sp_page;
-				$dbw->update('spellchecker', array('sc_dirty' => "1"), array('sc_page' => $page_id));
+				$dbw->update('spellchecker', array('sc_dirty' => "1"), array('sc_page' => $page_id), __METHOD__);
 			}
 		}
 		
 		pspell_save_wordlist($pspell);
 		
-		$dbw->query("TRUNCATE " . self::TEMP_TABLE);
+		$dbw->query("TRUNCATE " . self::TEMP_TABLE, __METHOD__);
 	}
 	
 	/***
@@ -556,9 +558,9 @@ class wikiHowDictionary{
 		} 
 		
 		//first check to see if it already exists
-		$id = $dbw->selectField(self::WORD_TABLE, 'sw_id', array('sw_word' => $word));
+		$id = $dbw->selectField(self::WORD_TABLE, 'sw_id', array('sw_word' => $word), __METHOD__);
 		if ($id === false) {
-			$dbw->insert(self::WORD_TABLE, array('sw_word' => $word, 'sw_corrections' => $corrections));
+			$dbw->insert(self::WORD_TABLE, array('sw_word' => $word, 'sw_corrections' => $corrections), __METHOD__);
 			$id = $dbw->insertId();
 		}
 		
@@ -575,7 +577,7 @@ class wikiHowDictionary{
 	static function getCaps() {
 		$dbr = wfGetDB(DB_SLAVE);
 		
-		$res = $dbr->select(self::CAPS_TABLE, "*");
+		$res = $dbr->select(self::CAPS_TABLE, "*", '', __METHOD__);
 		
 		$capsString = "";
 		while($row = $dbr->fetchObject($res)) {

@@ -67,7 +67,7 @@ IntroImageAdder.prototype.displayConfirmation = function( ret ) {
 }
 
 IntroImageAdder.prototype.closeConfirmation = function() {
-	if (jQuery('#confirmModalFlag').attr('checked')) {
+	if (jQuery('#confirmModalFlag').prop('checked')) {
 		setCookie('iia_modal', 1, 365);
 	}
 	jQuery('#img-box').dialog('close');

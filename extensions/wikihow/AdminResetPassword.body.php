@@ -78,7 +78,7 @@ $tmpl = <<<EOHTML
 (function($) {
 	$(document).ready(function() {
 		$('#reset-go')
-			.attr('disabled', '')
+			.prop('disabled', false)
 			.click(function () {
 				$('#reset-result').html('loading ...');
 				$.post('/Special:AdminResetPassword',

@@ -48,7 +48,15 @@ class QcAppWidget extends DashboardWidget {
 	public function getTopContributor(&$dbr){
 		$startdate = strtotime("7 days ago");
 		$starttimestamp = date('YmdG',$startdate) . floor(date('i',$startdate)/10) . '00000';
-		$res = $dbr->select('qc_vote', array('*', 'count(*) as C', 'MAX(qc_timestamp) as qc_recent'), array('qc_timestamp > "' . $starttimestamp . '"'), 'QcAppWidget::getLastContributor', array("GROUP BY" => 'qcv_user', "ORDER BY"=>"C DESC", "LIMIT"=>1));
+		$sql = "SELECT *, SUM(C) as C, MAX(qc_timestamp) as qc_recent  FROM
+			( (SELECT qcv_user, count(*) as C, MAX(qc_timestamp) as qc_timestamp FROM qc_vote LEFT JOIN wiki_shared.user ON qcv_user=user_id 
+				WHERE qc_timestamp > '{$starttimestamp}' GROUP BY qcv_user ORDER BY C DESC LIMIT 25)
+			UNION
+			(SELECT qcv_user, count(*) as C, MAX(qc_timestamp) as qc_timestamp from qc_vote_archive LEFT JOIN wiki_shared.user ON qcv_user=user_id 
+				WHERE qc_timestamp > '{$starttimestamp}' GROUP BY qcv_user ORDER BY C DESC LIMIT 25) ) t1
+			GROUP BY qcv_user  order by C desc limit 1";	
+
+		$res = $dbr->query($sql);
 		$row = $dbr->fetchObject($res);
 		$res->free();
 

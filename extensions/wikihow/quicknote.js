@@ -66,7 +66,7 @@ function initQuickNote( qnArticle, qnUser, contrib, regdate, qnArticleLink ) {
 
 	if ($('#thumbUp').length && !isThumbedUp) {
 		$('#qn_thumbsup').show();
-		$('input[name="qn_thumbs_check"]').attr('checked', false);
+		$('input[name="qn_thumbs_check"]').prop('checked', false);
 	}
 	else {
 		$('#qn_thumbsup').hide();
@@ -93,7 +93,7 @@ function qnButtons(pc_newmsg, obj, tmpl) {
 
 function checkThumbsUp() {
 	if ($('#qn_thumbsup').is(":visible")) {
-		$('input[name="qn_thumbs_check"]').attr('checked', true);
+		$('input[name="qn_thumbs_check"]').prop('checked', true);
 	}
 }
 

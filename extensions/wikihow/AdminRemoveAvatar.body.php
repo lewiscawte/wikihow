@@ -104,7 +104,7 @@ $tmpl = <<<EOHTML
 (function($) {
 	$(document).ready(function() {
 		$('#admin-go')
-			.attr('disabled', '')
+			.prop('disabled', false)
 			.click(function () {
 				$('#admin-result').html('loading ...');
 				$.post('/Special:AdminRemoveAvatar',

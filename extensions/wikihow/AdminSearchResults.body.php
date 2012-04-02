@@ -159,7 +159,7 @@ $tmpl = <<<EOHTML
 
 	$(document).ready(function() {
 		$('#pages-reset, #pages-fetch')
-			.attr('disabled', '')
+			.prop('disabled', false)
 			.click(function () {
 				var action = $(this).attr('id').replace(/^pages-/, '');
 				doServerAction(action);

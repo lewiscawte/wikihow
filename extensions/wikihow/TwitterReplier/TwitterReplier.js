@@ -203,11 +203,11 @@ WH.TwitterReplier = (function ($) {
 	function showHideSpinner( showHide ) 
 	{
 		if( 'hide' == showHide ) {
-			$("#reply").attr("disabled", "");
+			$("#reply").prop("disabled", false);
 			$("#reply_spinner").hide();
 		} else if( 'show' == showHide ) {
 			$("#char_limit").html("");
-			$("#reply").attr("disabled", "disabled");
+			$("#reply").prop("disabled", true);
 			$("#reply_spinner").show();
 		}
 	}
@@ -321,9 +321,9 @@ WH.TwitterReplier = (function ($) {
 				$("#respond_to, .customize_header").removeClass('grey');
 				$("#reply_tweet")
 					.removeClass("light_grey")
-					.attr("disabled", "")
+					.prop("disabled", false)
 					.focus();
-				$("#reply").attr("disabled", "");
+				$("#reply").prop("disabled", false);
 			}
 		});
 

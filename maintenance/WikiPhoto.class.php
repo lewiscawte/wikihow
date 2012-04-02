@@ -164,6 +164,22 @@ class WikiPhoto {
 	}
 
 	/**
+	 * Given a URL (partial or at any host), look up the Title 
+	 * object. If line is a number, lookup by article ID. If title 
+	 * couldn't be found, return null.
+	 */
+	public static function getArticleTitleNoCheck($url) {
+		$url = trim($url);
+		if (preg_match('@^[0-9]+$@', $url)) {
+			$title = Title::newFromID($url);
+		} else {
+			$partialUrl = preg_replace('@^(http://[^/]+/|/)@', '', $url);
+			$title = Title::newFromURL($partialUrl);
+		}
+		return $title;
+	}
+
+	/**
 	 * Given a URL at www.wikihow.com, look up the page ID.  If it couldn't
 	 * be found, return the empty string.
 	 */
