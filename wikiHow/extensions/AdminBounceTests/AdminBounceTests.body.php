@@ -489,7 +489,7 @@ $tmpl = <<<EOHTML
 
 	$(document).ready(function() {
 		$('#pages-resetbt, #pages-resetmb, #pages-reset, #pages-fetch')
-			.attr('disabled', '')
+			.prop('disabled', false)
 			.click(function () {
 				var action = $(this).attr('id').replace(/^pages-/, '');
 				var answer = true;
@@ -508,21 +508,21 @@ $tmpl = <<<EOHTML
 		/*
 		$('#pages-allcheck')
 			.click(function() {
-				if ($(this).attr('checked')==true){
-					$('#pages-reset').attr('disabled','');
+				if ($(this).prop('checked')){
+					$('#pages-reset').prop('disabled',false);
 				}else{
-					$('#pages-reset').attr('disabled','disabled');
+					$('#pages-reset').prop('disabled',true);
 				}
 			});
 		$('#pages-domains')
 			.change(function(){
 				if ($(this).attr('value')=='all'){
-					$('#pages-reset').attr('disabled','disabled');
-					$('#pages-allcheck').attr('disabled','');
+					$('#pages-reset').prop('disabled',true);
+					$('#pages-allcheck').prop('disabled',false);
 					$('#pages-check').css('color','');
 				}else{
-					$('#pages-reset').attr('disabled','');
-					$('#pages-allcheck').attr('disabled','disabled').attr('checked',false);
+					$('#pages-reset').prop('disabled',false);
+					$('#pages-allcheck').prop('disabled',true).prop('checked',false);
 					$('#pages-check').css('color','#ccc');
 				}
 				$('#pages-result').html('');

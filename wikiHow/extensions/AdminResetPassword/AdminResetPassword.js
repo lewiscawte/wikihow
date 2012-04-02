@@ -1,7 +1,7 @@
 (function( $ ) {
 	$( document ).ready( function() {
 		$( '#reset-go' )
-			.attr( 'disabled', '' )
+			.prop( 'disabled', false )
 			.click( function() {
 				$( '#reset-result' ).html( mw.msg( 'adminresetpassword-loading' ) );
 				$.post(

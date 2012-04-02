@@ -155,7 +155,7 @@ class AdminLookupPages extends UnlistedSpecialPage {
 		(function($) {
 			$(document).ready(function() {
 				$('#pages-go')
-					.attr('disabled', '')
+					.prop('disabled', false)
 					.click(function () {
 						$('#pages-result').html('loading ...');
 						$.post('/Special:$action',

@@ -308,7 +308,7 @@ $html .= <<<EOHTML
 (function($) {
 	$(document).ready(function() {
 		$('.pages-go')
-			.attr('disabled', '')
+			.prop('disabled', false)
 			.click(function() {
 				var action = $(this).attr('id').replace(/^pages-go-/, 'list-');
 				$('#pages-go-action').val(action);
@@ -355,13 +355,13 @@ $html .= <<<EOHTML
 					var edited = data['was-edited'] == 1;
 					if (!edited) {
 						$('#ec-default').click();
-						var editDisabled = 'disabled';
+						var editDisabled = true;
 					} else {
 						$('#ec-edit').click();
-						var editDisabled = '';
+						var editDisabled = false;
 					}
-					$('#edit-save').attr('disabled', 'disabled');
-					$('.edit-edited-data').attr('disabled', editDisabled);
+					$('#edit-save').prop('disabled', true);
+					$('.edit-edited-data').prop('disabled', editDisabled);
 
 					var dialogTitle = 'Edit ' + editType + ' &ldquo;' + title + '&rdquo;';
 					$('.ui-dialog-title').html(dialogTitle);
@@ -380,21 +380,21 @@ $html .= <<<EOHTML
 		// when Edit radio button is clicked
 		$('#ec-edit').click(function() {
 			$('.edit-edited-data')
-				.attr('disabled', '')
+				.prop('disabled', false)
 				.focus();
 		});
 
 		// when Default radio buttons are clicked
 		$('#ec-default').click(function () {
-			$('.edit-edited-data').attr('disabled', 'disabled');
+			$('.edit-edited-data').prop('disabled', true);
 		});
 
 		// when any radio button is clicked
 		$('.ec').click(function() {
-			$('#edit-save').attr('disabled', '');
+			$('#edit-save').prop('disabled', false);
 		});
 		$('.edit-edited-data').bind('keypress keyup keydown', function() {
-			$('#edit-save').attr('disabled', '');
+			$('#edit-save').prop('disabled', false);
 		});
 
 		// when any the save description button is pressed
@@ -405,7 +405,7 @@ $html .= <<<EOHTML
 			var editType = $('input:radio[name=editchoice]:checked').val();
 			var id = $('#edit-page-id').html();
 			var editedData = $('.edit-edited-data').val();
-			$('#edit-save').attr('disabled', 'disabled');
+			$('#edit-save').prop('disabled', true);
 
 			$.post('{$basepage}',
 				'action=save-' + action + '&edit-type=' + editType + '&page=' + id + '&data=' + encodeURIComponent(editedData),

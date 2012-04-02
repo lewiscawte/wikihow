@@ -282,7 +282,7 @@ jQuery.extend(WH.h5e, (function ($) {
 				editor.setPageClean();
 
 				$(this)
-					.attr('disabled', 'disabled')
+					.prop('disabled', true)
 					.unbind('click');
 
 				var url = wgServer + '/index.php?title=' + editor.targetPage + '&h5e=true&draft=' + loadDraftConfirm.loadDraftID + '&create-new-article=true';

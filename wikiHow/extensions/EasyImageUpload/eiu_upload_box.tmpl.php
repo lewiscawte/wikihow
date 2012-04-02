@@ -1,9 +1,9 @@
-<form id='eiu_uploadform' name='eiu_uploadform' enctype='multipart/form-data' method='post' action='<?= $submitUrl ?>' onsubmit="jQuery('#upload_btn').attr('disabled', 'disabled'); return AIM.submit(this, { onStart: jQuery.proxy(easyImageUpload.uploadOnStart, easyImageUpload), onComplete: jQuery.proxy(easyImageUpload.uploadOnComplete, easyImageUpload) });">
+<form id='eiu_uploadform' name='eiu_uploadform' enctype='multipart/form-data' method='post' action='<?= $submitUrl ?>' onsubmit="jQuery('#upload_btn').prop('disabled', true); return AIM.submit(this, { onStart: jQuery.proxy(easyImageUpload.uploadOnStart, easyImageUpload), onComplete: jQuery.proxy(easyImageUpload.uploadOnComplete, easyImageUpload) });">
     <table width='100%' class='uploadtable'>
 	<tr>
 		<td class='uploadtitle'><?= wfMsg('eiu-upload') ?></td>
 		<td class='uploadinput'>
-			<input type='file' id='ImageUploadFile' name='wpUploadFile' size='30' onchange="if (wgUserName) { jQuery('#upload_btn').attr('disabled', ''); jQuery('#eiu_uploadform').submit(); }">
+			<input type='file' id='ImageUploadFile' name='wpUploadFile' size='30' onchange="if (wgUserName) { jQuery('#upload_btn').prop('disabled', false); jQuery('#eiu_uploadform').submit(); }">
 			<input type='hidden' name='uploadform1' value='1'/>
 			<input type='hidden' name='src' value='upload'/>
 			<input type='submit' id='upload_btn' disabled='disabled' value='Upload' style="display: none;" />

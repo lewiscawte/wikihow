@@ -1,7 +1,7 @@
 (function( $ ) {
 	$( document ).ready( function() {
 		$( '#action-go' )
-			.attr( 'disabled', '' )
+			.prop( 'disabled', false )
 			.click( function() {
 				$( '#action-result' ).html( mw.msg( 'adminmarkemailconfirmed-loading' ) );
 				$.post(
