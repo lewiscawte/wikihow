@@ -50,8 +50,8 @@ class LSearchSearchResultsLoggedOutTemplate extends QuickTemplate {
 		<div class="sr_for lo_for">
 			<?php echo wfMsgForContent( 'lsearch-results-for', $enc_q ) ?>
 		</div>
+		<?php echo wfMsg( 'Adunit_search_top', $enc_q ); ?>
 		<?php echo wfMsg( 'Adunit_search_right' ); ?>
-		<?php echo wfMsg( 'Adunit_search_top' ); ?>
 	<?php endif; ?>
 
 	<?php if ( $suggestionLink ): ?>
