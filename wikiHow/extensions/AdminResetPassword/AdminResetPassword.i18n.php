@@ -11,7 +11,7 @@ $messages = array();
 /** English */
 $messages['en'] = array(
 	'adminresetpassword' => 'Reset Password',
-	'adminresetpassword-enter' => 'Enter username of account to reset',
+	'adminresetpassword-enter-username' => 'Enter username of account to reset',
 	'adminresetpassword-error' => "Error: user '$1' not found",
 	'adminresetpassword-reset' => 'reset',
 	'adminresetpassword-success' => "Account '$1' has been reset. No e-mail has been sent to the user.
