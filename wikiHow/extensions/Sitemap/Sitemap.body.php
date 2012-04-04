@@ -42,6 +42,7 @@ class Sitemap extends SpecialPage {
 				}
 			}
 		}
+
 		return $results;
 	}
 
@@ -86,16 +87,15 @@ class Sitemap extends SpecialPage {
 		$wgOut->setRobotPolicy( 'index,follow' );
 
 		// Add CSS
-		if ( defined( 'MW_SUPPORTS_RESOURCE_MODULES' ) ) {
-			$wgOut->addModules( 'ext.sitemap' );
-		} else {
-			global $wgScriptPath;
-			$wgOut->addExtensionStyle( $wgScriptPath . '/extensions/Sitemap/sitemap.css' );
-		}
+		$wgOut->addModules( 'ext.sitemap' );
 
 		$topcats = $this->getTopLevelCategories();
+		if ( empty( $topcats ) ) {
+			$wgOut->addWikiMsg( 'sitemap-not-defined' );
+		}
 
-		$wgOut->setHTMLTitle( wfMsg( 'sitemap' ) );
+		// Set the page title
+		$wgOut->setPageTitle( wfMsg( 'sitemap' ) );
 
 		$count = 0;
 		$wgOut->addHTML(
