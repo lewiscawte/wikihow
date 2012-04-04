@@ -19,6 +19,9 @@ class CheckMyLinks extends SpecialPage {
 	public function execute( $par ) {
 		global $wgOut, $wgUser, $wgParser, $wgTitle, $wgLang;
 
+		// Set the page title, robot policies, etc.
+		$this->setHeaders();
+
 		// Need to be logged in in order to use this feature
 		if ( !$wgUser->isLoggedIn() ) {
 			$wgOut->addWikiMsg( 'checkmylinks-not-logged-in' );
