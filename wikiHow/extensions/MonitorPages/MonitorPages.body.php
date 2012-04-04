@@ -17,6 +17,9 @@ class MonitorPages extends SpecialPage {
 	public function execute( $par ) {
 		global $wgOut, $wgUser, $wgRequest, $wgServer, $wgContLang, $wgScriptPath;
 
+		// Set the page title, robot policies, etc.
+		$this->setHeaders();
+
 		$target = isset( $par ) ? $par : $wgRequest->getVal( 'target' );
 		$dbw = wfGetDB( DB_MASTER );
 		$me = $this->getTitle();
