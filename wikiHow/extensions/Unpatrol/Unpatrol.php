@@ -23,7 +23,7 @@ $wgExtensionCredits['specialpage'][] = array(
 
 // Set up the new special page
 $dir = dirname( __FILE__ ) . '/';
-$wgExtensionMessagsFiles['Unpatrol'] = $dir . 'Unpatrol.i18n.php';
+$wgExtensionMessagesFiles['Unpatrol'] = $dir . 'Unpatrol.i18n.php';
 $wgAutoloadClasses['Unpatrol'] = $dir . 'Unpatrol.body.php';
 $wgSpecialPages['Unpatrol'] = 'Unpatrol';
 

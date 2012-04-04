@@ -44,6 +44,10 @@ class Unpatrol extends SpecialPage {
 			return;
 		}
 
+		// Set the page title, robot policies, etc.
+		$this->setHeaders();
+
+		// Now, whose edits are we going to unpatrol?
 		$username = $wgRequest->getVal( 'username', $par );
 
 		$wgOut->addHTML(
@@ -57,10 +61,11 @@ class Unpatrol extends SpecialPage {
 			date( 'Y' ) . ' <input type="text" name="month_2" size="2" />' .
 			wfMsg( 'unpatrol-day' ) . ' <input type="text" name="day_2" size="2" />' .
 			wfMsg( 'unpatrol-hour' ) . ' <input type="text" name="hour_2" size="2" /> <br /><br />
-			<input type="submit" />
+			<input type="submit" value="' . wfMsg( 'unpatrol-submit' ) . '" />
 			</form>'
 		);
 
+		// If the request was POSTed, start doing stuff!
 		if ( $wgRequest->wasPosted() ) {
 			$user = $wgRequest->getVal( 'username' );
 

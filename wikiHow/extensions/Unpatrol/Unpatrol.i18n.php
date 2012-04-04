@@ -24,6 +24,7 @@ $messages['en'] = array(
 	'unpatrol-reverting' => 'Reverting changes by $1 since $2',
 	'unpatrol-reverting-between' => 'Reverting changes by $1 between $2 and $3',
 	'unpatrol-startdate' => 'Start date:',
+	'unpatrol-submit' => 'Submit',
 	'unpatrol-username' => 'Username:',
 	'unpatrol-year' => 'Year:',
 );
