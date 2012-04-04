@@ -24,11 +24,11 @@ class CategoryListing extends SpecialPage {
 		$wgOut->setRobotPolicy( 'index,follow' );
 
 		// Add the "learn how to categorize an article" message
-		$wgOut->addWikiMsg( 'categorylisting-subheader' ) );
+		$wgOut->addWikiMsg( 'categorylisting-subheader' );
 		// The actual content of the page; before displaying it, get rid of the
 		// surrounding pre tags
 		$wgOut->addHTML( preg_replace( '/\<[\/]?pre\>/', '',
-			wfMsg( 'categorylisting-categorytable', wfGetPad() )
+			wfMsg( 'categorylisting-categorytable', /*wfGetPad()*/'' )
 		) );
 
 		return;
