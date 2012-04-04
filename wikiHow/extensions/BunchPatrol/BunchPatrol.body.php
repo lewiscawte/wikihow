@@ -6,7 +6,7 @@ class BunchPatrol extends SpecialPage {
 	 * Constructor -- set up the new special page
 	 */
 	public function __construct() {
-		parent::__construct( 'BunchPatrol' );
+		parent::__construct( 'BunchPatrol', 'patrol' );
 	}
 
 	/**
@@ -16,6 +16,24 @@ class BunchPatrol extends SpecialPage {
 	 */
 	public function execute( $par ) {
 		global $wgRequest, $wgOut, $wgUser;
+
+		// Check permissions
+		if ( !$wgUser->isAllowed( 'patrol' ) ) {
+			$this->displayRestrictionError();
+			return;
+		}
+
+		// Show a message if the database is in read-only mode
+		if ( wfReadOnly() ) {
+			$wgOut->readOnlyPage();
+			return;
+		}
+
+		// If the user is blocked, they don't need to access this page
+		if ( $wgUser->isBlocked() ) {
+			$wgOut->blockedPage();
+			return;
+		}
 
 		$target = isset( $par ) ? $par : $wgRequest->getVal( 'target' );
 
