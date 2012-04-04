@@ -27,3 +27,32 @@ $dir = dirname( __FILE__ ) . '/';
 $wgExtensionMessagesFiles['ArticleStats'] = $dir . 'ArticleStats.i18n.php';
 $wgAutoloadClasses['ArticleStats'] = $dir . 'ArticleStats.body.php';
 $wgSpecialPages['ArticleStats'] = 'ArticleStats';
+
+// Hooked functions which add a link to Special:ArticleStats to the toolbox
+$wgHooks['SkinTemplateBuildNavUrlsNav_urlsAfterPermalink'][] = 'wfArticleStatsAddLinkToToolbox';
+$wgHooks['SkinTemplateToolboxEnd'][] = 'wfArticleStatsOnSkinTemplateToolboxEnd';
+
+function wfArticleStatsAddLinkToToolbox( &$skinTemplate, &$nav_urls, &$oldid, &$revid ) {
+	if ( $skinTemplate->getTitle()->getNamespace() == NS_MAIN ) {
+		$nav_urls['articlestats'] = array(
+			'text' => wfMessage( 'articlestats' )->plain(),
+			'href' => SpecialPage::getTitleFor( 'ArticleStats', $skinTemplate->getTitle()->getText() )->getFullURL()
+		);
+	}
+	return true;
+}
+
+function wfArticleStatsOnSkinTemplateToolboxEnd( $skinTemplate ) {
+	if ( isset( $skinTemplate->data['nav_urls']['articlestats'] ) ) {
+		if ( $skinTemplate->data['nav_urls']['articlestats']['href'] == '' ) {
+			echo '<li id="t-isarticlestats">' .
+				wfMessgage( 'articlestats' )->plain() . '</li>';
+		} else {
+			$url = $skinTemplate->data['nav_urls']['articlestats']['href'];
+			echo '<li id="t-articlestats"><a href="' . htmlspecialchars( $url ) . '">';
+			echo wfMessage( 'articlestats' )->plain();
+			echo '</a></li>';
+		}
+	}
+	return true;
+}

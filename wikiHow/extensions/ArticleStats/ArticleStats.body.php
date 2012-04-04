@@ -1,6 +1,6 @@
 <?php
 
-class ArticleStats extends SpecialPage {
+class ArticleStats extends UnlistedSpecialPage {
 
 	/**
 	 * Constructor -- set up the new special page
@@ -15,7 +15,7 @@ class ArticleStats extends SpecialPage {
 	 * @param $par Mixed: parameter passed to the page or null
 	 */
 	public function execute( $par ) {
-		global $wgRequest, $wgOut, $wgLang, $wgScriptPath;
+		global $wgRequest, $wgOut, $wgLang, $wgScriptPath, $wgParser;
 
 		$target = $par != '' ? $par : $wgRequest->getVal( 'target' );
 
@@ -95,7 +95,7 @@ class ArticleStats extends SpecialPage {
 		}
 
 		$rev = Revision::newFromTitle( $t );
-		$section = Article::getSection( $rev->getText(), 0 );
+		$section = $wgParser->getSection( $rev->getText(), 0 );
 		$fileNamespaceName = $wgLang->getNsText( NS_FILE );
 		if( preg_match( '/\[\[' . $fileNamespaceName . ':/', $section ) == 1 ) {
 			$intro_photo = wfMsg( 'articlestats-yes' );
@@ -103,17 +103,17 @@ class ArticleStats extends SpecialPage {
 			$intro_photo = wfMsg( 'articlestats-no' );
 		}
 
-		$section = Article::getSection( $rev->getText(), 1 );
+		$section = $wgParser->getSection( $rev->getText(), 1 );
 		preg_match( "/==[ ]*" . wfMsg( 'steps' ) . '/', $section, $matches, PREG_OFFSET_CAPTURE );
 		if ( sizeof( $matches ) == 0 || $matches[0][1] != 0 ) {
-			$section = Article::getSection( $rev->getText(), 2 );
+			$section = $wgParser->getSection( $rev->getText(), 2 );
 		}
 
 		$num_steps = preg_match_all( '/^#/im', $section, $matches );
 		$num_step_photos = preg_match_all( '/\[\[' . $fileNamespaceName . ':/', $section, $matches );
 		$has_stepbystep_photos = wfMsg( 'articlestats-no' );
 		if ( $num_steps > 0 ) {
-			$has_stepbystep_photos = ( $num_step_photos / $num_steps ) > 0.5 ? wfMsg( 'articlestats-yes' ) : wfMsg( 'articlestats_no' );
+			$has_stepbystep_photos = ( $num_step_photos / $num_steps ) > 0.5 ? wfMsg( 'articlestats-yes' ) : wfMsg( 'articlestats-no' );
 		}
 
 		$linkshere = SpecialPage::getTitleFor( 'Whatlinkshere' );
@@ -149,7 +149,7 @@ class ArticleStats extends SpecialPage {
 		);
 		$rating = $wgLang->formatNum( $rating * 100 );
 
-		$a = new Article( $t );
+		$a = new Article( $t, 0 /* oldid */ );
 		$count = $a->getCount();
 		$pageViews = $wgLang->formatNum( $count );
 
