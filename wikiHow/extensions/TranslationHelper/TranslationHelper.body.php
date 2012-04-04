@@ -20,6 +20,9 @@ class TranslationHelper extends SpecialPage {
 	public function execute( $par ) {
 		global $wgDBname, $wgOut, $wgUser, $wgTranslationHelper;
 
+		// @todo FIXME: this method (getExtensionMessagesFor) hasn't existed
+		// since Tim Starling's i18n system refactor, which was in
+		// r52503 (28 June 2009)
 		$source = MessageCache::singleton()->getExtensionMessagesFor(
 			$wgTranslationHelper['sourceLang']
 		);
