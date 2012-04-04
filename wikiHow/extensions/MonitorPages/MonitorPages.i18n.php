@@ -24,6 +24,7 @@ $messages['en'] = array(
 	'monitorpages-previously-monitored' => 'Pages previously monitored',
 	'monitorpages-results' => 'Results for $1',
 	'monitorpages-returnto' => 'Return to the main list',
+	'monitorpages-submit' => 'Submit',
 	// For Special:ListGroupRights
 	'right-monitorpages-add' => 'Add pages to the list of pages whose Google ranking is being monitored',
 );
@@ -42,5 +43,6 @@ $messages['fi'] = array(
 	'monitorpages-position' => 'Sijoitus : $1',
 	'monitorpages-results' => 'Tulokset hakusanalle $1',
 	'monitorpages-returnto' => 'Palaa päälistaan',
+	'monitorpages-submit' => 'Lähetä',
 	'right-monitorpages-add' => 'Lisätä sivuja listaan sivuista, joiden Google-sijoitusta tarkkaillaan',
 );

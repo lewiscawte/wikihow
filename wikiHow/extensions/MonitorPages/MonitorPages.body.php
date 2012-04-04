@@ -131,7 +131,7 @@ class MonitorPages extends SpecialPage {
 					<form method="post" action="' . $me->getFullURL() . '">
 					<textarea name="pages" rows="3" cols="60"></textarea>
 					<br /><br />
-					<input type="submit" value="' . wfMsgHtml( 'submit' ) . '" />
+					<input type="submit" value="' . wfMsgHtml( 'monitorpages-submit' ) . '" />
 					</form>'
 				);
 			}
@@ -146,7 +146,7 @@ class MonitorPages extends SpecialPage {
 			);
 			$wgOut->addHTML(
 				wfMsg( 'monitorpages-results', Linker::link( $t, $t->getText() ) ) .
-				' - (<a href="http://www.google.com/search?q=' . urlencode( 'How to ' . $t->getText() ) . '" target="new">' .
+				' - (<a href="http://www.google.com/search?q=' . urlencode( wfMsg( 'howto', $t->getText() ) ) . '" target="new">' .
 				wfMsgHtml( 'monitorpages-link' ) . '</a>)<br /><br />'
 			);
 			$wgOut->addHTML( '<ol>' );
