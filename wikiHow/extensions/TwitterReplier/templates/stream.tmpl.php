@@ -4,6 +4,6 @@
 	<ul id="tweets_ticker">
 		<?php echo TwitterReplierTemplate::html( 'tweets', array( 'tweets' => $tweets ) ) ?>
 	</ul>
-	
+
 	<span id="screenName"><?php echo $screenName ? $screenName : '' ?></span>
 	<span id="profileImage"><?php echo $profileImage ? $profileImage : '' ?></span>

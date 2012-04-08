@@ -1,26 +1,26 @@
 <span>
-	<? if( $profileImage ): ?>
+	<?php if( $profileImage ): ?>
 	<span class="avatar">
-		<img src="<?= $profileImage ?>" alt="@<?= $fromUser ?> avatar" width="48" height="48"/>
+		<img src="<?php echo $profileImage ?>" alt="@<?php echo $fromUser ?> avatar" width="48" height="48"/>
 	</span>
-	<? endif; ?>
+	<?php endif; ?>
 
-	<span class="twitter_handle" style="font-weight:bold;color:#444" >
-		<?= $fromUser ?>
+	<span class="twitter_handle" style="font-weight:bold; color:#444">
+		<?php echo $fromUser ?>
 	</span>
-
-	<br /> 
-
-	<span class="tweet">
-		<?= $tweet ?>
-	</span> 
 
 	<br />
-	<? if( $createdOn ): ?>
+
+	<span class="tweet">
+		<?php echo $tweet ?>
+	</span>
+
+	<br />
+	<?php if( $createdOn ): ?>
 	<span class="time reltime">
 		<?php $timeStr = strtotime( $createdOn ); ?>
-		<?= TwitterReplierTemplate::formatTime( $timeStr ) ?>
-		<input type="hidden" name="ts" value="<?= $timeStr ?>" />
+		<?php echo TwitterReplierTemplate::formatTime( $timeStr ) ?>
+		<input type="hidden" name="ts" value="<?php echo $timeStr ?>" />
 	</span>
-	<? endif; ?>
+	<?php endif; ?>
 </span>
