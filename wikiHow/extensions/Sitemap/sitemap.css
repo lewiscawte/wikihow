@@ -1,0 +1,13 @@
+#catentry li {
+	margin-bottom: 0;
+}
+
+.cats {
+	width: 90%;
+}
+
+.cats td {
+	vertical-align: top;
+	border: 1px solid #C3D9FF;
+	padding: 5px;
+}
