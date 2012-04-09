@@ -5,7 +5,7 @@
 // tag in the xml data for the video, (3) there are links from a page
 // with namespace Video:.
 //
-// This is run nightly on spare1 as part of the nightly.sh script
+// This is run nightly on the spare server as part of the nightly.sh script
 //
 
 require_once('commandLine.inc');

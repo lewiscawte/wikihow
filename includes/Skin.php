@@ -669,7 +669,7 @@ END;
 			$s .= '<br /><hr />';
 
 			# get a big array of the parents tree
-			$parenttree = $wgTitle->getParentCategoryTree();
+			$parenttree = WikiHow::getCurrentParentCategoryTree();
 			# Skin object passed by reference cause it can not be
 			# accessed under the method subfunction drawCategoryBrowser
 			$tempout = explode("\n", Skin::drawCategoryBrowser($parenttree, $this) );

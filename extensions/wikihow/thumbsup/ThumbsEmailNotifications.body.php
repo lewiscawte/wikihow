@@ -18,7 +18,7 @@ class ThumbsEmailNotifications extends UnlistedSpecialPage {
 		$lookBack = wfTimestamp(TS_DB, $lookBack);
 
 		$sql = "SELECT DISTINCT thumb_recipient_text FROM thumbs WHERE thumb_timestamp > '$lookBack'";
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 		while ($row = $dbr->fetchObject($res)) {
 			$userText = $row->thumb_recipient_text;
 			$u = User::newFromName($userText);
@@ -113,7 +113,7 @@ $html_text";
 		ORDER BY 
 			MAX(thumb_timestamp) DESC";
 
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		$notifications = array();
 		while($row = $dbr->fetchObject($res)) {

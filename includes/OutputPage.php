@@ -562,7 +562,7 @@ class OutputPage {
 	}
 
 	public function sendCacheControl() {
-		global $wgUseSquid, $wgUseESI, $wgUseETag, $wgSquidMaxage, $wgRequest;
+		global $wgUseSquid, $wgUseESI, $wgUseETag, $wgSquidMaxage, $wgRequest, $wgTitle;
 		$fname = 'OutputPage::sendCacheControl';
 
 		$response = $wgRequest->response();
@@ -602,6 +602,10 @@ class OutputPage {
 					# start with a shorter timeout for initial testing
 					# header( "Cache-Control: s-maxage=2678400, must-revalidate, max-age=0" );
 					$response->header( 'Cache-Control: s-maxage='.$this->mSquidMaxage.', must-revalidate, max-age=0' );
+
+					// ADDED a Header to send to Varnish that signifies whether the page is the Main-Page.
+					// This should be stripped out by Varnish before it's passed through
+					wfRunHooks('AddCacheControlHeaders', array());
 				}
 			} else {
 				# We do want clients to cache if they can, but they *must* check for updates

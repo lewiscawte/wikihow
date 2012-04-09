@@ -23,7 +23,7 @@ class Managepagelist extends UnlistedSpecialPage {
 		if ($wgRequest->getVal('a') == 'remove') {
 			$t = Title::newFromID($wgRequest->getVal('id'));
 			$dbw = wfGetDB(DB_MASTER);
-			$dbw->delete('pagelist', array('pl_page' => $wgRequest->getVal('id'), 'pl_list'=>$list));
+			$dbw->delete('pagelist', array('pl_page' => $wgRequest->getVal('id'), 'pl_list'=>$list), __METHOD__);
 			$wgOut->addHTML("<p style='color:blue; font-weight: bold;'>{$t->getFullText()} has been remove from the list.</p>");
 
 		}
@@ -42,18 +42,18 @@ class Managepagelist extends UnlistedSpecialPage {
 				if (!$t || !$t->getArticleID()) {
 					$wgOut->addHTML("<p style='color:red; font-weight: bold;'>Error: Couldn't find article id for {$wgRequest->getVal('newtitle')}</p>");
 				} else {
-					if ($dbr->selectField("pagelist", array("count(*)"), array('pl_page' => $t->getArticleID(), 'pl_list'=>$list)) > 0) {
+					if ($dbr->selectField("pagelist", array("count(*)"), array('pl_page' => $t->getArticleID(), 'pl_list'=>$list), __METHOD__) > 0) {
 						$wgOut->addHTML("<p style='color:red; font-weight: bold;'>Oops! This title is already in the list</p>");
 					} else {	
 						$dbw = wfGetDB(DB_MASTER);
-						$dbw->insert('pagelist', array('pl_page' => $t->getArticleID(), 'pl_list'=>$list));
+						$dbw->insert('pagelist', array('pl_page' => $t->getArticleID(), 'pl_list'=>$list), __METHOD__);
 						if ($list == 'risingstar') {
 							// add the rising star template to the discussion page
 							$talk = $t->getTalkPage();
 							$a = new Article($talk);
 							$text = $a->getContent();
-							$min = $dbr->selectField('revision', array("min(rev_id)"), array('rev_page'=>$t->getArticleId()));
-							$name = $dbr->selectField('revision', array('rev_user_text'), array('rev_id'=>$min));
+							$min = $dbr->selectField('revision', array("min(rev_id)"), array('rev_page'=>$t->getArticleId()), __METHOD__);
+							$name = $dbr->selectField('revision', array('rev_user_text'), array('rev_id'=>$min), __METHOD__);
 							$text = "{{Rising-star-discussion-msg-2|[[User:{$name}|{$name}]]|[[User:{$wgUser->getName()}|{$wgUser->getName()}]]}}\n" . $text;
 							$a->doEdit($text, wfMsg('nab-rs-discussion-editsummary'));
 
@@ -75,7 +75,7 @@ class Managepagelist extends UnlistedSpecialPage {
 					<select onchange='window.location.href=\"/Special:Managepagelist&list=\" + this.value;'>
 			");
 
-		$res = $dbr->query("select distinct(pl_list) from pagelist;");
+		$res = $dbr->query("select distinct(pl_list) from pagelist", __METHOD__);
 		while ($row = $dbr->fetchObject($res)) {
 			if ($row->pl_list == $list) {
 				$wgOut->addHTML("<OPTION SELECTED style='font-weight: bold;'>" . wfMsg('pagelist_' . $row->pl_list) . "</OPTION>\n");
@@ -85,11 +85,11 @@ class Managepagelist extends UnlistedSpecialPage {
 		}
 		$wgOut->addHTML("</select></td></tr></table>
 				</form>");
-		$res = $dbr->select (array('page', 'pagelist'),
+		$res = $dbr->select(array('page', 'pagelist'),
 			array('page_title', 'page_namespace', 'page_id'),
 			array('page_id=pl_page', 'pl_list'=>$list),
-			"Managepagelist::execute",
-			array("ORDER BY" => "pl_page DESC", ));
+			__METHOD__,
+			array("ORDER BY" => "pl_page DESC"));
 
 		$wgOut->addHTML("<br/><p>There are " . number_format($dbr->numRows($res), 0, "", ",") . " articles in this list.</p>");
 		$wgOut->addHTML("<table class='pagelist'>");

@@ -152,21 +152,21 @@ abstract class QCRule {
 	 *
 	 ****/
 
+	function getCacheKey($userid) {
+		return wfMemcKey('qcuserlog', $userid);
+	}
+
 	function markQCAsViewed($qcid) {
 		global $wgMemc, $wgUser; 
 		$userid = $wgUser->getID();
-		//$key = wfMemcKey("qcuserlog");
-		$key = wfMemcKey("qcuserlog" . $userid);
+		$key = self::getCacheKey($userid);
 		$log = $wgMemc->get($key); 
 		if (!$log) {
 			$log = array(); 
 		}
-		//if (!isset($log[$userid])) {
 		if (!isset($log)) {
-			//$log[$userid] = array(); 
 			$log = array();
 		}
-		//$log[$userid][] = $qcid;
 		$log[] = $qcid;
 		$wgMemc->set($key, $log, self::getPreviouslyViewedExp()); 
 	}
@@ -174,9 +174,8 @@ abstract class QCRule {
 	function getPreviouslyViewed() {
 		global $wgMemc, $wgUser; 
 		$userid = $wgUser->getID();
-		//$key = wfMemcKey("qcuserlog");
 		
-		$key = wfMemcKey("qcuserlog" . $userid);
+		$key = self::getCacheKey($userid);
 
 		$log = $wgMemc->get($key); 
 		if (!$log) {
@@ -519,6 +518,9 @@ class QCRuleIntroImage extends QCRuleTextChange {
 		$oldtext = Article::getSection($this->getLastRevisionText(), 0);
 		$newtext = Article::getSection($this->mRevision->getText(), 0);
 
+		//make sure it doesn't have a nointroimg template in it
+		if (preg_match('@{{nointroimg}}@im',$newtext)) return false;
+		
 		$ret = false;
 		if ($oldtext == null && $this->hasText($part, $newtext)) {
 			$ret = true;
@@ -612,6 +614,15 @@ class QCRuleIntroImage extends QCRuleTextChange {
 		// grab the intro image
 		$text = $r->getText(); 
 		$intro = Article::getSection($text, 0); 
+
+		//ignore if we have a {{nointroimg}} template in there
+		$a = new Article($t);
+		$templates = $a->getUsedTemplates();
+		if (in_array('Template:Nointroimg',$templates)) {
+			$this->deleteBad($this->mResult->qc_page);
+			return "<!--{$this->mResult->qc_page}--><p></p><p>Intro images have been disabled for this article. Please <a href='#' onclick='window.location.reload()'>refresh</a> for the next article.</p>";
+		}
+		
 		$html = self::getHeader($t); 
 		$changedby = self::getChangedBy("Image added by: ");
 		$pic = self::getPicture($intro); 

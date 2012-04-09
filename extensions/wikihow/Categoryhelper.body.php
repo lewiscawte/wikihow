@@ -6,7 +6,7 @@ class Categoryhelper extends UnlistedSpecialPage {
 	}
 
 	function getCategoryDropDownTree() {
-		global $wgRequest, $wgOut, $wgMemc;
+		global $wgRequest, $wgMemc;
 
 		$key = wfMemcKey('category', 'tree', 'wikihow');
 		$options = $wgMemc->get( $key );
@@ -70,7 +70,7 @@ class Categoryhelper extends UnlistedSpecialPage {
 	 *
 	 **/
 	function getCategoryTreeArray() {
-		global $wgRequest, $wgOut, $wgMemc;
+		global $wgRequest, $wgMemc;
 	
 		$key = wfMemcKey('category', 'tree', 'wikihow');
 		$options = $wgMemc->get( $key );
@@ -160,14 +160,13 @@ class Categoryhelper extends UnlistedSpecialPage {
 		return $val;
 	}
 
-    function execute ($par) {
+    function execute($par) {
 		global $wgOut, $wgRequest;
 		$wgOut->setArticleBodyOnly(true);	
 		if ($wgRequest->getVal('cat')) {
 			$category = $wgRequest->getVal('cat');
 			$options = $this->getCategoryDropDownTree();
 			foreach($options[$category] as $sub) {
-				//$wgOut->addHTML("{$sub}\n");
 				echo $this->getHTMLForCategoryOption($sub, '', true);
 			}
 		}
@@ -215,7 +214,7 @@ class Categoryhelper extends UnlistedSpecialPage {
 	        }
 	}
 	function getCategoryOptionsForm($default, $cats = null) {
-		global $wgUser, $wgOut, $wgTitle, $wgContLang, $wgMaxCategories, $wgRequest;
+		global $wgUser, $wgMaxCategories, $wgRequest;
 		
 		if (!$wgUser->isLoggedIn())
 			return "";
@@ -231,7 +230,7 @@ class Categoryhelper extends UnlistedSpecialPage {
 			$fakeparent[Title::makeTitle(NS_CATEGORY, $default)->getFullText()] = array();
 			$tree = Categoryhelper::modifiedParentCategoryTree($fakeparent);
 		} else {
-			$tree = $wgTitle->getParentCategoryTree();
+			$tree = WikiHow::getCurrentParentCategoryTree();
 		}
 		if (!$tree) $tree = array();
 		$toplevel = array();
@@ -336,7 +335,7 @@ print_r($bottomlevel);
 	 *
 	 **/
 	function getCategoryOptionsForm2($default, $cats = null) {
-		global $wgUser, $wgOut, $wgTitle, $wgContLang, $wgMaxCategories, $wgRequest;
+		global $wgUser, $wgMaxCategories, $wgRequest;
 		
 		if (!$wgUser->isLoggedIn())
 			return "";
@@ -352,7 +351,7 @@ print_r($bottomlevel);
 			$fakeparent[Title::makeTitle(NS_CATEGORY, $default)->getFullText()] = array();
 			$tree = Categoryhelper::modifiedParentCategoryTree($fakeparent);
 		} else {
-			$tree = $wgTitle->getParentCategoryTree();
+			$tree = WikiHow::getCurrentParentCategoryTree();
 		}
 		if (!$tree) $tree = array();
 		$toplevel = array();

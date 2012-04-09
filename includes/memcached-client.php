@@ -402,14 +402,14 @@ class memcached
       wfProfileIn( $fname );
 
       if (!$this->_active) {
-	 wfProfileOut( $fname );
+         wfProfileOut( $fname );
          return false;
       }
 
       $sock = $this->get_sock($key);
 
       if (!is_resource($sock)) {
-	 wfProfileOut( $fname );
+         wfProfileOut( $fname );
          return false;
       }
 
@@ -419,7 +419,7 @@ class memcached
       if (!$this->_safe_fwrite($sock, $cmd, strlen($cmd)))
       {
          $this->_dead_sock($sock);
-	 wfProfileOut( $fname );
+         wfProfileOut( $fname );
          return false;
       }
 
@@ -936,6 +936,12 @@ class memcached
     */
    function _set ($cmd, $key, $val, $exp)
    {
+      global $wgMemCachedDefaultExpiry;
+
+      // XXCHANGED: added to expire stuff from memcache after a while
+      if ($wgMemCachedDefaultExpiry && !$exp)
+         $exp = $wgMemCachedDefaultExpiry;
+
       if (!$this->_active)
          return false;
 

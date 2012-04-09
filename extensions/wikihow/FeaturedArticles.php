@@ -2,11 +2,10 @@
 
 class FeaturedArticles {
 	
-	
-	function getNumberOfDays ($default, $title_article="RSS-feed") {
+	public static function getNumberOfDays($default, $feedTitle = "RSS-feed") {
 		$header = "==Number of Days==";
 		$header_len = strlen($header);
-		$t = Title::newFromText($title_article, NS_PROJECT);
+		$t = Title::newFromText($feedTitle, NS_PROJECT);
 		$r = Revision::newFromTitle($t);
 		$text = $r->getText();
 		$x = strpos($text, $header);
@@ -17,10 +16,11 @@ class FeaturedArticles {
 		return trim($days);
 	}
 	
-	function getDatesForFeed ($numdays) {
+	private static function getDatesForFeed($numdays) {
 		global $wgRSSOffsetHours;
+
 		$result = array();
-		$tstamp=mktime() - $wgRSSOffsetHours * 3600;
+		$tstamp = mktime() - $wgRSSOffsetHours * 3600;
 		$last_tz = date('Z', $tstamp);
 		for ($i = 0; $i < $numdays; $i++) {
 			$xx = getdate($tstamp);
@@ -43,18 +43,25 @@ class FeaturedArticles {
 		return $result; 
 	}
 	
-	
-	function getFeaturedArticles($numdays, $title_article="RSS-feed") { 
-		global $wgStylePath, $wgUser, $wgScriptPath, $wgTitle, $wgRSSOffsetHours;
-		$sk = $wgUser->getSkin();
-		$feeds = array();
-		$t = Title::newFromText($title_article, NS_PROJECT);
-		$r = Revision::newFromTitle($t); 
-		if (!$r) {
-			return $feeds;
+	public static function getFeaturedArticles($numdays, $feedTitle = "RSS-feed") { 
+		global $wgRSSOffsetHours, $wgMemc;
+		static $texts = array(); // local cache so that we retrieve text once
+
+		$titleHash = md5($feedTitle);
+		$cachekey = wfMemcKey('featured', $numdays, $titleHash);
+		$feeds = $wgMemc->get($cachekey);
+		if ($feeds) return $feeds;
+
+		if (!$texts[$titleHash]) {
+			$title = Title::newFromText($feedTitle, NS_PROJECT);
+			$rev = Revision::newFromTitle($title); 
+			if (!$rev) return array();
+
+			$texts[$titleHash] = $rev->getText(); 
 		}
-		$text = $r->getText(); 
-		$dates = FeaturedArticles::getDatesForFeed($numdays);
+		$text = $texts[$titleHash];
+
+		$dates = self::getDatesForFeed($numdays);
 		$d_count = array();
 		$feeds = array();
 		foreach ($dates as $d) {
@@ -122,9 +129,10 @@ class FeaturedArticles {
 			$feeds[] = $item;
 		}
 		
+		$wgMemc->set($cachekey, $feeds, 5 * 60); // 5 minutes
+
 		return $feeds;
 	}
 	
 }
 	
-?>

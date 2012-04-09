@@ -7,7 +7,7 @@ require_once("$IP/maintenance/WikiPhoto.class.php");
 
 class AdminEnlargeImages extends UnlistedSpecialPage {
 
-	const DEFAULT_CENTER_PIXELS = 500;
+	const DEFAULT_CENTER_PIXELS = 550;
 	const DEFAULT_ENLARGE_PIXELS = 300;
 
 	public function __construct() {
@@ -23,7 +23,7 @@ class AdminEnlargeImages extends UnlistedSpecialPage {
 		foreach ($pageList as $url) {
 			$url = trim($url);
 			if (!empty($url)) {
-				$title = WikiPhoto::getArticleTitle($url);
+				$title = WikiPhoto::getArticleTitleNoCheck($url);
 				$urls[] = array('url' => $url, 'title' => $title);
 			}
 		}
@@ -34,98 +34,16 @@ class AdminEnlargeImages extends UnlistedSpecialPage {
 	 * Resize the steps images in a list of Title objects.
 	 */
 	private static function enlargeImagesUrls(&$urls, $recenter, $px, $introPx) {
-		$dbr = wfGetDB(DB_SLAVE);
 		foreach ($urls as &$url) {
-			$err = '';
-			$numImages = 0;
 			if (!$url['title']) {
 				$err = 'Unable to load article';
+				$numImages = 0;
 			} else {
-				$stepsText = '';
-				$wikitext = Wikitext::getWikitext($dbr, $url['title']);
-				if ($wikitext) {
-					list($stepsText, $sectionID) = 
-						Wikitext::getStepsSection($wikitext, true);
-				}
-
-				if (!$stepsText) {
-					$err = 'Unable to load wikitext';
-				} else {
-					list($stepsText, $numImages, $err) = 
-						self::enlargeImages($stepsText, $recenter, $px, false);
-					if (!$err) {
-						$wikitext = Wikitext::replaceStepsSection($wikitext, $sectionID, $stepsText, true);
-
-						$comment = $recenter ?
-							'Enlarging and centering Steps photos' :
-							'Enlarging Steps photos to ' . $px . ' pixels';
-
-						if ($introPx) {
-							$intro = Wikitext::getIntro($wikitext);
-							list($intro, $introImages, $err) = 
-								self::enlargeImages($intro, '', $introPx, true);
-							$numImages += $introImages;
-							$wikitext = Wikitext::replaceIntro($wikitext, $intro);
-							
-							$comment .= '; enlarging intro image';
-						}
-
-						if (!$err) {
-							$err = Wikitext::saveWikitext($url['title'], $wikitext, $comment);
-						}
-					}
-				}
+				list($err, $numImages) = Wikitext::enlargeImages($url['title'], $recenter, $px, $introPx);
 			}
 			$url['err'] = $err;
 			$url['images'] = $numImages;
 		}
-	}
-
-	/**
-	 * Enlarge the images in a section of wikitext.  Currently tested with
-	 * both intro and steps sections.
-	 */
-	private static function enlargeImages($text, $recenter, $px, $isIntro) {
-		$orientation = $recenter ? 'center' : '';
-
-		if (!$isIntro) {
-			$steps = Wikitext::splitSteps($text);
-		} else {
-			$steps = array($text);
-		}
-
-		$numImages = 0;
-		foreach ($steps as &$step) {
-			if ($isIntro || Wikitext::isStep($step, false)) {
-				list($tokenText, $images) = 
-					Wikitext::cutImages($step);
-
-				$step = $tokenText;
-				$numImages += count($images);
-
-				foreach ($images as $image) {
-					$tag = $image['tag'];
-					$modtag = Wikitext::changeImageTag($tag, $px, $orientation);
-					if ($recenter) {
-						$step = str_replace($image['token'], '', $step);
-						$step = trim($step);
-						$re = "@[\r\n]+===[^=]*===@m";
-						// Special case for alt methods
-						if (preg_match($re, $step, $altMethod)) {
-							$insert = "<br><br>$modtag" . $altMethod[0] . "\n";
-							$step = preg_replace($re, $insert, $step);
-						} else {
-							$step .= "<br><br>$modtag\n";
-						}
-					} else {
-						$step = str_replace($image['token'], $modtag, $step);
-					}
-				}
-			}
-		}
-
-		$text = join('', $steps);
-		return array($text, $numImages, $err);
 	}
 
 	/**
@@ -242,7 +160,8 @@ $tmpl = <<<EOHTML
 						$('#pages-result').html(data['result']);
 						$('#pages-list').focus();
 					},
-					'json');
+					'json')
+					.error(function() {});
 				return false;
 			});
 

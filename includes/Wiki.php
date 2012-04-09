@@ -139,7 +139,10 @@ class MediaWiki {
 
 		$action = $this->getVal('Action');
 		$search = $request->getVal('search');
-		if ($this->getVal('Server') != "http://" . $_SERVER['HTTP_HOST'] && !preg_match("@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+@",  $_SERVER['HTTP_HOST'])) {
+		if ($this->getVal('Server') != "http://" . $_SERVER['HTTP_HOST']
+			&& !preg_match("@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+@",  $_SERVER['HTTP_HOST'])
+			&& !IS_SPARE_HOST)
+		{
 			$output->redirect($this->getVal('Server') . $_SERVER['REQUEST_URI'], 301);
 			return;
 		}

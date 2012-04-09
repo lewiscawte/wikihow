@@ -16,7 +16,7 @@ class ArticleData extends UnlistedSpecialPage {
 		global $wgUser, $wgOut, $wgRequest, $wgServer, $isDevServer;
 
 		$userGroups = $wgUser->getGroups();
-		if (($wgServer != "http://spare1.wikihow.com" && !$isDevServer) || $wgUser->isBlocked() || !in_array('staff', $userGroups)) {
+		if ((!IS_SPARE_HOST && !$isDevServer) || $wgUser->isBlocked() || !in_array('staff', $userGroups)) {
 			$wgOut->setRobotpolicy('noindex,nofollow');
 			$wgOut->showErrorPage( 'nosuchspecialpage', 'nospecialpagetext' );
 			return;

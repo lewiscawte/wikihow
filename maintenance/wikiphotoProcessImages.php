@@ -35,6 +35,7 @@ CREATE TABLE wikiphoto_image_names (
 
 
 require_once('commandLine.inc');
+require_once("$IP/maintenance/WikiPhoto.class.php");
 require_once("$IP/extensions/wikihow/common/S3.php");
 
 class WikiPhotoProcess {
@@ -50,7 +51,11 @@ class WikiPhotoProcess {
 	static $debugArticleID = '',
 		$stepsMsg,
 		$imageExts = array('png', 'jpg'),
-		$excludeUsers = array('old', 'backup');
+		$excludeUsers = array('old', 'backup'),
+		$enlargePhotoUsers = array(
+			'amy', 'augosto', 'gerard', 'jameel',
+			'ledine', 'mario', 'muhammad', 'rona',
+			'evgeny');
 
 	/**
 	 * Generate a string of random characters
@@ -147,10 +152,10 @@ class WikiPhotoProcess {
 	/**
 	 * Check the database about whether an article needs processing
 	 */
-	private static function imagesNeedProcessing($articleID) {
+	private static function dbImagesNeedProcessing($articleID) {
 		$dbr = self::getDB('read');
 		$sql = 'SELECT processed, retry FROM wikiphoto_article_status WHERE article_id=' . $dbr->addQuotes($articleID);
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 		$row = $dbr->fetchRow($res);
 		if (!$row || !$row['processed'] || $row['retry']) {
 			return true;
@@ -162,10 +167,10 @@ class WikiPhotoProcess {
 	/**
 	 * Set an article as processed in the database
 	 */
-	private static function setArticleProcessed($articleID, $creator, $error, $url, $numImages, $numSteps) {
+	private static function dbSetArticleProcessed($articleID, $creator, $error, $url, $numImages, $numSteps) {
 		$dbw = self::getDB('write');
 		$sql = 'REPLACE INTO wikiphoto_article_status SET article_id=' . $dbw->addQuotes($articleID) . ', processed=' . $dbw->addQuotes(wfTimestampNow(TS_MW)) . ', retry=0, error=' . $dbw->addQuotes($error) . ', url=' . $dbw->addQuotes($url) . ', images=' . $dbw->addQuotes($numImages) . ', creator=' . $dbw->addQuotes($creator) . ', steps=' . $dbw->addQuotes($numSteps) . ', needs_retry=0';
-		$dbw->query($sql);
+		$dbw->query($sql, __METHOD__);
 	}
 
 	/**
@@ -308,7 +313,7 @@ class WikiPhotoProcess {
 		// check if we've already tried to upload this image
 		$imgname = $articleID . '/' . $image['name'];
 		$sql = 'SELECT wikiname FROM wikiphoto_image_names WHERE filename=' . $dbw->addQuotes($imgname);
-		$res = $dbw->query($sql);
+		$res = $dbw->query($sql, __METHOD__);
 		$row = $res->fetchRow();
 
 		// if we've already uploaded this image, just return that filename
@@ -345,7 +350,7 @@ class WikiPhotoProcess {
 		$image['mediawikiName'] = $newName;
 
 		$sql = 'INSERT INTO wikiphoto_image_names SET filename=' . $dbw->addQuotes($imgname) . ', wikiname=' . $dbw->addQuotes($image['mediawikiName']);
-		$dbw->query($sql);
+		$dbw->query($sql, __METHOD__);
 
 		return true;
 	}
@@ -412,10 +417,18 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 			$err = self::saveArticleText($articleID, $text);
 		}
 
+		// try to enlarge the uploaded photos of certain users
+		if (!$err) {
+			if (in_array($creator, self::$enlargePhotoUsers)) {
+				list($err, $numImages) =
+					Wikitext::enlargeImages($title, true, AdminEnlargeImages::DEFAULT_CENTER_PIXELS);
+			}
+		}
+
 		if ($err) {
-			self::setArticleProcessed($articleID, $creator, $err, $url, 0, $numSteps);
+			self::dbSetArticleProcessed($articleID, $creator, $err, $url, 0, $numSteps);
 		} else {
-			self::setArticleProcessed($articleID, $creator, '', $url, count($imageList), $numSteps);
+			self::dbSetArticleProcessed($articleID, $creator, '', $url, count($imageList), $numSteps);
 		}
 
 		return array($err, $title);
@@ -452,7 +465,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 				// if article needs to be processed, process all images within that dir
 				if ($articleID > 0
 					&& is_dir($articleDir)
-					&& self::imagesNeedProcessing($articleID)
+					&& self::dbImagesNeedProcessing($articleID)
 					&& (!self::$debugArticleID || self::$debugArticleID == $articleID))
 				{
 					$subdh = opendir($articleDir);
@@ -486,7 +499,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 	/**
 	 * Grab the status of all articles processed.
 	 */
-	private static function getArticlesUpdatedAll() {
+	private static function dbGetArticlesUpdatedAll() {
 		$articles = array();
 		$dbr = self::getDB('read');
 		$res = $dbr->select('wikiphoto_article_status', array('article_id', 'processed', 'error', 'needs_retry', 'retry'), '', __METHOD__);
@@ -501,9 +514,9 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 	/**
 	 * Flag article as needing retry
 	 */
-	private static function flagNeedsRetry($id) {
+	private static function dbFlagNeedsRetry($id) {
 		$dbw = self::getDB('write');
-		$dbw->update('wikiphoto_article_status', array('needs_retry' => 1), array('article_id' => $id));
+		$dbw->update('wikiphoto_article_status', array('needs_retry' => 1), array('article_id' => $id), __METHOD__);
 	}
 
 	/**
@@ -660,7 +673,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 		$s3 = new S3(WH_AWS_WIKIPHOTO_ACCESS_KEY, WH_AWS_WIKIPHOTO_SECRET_KEY);
 		$articles = self::getS3Articles($s3, self::AWS_BUCKET);
 
-		$processed = self::getArticlesUpdatedAll();
+		$processed = self::dbGetArticlesUpdatedAll();
 
 		// process all articles
 		foreach ($articles as $id => $details) {
@@ -668,7 +681,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 			if ($debug && $debug != $id) continue;
 			if (@$details['err']) {
 				if (!$processed[$id]) {
-					self::setArticleProcessed($id, $details['user'], $details['err'], '', 0, 0);
+					self::dbSetArticleProcessed($id, $details['user'], $details['err'], '', 0, 0);
 				}
 				continue;
 			}
@@ -683,7 +696,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 				&& !$processed[$id]['error']
 				&& $processed[$id]['processed'] < $details['time'])
 			{
-				self::flagNeedsRetry($id);
+				self::dbFlagNeedsRetry($id);
 				continue;
 			}
 
@@ -720,6 +733,13 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 				continue;
 			}
 
+			// if article is not on Wikiphoto article exclude list
+			if (WikiPhoto::checkExcludeList($id)) {
+				$err = 'Article was found on Wikiphoto EXCLUDE list';
+				self::dbSetArticleProcessed($id, $details['user'], $err, '', 0, 0);
+				continue;
+			}
+
 			// pull zip file into staging area
 			$stageDir = '';
 			$imageList = array();
@@ -752,7 +772,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 			if (!$err) {
 				list($err, $title) = self::processImages($id, $details['user'], $imageList);
 			} else {
-				self::setArticleProcessed($id, $details['user'], $err, '', 0, 0);
+				self::dbSetArticleProcessed($id, $details['user'], $err, '', 0, 0);
 			}
 
 			if ($stageDir) {
@@ -894,7 +914,9 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 		global $wgUser;
 		// next 2 lines taken from maintenance/deleteDefaultMessages.php
 		$wgUser = User::newFromName($user);
-		$wgUser->addGroup('bot');
+		if (!$wgUser->isBot()) {
+			$wgUser->addGroup('bot');
+		}
 	}
 
 	/**

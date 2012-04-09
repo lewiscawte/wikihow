@@ -3,14 +3,14 @@
 class Welcome extends UnlistedSpecialPage {
 
 	function __construct() {
-		UnlistedSpecialPage::UnlistedSpecialPage( 'Welcome' );
+		UnlistedSpecialPage::UnlistedSpecialPage('Welcome');
 	}
 
 	function sendWelcome() {
 		global $wgUser;
 		return self::sendWelcomeUser($wgUser);
 	}
-		
+
 	function sendWelcomeUser($user) {
 		global $wgServer, $wgOutputEncoding;
 
@@ -19,8 +19,8 @@ class Welcome extends UnlistedSpecialPage {
 			return true;
 		}
 
-		if ($user->getOption( 'disablemarketingemail' ) == '1' ) {
-			wfDebug( "Welcome email: Marketing preference not selected.\n");
+		if ($user->getOption('disablemarketingemail') == '1' ) {
+			wfDebug("Welcome email: Marketing preference not selected.\n");
 			return true;
 		}
 
@@ -30,7 +30,7 @@ class Welcome extends UnlistedSpecialPage {
 		}
 
 		$subject = wfMsg('welcome-email-subject');
-			
+
 		$from_name = "";
 		$validEmail = "";
 		$from_name = wfMsg('welcome-email-fromname');
@@ -45,12 +45,15 @@ class Welcome extends UnlistedSpecialPage {
 
 		$validEmail = $email;
 		$to_name .= " <$email>";
-			
-		//server,username,talkpage,username
-		$body = wfMsg('welcome-email-body', $wgServer, $username, $wgServer .'/'. preg_replace('/ /','-',$user->getTalkPage()), $user->getName()  );
 
-		$from = new MailAddress ($from_name);	
-		$to = new MailAddress ($to_name);
+		//server,username,talkpage,username
+		$body = wfMsg('welcome-email-body',
+			$wgServer, $username,
+			$wgServer .'/'. preg_replace('/ /','-',$user->getTalkPage()),
+			$user->getName() );
+
+		$from = new MailAddress($from_name);
+		$to = new MailAddress($to_name);
 		$content_type = "text/html; charset={$wgOutputEncoding}";
 		if (!UserMailer::send($to, $from, $subject, $body, false, $content_type)) {
 			wfDebug( "Welcome email: got an en error while sending.\n");
@@ -60,15 +63,15 @@ class Welcome extends UnlistedSpecialPage {
 
 	}
 
-	function execute ($par) {
+	function execute($par) {
 		global $wgUser, $wgRequest, $wgOut, $wgServer;
-		wfLoadExtensionMessages('Welcome');		
+		wfLoadExtensionMessages('Welcome');
 		$fname = 'Welcome';
 
 		$wgOut->setArticleBodyOnly(true);
 
 		$username = $wgRequest->getVal('u', null);
-		
+
 		if ($username != '') {
 			$u = new User();
 			$u->setName($username);
@@ -78,10 +81,12 @@ class Welcome extends UnlistedSpecialPage {
 		}
 
 		//server,username,talkpage,username
-		$body = wfMsg('welcome-email-body', $wgServer, $username, $wgServer .'/'. preg_replace('/ /','-',$u->getTalkPage()), $username  );
+		$body = wfMsg('welcome-email-body',
+			$wgServer, $username,
+			$wgServer .'/'. preg_replace('/ /','-',$u->getTalkPage()),
+			$username );
 
-		echo $body;	
+		echo $body;
 	}
 }
-		
-	
+

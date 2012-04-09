@@ -9,10 +9,10 @@ class wikihowAds {
 		$this->ads = array();
 	}
 	
-	public static function getSetup(){
+	public static function getSetup() {
 		global $wgUser;
 		
-		$sk = $wgUser->getSkin();
+		//$sk = $wgUser->getSkin();
 		
 		//return wfMsg('Ad_setup', WikiHowTemplate::isHhm());
 		return wfMsg('Wikihowads_setup', WikiHowTemplate::isHhm());
@@ -101,7 +101,7 @@ EOHTML;
 	
 	function getLinkUnit($num) {
 		global $wgUser;
-		$sk = $wgUser->getSkin();
+		//$sk = $wgUser->getSkin();
 		$channels = self::getCustomGoogleChannels('linkunit' . $num, false);
 		$s = wfMsg('linkunit' . $num, $channels[0]);
 		$s = "<div class='wh_ad'>" . preg_replace('/\<[\/]?pre[^>]*>/', '', $s) . "</div>";
@@ -110,7 +110,7 @@ EOHTML;
 
 	function getAdUnit($num) {
 		global $wgUser, $wgLanguageCode;
-		$sk = $wgUser->getSkin();
+		//$sk = $wgUser->getSkin();
 		if($wgLanguageCode == "en") {
 			$channels = self::getCustomGoogleChannels('adunit' . $num, false);
 			$s = wfMsg('adunit' . $num, $channels[0]);
@@ -125,8 +125,8 @@ EOHTML;
 	
 	function getWikihowAdUnit($num) {
 		global $wgUser, $wgLanguageCode;
-		$sk = $wgUser->getSkin();
-		if($wgLanguageCode == "en"){ 
+		//$sk = $wgUser->getSkin();
+		if ($wgLanguageCode == "en") { 
 			$channelArray = self::getCustomGoogleChannels('adunit' . $num, false);
 			$channels = $channelArray[0];
 		}
@@ -160,7 +160,7 @@ EOHTML;
 		}
 	}
 	
-	public static function getGlobalChannels(){
+	public static function getGlobalChannels() {
 		global $wgTitle, $wgUser;
 
 		$sk = $wgUser->getSkin();
@@ -173,8 +173,8 @@ EOHTML;
 		// tech buckets above
         if ($wgTitle->getNamespace() == NS_MAIN) {
             $dbr = wfGetDB(DB_MASTER);
-            $minrev = $dbr->selectField('revision', 'min(rev_id)', array('rev_page'=>$wgTitle->getArticleID()));
-			$details = $dbr->selectRow('revision', array('rev_user_text', 'rev_timestamp'), array('rev_id'=>$minrev));
+            $minrev = $dbr->selectField('revision', 'min(rev_id)', array('rev_page'=>$wgTitle->getArticleID()), __METHOD__);
+			$details = $dbr->selectRow('revision', array('rev_user_text', 'rev_timestamp'), array('rev_id'=>$minrev), __METHOD__);
 			$fe = $details->rev_user_text;
 
 			//Tech buckets (no longer only WRM)
@@ -204,8 +204,8 @@ EOHTML;
 				}
 			}
 
-			if(!$foundTech){
-				$msg = wfMsg('T_bin2')  . "\n" . wfMsg('T_bin2a'); //startup companies
+			if (!$foundTech) {
+				$msg = wfMsg('T_bin2')  . "\n" . wfMsg('T_bin2a') . "\n" . wfMsg('T_bin2b'); //startup companies
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -426,7 +426,7 @@ EOHTML;
 				}
 			}
 
-			$msg = wfMsg('Dec2010_e2');
+			$msg = wfMsg('Dec2010_e2') . "\n" . wfMsg('Dec2010_e2a');
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -758,11 +758,11 @@ EOHTML;
 		}
 
 		// do the categories
-		$tree = $wgTitle->getParentCategoryTree();
-		$tree = $sk->flattenCategoryTree($tree);
-		$tree = $sk->cleanUpCategoryTree($tree);
+		$tree = WikiHow::getCurrentParentCategoryTree();
+		$tree = self::flattenCategoryTree($tree);
+		$tree = self::cleanUpCategoryTree($tree);
 
-		$map = $sk->getCategoryChannelMap();
+		$map = self::getCategoryChannelMap();
 		foreach ($tree as $cat) {
 			if (isset($map[$cat])) {
 				$channels[] = $map[$cat];
@@ -791,17 +791,17 @@ EOHTML;
 		return $result;
 	}
 	
-	function getInternationalChannels(){
+	function getInternationalChannels() {
 		global $wgTitle, $wgUser;
 		
 		$channels = array();
 
-		$sk = $wgUser->getSkin();
+		//$sk = $wgUser->getSkin();
 
 		if ($wgTitle->getNamespace() == NS_MAIN) {
             $dbr = wfGetDB(DB_MASTER);
-            $minrev = $dbr->selectField('revision', 'min(rev_id)', array('rev_page'=>$wgTitle->getArticleID()));
-			$details = $dbr->selectRow('revision', array('rev_user_text', 'rev_timestamp'), array('rev_id'=>$minrev));
+            $minrev = $dbr->selectField('revision', 'min(rev_id)', array('rev_page'=>$wgTitle->getArticleID()), __METHOD__);
+			$details = $dbr->selectRow('revision', array('rev_user_text', 'rev_timestamp'), array('rev_id'=>$minrev), __METHOD__);
 			$fe = $details->rev_user_text;
 
             if (in_array($fe, array('Wilfredor', 'WikiHow Traduce')) ){
@@ -818,7 +818,7 @@ EOHTML;
 		return $channelString;
 	}
 	
-	function isJSTest(){
+	function isJSTest() {
 		global $wgTitle;
 		
 		$msg = wfMsg('Js_control'); //JS test
@@ -831,7 +831,7 @@ EOHTML;
 		
 	}
 	
-	function isJSControl(){
+	function isJSControl() {
 		global $wgTitle;
 		
 		$msg = wfMsg('Js_test'); //JS test
@@ -853,7 +853,7 @@ EOHTML;
 		return false;
 	}
 	
-	function getMtv(){
+	function getMtv() {
 		$s = "";
 			
 		$s = "<div class='wh_ad'><div class='side_ad'>"; 
@@ -862,6 +862,61 @@ EOHTML;
 		$s .= "</div></div>";
 		
 		return $s;
+	}
+
+	public static function cleanUpCategoryTree($tree) {
+		$results = array();
+		if (!is_array($tree)) return $results;
+		foreach ($tree as $cat) {
+			$t = Title::newFromText($cat);
+			if ($t)
+				$results[]= $t->getText();
+		}
+		return $results;
+	}
+
+	public static function flattenCategoryTree($tree) {
+		if (is_array($tree)) {
+			$results = array();
+			foreach ($tree as $key => $value) {
+				$results[] = $key;
+				$x = self::flattenCategoryTree($value);
+				if (is_array($x))
+					return array_merge($results, $x);
+				else
+					return $results;
+			}
+		} else {
+			$results = array();
+			$results[] = $tree;
+			return $results;
+		}
+	}
+
+	public static function getCategoryChannelMap() {
+		global $wgMemc;
+		$key = wfMemcKey('googlechannel', 'category', 'tree');
+		$tree = $wgMemc->get( $key );
+		if (!$tree) {
+			$tree = array();
+			$content = wfMsgForContent('category_ad_channel_map');
+			preg_match_all("/^#.*/im", $content, $matches);
+			foreach ($matches[0] as $match) {
+				$match = str_replace("#", "", $match);
+				$cats = split(",", $match);
+				$channel= trim(array_pop($cats));
+				foreach($cats as $c) {
+					$c = trim($c);
+					if (isset($tree[$c]))
+						$tree[$c] .= ",$channel";
+					else
+						$tree[$c] = $channel;
+				}
+			}
+			$wgMemc->set($key, $tree, time() + 3600);
+		}
+		return $tree;
+
 	}
 
 }

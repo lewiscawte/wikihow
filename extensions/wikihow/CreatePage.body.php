@@ -227,7 +227,7 @@ class SuggestionSearch extends UnlistedSpecialPage {
 		$text = trim($text);
 		$limit = intval($limit);
 
-		$cacheKey = wfMemcKey('match_suggest_titles__' . $limit . ':' .$text);
+		$cacheKey = wfMemcKey('matchsuggtitles', $limit, $text);
 		$result = $wgMemc->get($cacheKey);
 		if ($result !== null) {
 			return $result;
@@ -235,7 +235,7 @@ class SuggestionSearch extends UnlistedSpecialPage {
 
 		$key = generateSearchKey($text);
 
-		$db =& wfGetDB( DB_MASTER );
+		$db = wfGetDB( DB_MASTER );
 
 		$base = "SELECT suggested_titles.st_title, st_id FROM suggested_titles WHERE ";
 		$sql = $base . " convert(st_title using latin1) like " . $db->addQuotes($text . "%"). " and st_used = 0 ";

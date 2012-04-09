@@ -50,7 +50,8 @@ $wgLogHeaders['nap'] = 'newarticlepatrollogpagetext';
 // Take the article out of the queue if it's been deleted
 function wfNewArticlePatrolClearOnDelete($article, $user, $reason) {
 	$dbw = wfGetDB(DB_MASTER);
-	$dbw->query("DELETE FROM newarticlepatrol WHERE nap_page={$article->getId()};");
+	$sql = "DELETE FROM newarticlepatrol WHERE nap_page={$article->getId()}";
+	$dbw->query($sql, __FUNCTION__);
 	return true;
 }
 
@@ -65,22 +66,19 @@ function wfNewArticlePatrolAddOnCreation($article, $user, $text, $summary, $p5, 
 
 	if (in_array("bot", $wgUser->getGroups())) {
 		// ignore bots
-		//rsdbg('bot1', $article);
 		return true;
 	}
 
-	$num_revisions = $db->selectField('revision', 'count(*)', array('rev_page=' . $article->getId()));
-	$min_rev = $db->selectField('revision', 'min(rev_id)', array('rev_page=' . $article->getId()));
-	$ts = $db->selectField('revision', 'rev_timestamp', array('rev_id=' . $min_rev));
-	$userid = $db->selectField('revision', 'rev_user', array('rev_id=' . $min_rev));
-	//$rev_id_fetched = $article->mRevIdFetched;
-	$nap_count = $db->selectField('newarticlepatrol', 'count(*)', array('nap_page=' . $article->getId()));
+	$num_revisions = $db->selectField('revision', 'count(*)', array('rev_page=' . $article->getId()), __FUNCTION__);
+	$min_rev = $db->selectField('revision', 'min(rev_id)', array('rev_page=' . $article->getId()), __FUNCTION__);
+	$ts = $db->selectField('revision', 'rev_timestamp', array('rev_id=' . $min_rev), __FUNCTION__);
+	$userid = $db->selectField('revision', 'rev_user', array('rev_id=' . $min_rev), __FUNCTION__);
+	$nap_count = $db->selectField('newarticlepatrol', 'count(*)', array('nap_page=' . $article->getId()), __FUNCTION__);
 
 	// filter articles created by bots
 	if ($userid > 0) {
 		$u = User::newFromID($userid);
 		if ($u && in_array("bot", $u->getGroups())) {
-			//rsdbg('bot2', $article);
 			return true;
 		}
 	}
@@ -116,7 +114,8 @@ function wfNewArticlePatrolAddOnCreation($article, $user, $text, $summary, $p5, 
 					'count(*)',
 					array('rev_page=page_id',
 						'page_namespace' => NS_MAIN,
-						'rev_user_text'=>$user->getName()));
+						'rev_user_text'=>$user->getName()),
+					__FUNCTION__);
 				if ($count < $newbie['edits']) {
 					$nap_newbie = 1;
 				}
@@ -126,42 +125,27 @@ function wfNewArticlePatrolAddOnCreation($article, $user, $text, $summary, $p5, 
 				$count = $db->selectField(
 					array('firstedit'),
 					'count(*)',
-					array('fe_user_text' => $user->getName()));
+					array('fe_user_text' => $user->getName()),
+					__FUNCTION__);
 				if ($count < $newbie['articles']) {
 					$nap_newbie = 1;
 				}
 			}
 		}
 
-		$min_ts = $db->selectField('revision', 'min(rev_timestamp)', array('rev_page=' . $article->getId()));
+		$min_ts = $db->selectField('revision',
+			'min(rev_timestamp)',
+			array('rev_page' => $article->getId()),
+			__FUNCTION__);
 
 		$db->insert('newarticlepatrol',
 			array(
 				'nap_page' => $article->getId(),
 				'nap_timestamp' => $min_ts,
 				'nap_newbie' => $nap_newbie),
-			__METHOD__);
-		//rsdbg(false, $article);
-	} else {
-		//rsdbg('missed conds', $article);
+			__FUNCTION__);
 	}
 
 	return true;
 }
-
-/*
-function rsdbg($missedNAB, $article) {
-	global $wgServer;
-	$t = $article->getTitle();
-	$titleStr = $t ? $t->getText() : '(no title!)';
-	$url = $t ? $t->getPartialUrl() : '';
-	$email = new MailAddress('reuben@wikihow.com');
-	$subject = 'WHDEBUG NAB ' . $titleStr;
-	$msg = 'URL: ' . $wgServer . '/' . $url . "\n";
-	$msg .= "status: " . ($missedNAB ? 'not nabbed: ' . $missedNAB : 'nabbed') . "\n";
-	$msg .= "from: wfNewArticlePatrolAddOnCreation\n";
-	$msg .= "article: " . print_r($article, true);
-	UserMailer::send($email, $email, $subject, $msg);
-}
-*/
 

@@ -95,7 +95,7 @@ class ThumbsUp extends UnlistedSpecialPage {
 		wfProfileIn( $fname );
 
 		$dbr = wfGetDB(DB_SLAVE);
-		$minRev = $dbr->selectField('revision', array('min(rev_id)'), array("rev_page" => $pageId));
+		$minRev = $dbr->selectField('revision', array('min(rev_id)'), array("rev_page" => $pageId), __METHOD__);
 
 		wfProfileOut( $fname );
 

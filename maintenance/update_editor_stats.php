@@ -260,7 +260,7 @@ function createEmail(&$editedStats, &$createdStats, &$nabStats, &$patrolStats, &
 	$headers  = 'MIME-Version: 1.0' . "\r\n";
 	$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
 	
-	mail('bebeth@wikihow.com, krystle@wikihow.com', 'Editor Stats', $email, $headers);
+	mail('reports@wikihow.com', 'Editor Stats', $email, $headers);
 	
 }
 

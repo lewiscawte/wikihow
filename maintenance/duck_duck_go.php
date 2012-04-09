@@ -25,17 +25,21 @@ $baseMemory = memory_get_usage();
 
 $dbr = wfGetDB(DB_SLAVE);
 
-$res = $dbr->select('page', array('page_namespace', 'page_title'), array('page_namespace'=>NS_MAIN, 'page_is_redirect'=>0
-	//, 'page_title'=>'Get-Six-Pack-Abs'
-	// , 'page_id=12813'
-	, 'page_id NOT IN (5, 5791)'
+$res = $dbr->select('page',
+	array('page_namespace', 'page_title'),
+	array(
+		'page_namespace' => NS_MAIN,
+		'page_is_redirect' => 0,
+		//'page_title'=>'Get-Six-Pack-Abs',
+		//'page_id=12813',
+		'page_id NOT IN (5, 5791)',
 	),
-		"duck-duck-go",
-	//	, array("LIMIT"=>1000, "ORDER BY"=>"page_counter desc")
-		array("ORDER BY"=>"page_id"
-		//, "LIMIT"=>1
-		)
-	);
+	__FILE__,
+	//array("LIMIT"=>1000, "ORDER BY"=>"page_counter desc")
+	array(
+		'ORDER BY' => 'page_id',
+		//'LIMIT' => 1,
+	));
 
 //echo "#" . date("r") . " - " . (memory_get_usage() - $baseMemory) . "\n";
 $titles = array();

@@ -31,9 +31,10 @@ class SkinWikihowskin extends SkinTemplate {
 	// For google adsense
 	public $mGlobalChannels	= array();
 	public $mGlobalComments	= array();
+    public $mCategories = array();
+
 	public $mAuthors;
 	public $mSidebarWidgets	= array();
-    public $mCategories = array();
 
 	function initPage( &$out ) {
 		SkinTemplate::initPage( $out );
@@ -50,7 +51,7 @@ class SkinWikihowskin extends SkinTemplate {
 		<div class='sidebar_bottom_fold'></div>
 	</div>\n";
 
-		array_push($this->mSidebarWidgets,$display);
+		array_push($this->mSidebarWidgets, $display);
 		return;
 	}
 
@@ -108,7 +109,7 @@ class SkinWikihowskin extends SkinTemplate {
 		return $html;
 	}
 
-	function getLastEditedInfo(){
+	function getLastEditedInfo() {
 		global $wgTitle;
 
 		$dbr = wfGetDB(DB_SLAVE);
@@ -118,7 +119,7 @@ class SkinWikihowskin extends SkinTemplate {
 
 		$row = $dbr->selectRow('revision', array('rev_user', 'rev_user_text', 'rev_timestamp'),
 				array('rev_user NOT IN (' . $dbr->makeList($bad) . ")", "rev_page"=>$wgTitle->getArticleID()),
-				"SkinWikihowskin::getLastEdited",
+				__METHOD__,
 				array("ORDER BY" => "rev_id DESC", "LIMIT"=>1)
 			);
 
@@ -360,7 +361,7 @@ class SkinWikihowskin extends SkinTemplate {
 		return $result . "</table>";
 	}
 
-	function hasMajorityPhotos() {
+	/*function hasMajorityPhotos() {
 		global $wgTitle;
 		$r = Revision::newFromTitle($wgTitle);
 		if ($r == null) return false;
@@ -369,7 +370,7 @@ class SkinWikihowskin extends SkinTemplate {
 		$num_step_photos = preg_match_all('/\[\[Image:/', $section, $matches);
 		if ($num_steps > 0 && $num_step_photos / $num_steps > 0.5) return true;
 		return false;
-	}
+	}*/
 
 	function hasIntroImage() {
 		global $wgTitle;
@@ -389,7 +390,7 @@ class SkinWikihowskin extends SkinTemplate {
 			array('categorylinks', 'page'),
 			array('page_namespace', 'page_title'),
 			array('page_id=cl_from', 'page_namespace=' . NS_CATEGORY, 'cl_to'=>$wgTitle->getDBKey()),
-			"WikiHowSkin::getMetaSubcategories",
+			__METHOD__,
 			array('ORDER BY' => 'page_counter desc', 'LIMIT' => ($limit + 1) )
 		);
 		$requests = wfMsg('requests');
@@ -528,12 +529,12 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 
 	function needsFurtherEditing(&$title) {
-		$cats = ($title->getParentCategories());
+		$cats = $title->getParentCategories();
 		if (is_array($cats) && sizeof($cats) > 0) {
 			$keys = array_keys($cats);
 			$templates = wfMsgForContent('templates_further_editing');
 			$templates = split("\n", $templates);
-			$templates = array_flip($templates); // make the array associateive.
+			$templates = array_flip($templates); // switch all key/value pairs
 			for ($i = 0; $i < sizeof($keys) && !$found; $i++) {
 				$t = Title::newFromText($keys[$i]);
 				if (isset($templates[$t->getText()]) ) {
@@ -547,16 +548,19 @@ class SkinWikihowskin extends SkinTemplate {
 	function getRelatedArticlesBox($e) {
 		global $wgTitle, $wgContLang, $wgUser, $wgRequest, $wgMemc;
 
-		if ($wgTitle->getNamespace() != NS_MAIN || $wgTitle->getFullText() == wfMsg('mainpage') || $wgRequest->getVal('action') != '') return '';
-
-		$key = wfMemcKey("related_articles_box_1_" . $wgTitle->getArticleID());
-		$val = $wgMemc->get($key);
-			
-		if ($val) {
-			return $val;
+		if (!$wgTitle 
+			|| $wgTitle->getNamespace() != NS_MAIN
+			|| $wgTitle->getFullText() == wfMsg('mainpage')
+			|| $wgRequest->getVal('action') != '')
+		{
+			return '';
 		}
+
+		$key = wfMemcKey('relarticles_box1', $wgTitle->getArticleID());
+		$val = $wgMemc->get($key);
+		if ($val) return $val;
 		
-		$cats = ($wgTitle->getParentCategories());
+		$cats = WikiHow::getCurrentParentCategories();
 		$cat = '';
 		if (is_array($cats) && sizeof($cats) > 0) {
 			$keys = array_keys($cats);
@@ -573,21 +577,30 @@ class SkinWikihowskin extends SkinTemplate {
 				break;
 			}
 		}
-		// Populate related articles box with other articles in the category, displaying the featured articles first
+		// Populate related articles box with other articles in the category, 
+		// displaying the featured articles first
 		$result = "";
 		if (!empty($cat)) {
 			$dbr = wfGetDB(DB_SLAVE);
 			$num = intval(wfMsgForContent('num_related_articles_to_display'));
-			$res = $dbr->select(array('categorylinks', 'page'), array('cl_from', 'page_is_featured'), 
-				array ('cl_from = page_id', 'cl_to' => $cat, 'page_namespace' => 0, 'page_is_redirect' => 0, '(page_is_featured = 1 OR page_random >' . wfRandom() . ')'),
-				"WikiHowSkin:getRelatedArticlesBox", array('ORDER BY' => 'page_is_featured DESC'));
+			$res = $dbr->select(array('categorylinks', 'page'),
+				array('cl_from', 'page_is_featured, page_title'), 
+				array(
+					'cl_from = page_id',
+					'cl_to' => $cat,
+					'page_namespace' => 0,
+					'page_is_redirect' => 0,
+					'(page_is_featured = 1 OR page_random > ' . wfRandom() . ')'
+				),
+				__METHOD__,
+				array('ORDER BY' => 'page_is_featured DESC'));
 
 			$count = 0;
 			while (($row = $dbr->fetchObject($res)) && $count < $num) {
 				if ($row->cl_from == $wgTitle->getArticleID()) {
 					continue;
 				}
-				$t = Title::newFromID($row->cl_from);
+				$t = Title::newFromDBkey($row->page_title);
 				if (!$t || $this->needsFurtherEditing($t)) {
 					continue;
 				}
@@ -605,13 +618,16 @@ class SkinWikihowskin extends SkinTemplate {
 		return $result;
 	}
 
-	function getUsernameFromTitle () {
-			global $wgTitle;
+	function getUsernameFromTitle() {
+		global $wgTitle;
+		$real_name = '';
 		$username = $wgTitle->getText();
-				$username = ereg_replace("/.*", "", $username);
-				$id = User::idFromName($username);
-				$real_name = User::whoIsReal($id);
-				if ($real_name == "") $real_name = $username;
+		$username = ereg_replace("/.*", "", $username);
+		$user = User::newFromName($username);
+		if ($user) {
+			$real_name = $user->getRealName();
+			if (!$real_name) $real_name = $username;
+		}
 		return $real_name;
 	}
 
@@ -680,13 +696,13 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 	
 	function getGalleryImage($title, $width, $height) {
-
 		global $wgMemc, $wgLanguageCode, $wgContLang;
 
-		$key = wfMemcKey("gallery1:{$title->getArticleID()}:$width:$height");
+		$key = wfMemcKey('gallery1', $title->getArticleID(), $width, $height);
 
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$val = $wgMemc->get($key);
+		if ($val) {
+			return $val;
 		}
 
 		if (($title->getNamespace() == NS_MAIN) || ($title->getNamespace() == NS_CATEGORY) ) {
@@ -697,7 +713,8 @@ class SkinWikihowskin extends SkinTemplate {
 					$thumb = $file->getThumbnail($width, $height, true, true);
 					if ($thumb instanceof MediaTransformError) {
 						// we got problems!
-						print_r($thumb); exit;
+						print_r($thumb);
+						exit;
 					} else {
 						$wgMemc->set($key, wfGetPad($thumb->url), 2* 3600); // 2 hours
 						return wfGetPad($thumb->url);
@@ -737,7 +754,8 @@ class SkinWikihowskin extends SkinTemplate {
 				$cat = self::getTopCategory($title);
 
 				//INTL: Get the partial URL for the top category if it exists
-				// For some reason only the english site returns the partial URL for self::getTopCategory
+				// For some reason only the english site returns the partial 
+				// URL for self::getTopCategory
 				if (isset($cat) && $wgLanguageCode != 'en') {
 					$title = Title::newFromText($cat);
 					if ($title) {
@@ -821,17 +839,17 @@ class SkinWikihowskin extends SkinTemplate {
 		
 	function getNewArticlesBox() {
 		global $wgMemc;
-		$key = "wikihowskin_newarticlesbox";
-		$cached = $wgMemc->get(wfMemcKey($key));
+		$cached = $wgMemc->get(wfMemcKey('newarticlesbox'));
 		if ($cached)  {
 			return $cached;
 		}
 		$dbr = wfGetDB(DB_SLAVE);
 		$ids = array();
-		$res = $dbr->select('pagelist', 'pl_page', array('pl_list'=>'risingstar'),
-			"WikiHowSkin::getNewArticlesBox",
-			array('ORDER BY' => 'pl_page desc', 'LIMIT'=>5)
-			);
+		$res = $dbr->select('pagelist',
+			'pl_page',
+			array('pl_list'=>'risingstar'),
+			__METHOD__,
+			array('ORDER BY' => 'pl_page desc', 'LIMIT' => 5));
 		while($row = $dbr->fetchObject($res)) {
 			$ids[] = $row->pl_page;
 		}
@@ -839,13 +857,11 @@ class SkinWikihowskin extends SkinTemplate {
 		$res = $dbr->select(array('page'),
 			array('page_namespace', 'page_title'),
 			array('page_id IN (' . implode(",", $ids) . ")"),
-			"WikiHowSkin::getNewArticlesBox",
-			array('ORDER BY' => 'page_id desc', 'LIMIT'=>5)
-			);
+			__METHOD__,
+			array('ORDER BY' => 'page_id desc', 'LIMIT' => 5));
 		while($row = $dbr->fetchObject($res)) {
 			$t = Title::makeTitle(NS_MAIN, $row->page_title);
-			if (!$t)
-				continue;
+			if (!$t) continue;
 			$html .= $this->featuredArticlesLine($t, $t->getText());
 		}
 		$html .=  "</table></div>";
@@ -854,12 +870,19 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 
 	function getFeaturedArticlesBox($dayslimit = 11, $linkslimit = 4 ) {
-		global $wgStylePath, $wgUser, $wgServer, $wgScriptPath, $wgTitle, $wgLang, $IP, $wgProdServer;
+		global $wgUser, $wgServer, $wgTitle, $IP, $wgProdServer, $wgMemc;
+
 		$sk = $wgUser->getSkin();
+
+		$cachekey = wfMemcKey('featuredbox', $dayslimit, $linkslimit);
+		$result = $wgMemc->get($cachekey);
+		if ($result) return $result;
+
 		require_once("$IP/extensions/wikihow/FeaturedArticles.php");
 		$feeds = FeaturedArticles::getFeaturedArticles($dayslimit);
 
 		$html = "<h3><span onclick=\"location='" . wfMsg('featuredarticles_url') . "';\" style=\"cursor:pointer;\">" . wfMsg('featuredarticles') . "</span></h3>\n<table>";
+
 		$now = time();
 		$popular = Title::makeTitle(NS_SPECIAL, "Popularpages");
 		$count = 0;
@@ -867,8 +890,10 @@ class SkinWikihowskin extends SkinTemplate {
 			$url = $item[0];
 			$d = $item[1];
 			if ($d > $now) continue;
-			$url = str_replace("$wgServer$wgScriptPath/", "", $url);
-			$url = str_replace("http://www.wikihow.com/", "", $url);
+			$url = str_replace("$wgServer/", "", $url);
+			if ($wgServer != 'http://www.wikihow.com') {
+				$url = str_replace("http://www.wikihow.com/", "", $url);
+			}
 			if (isset($wgProdServer)) {
 				$url = str_replace($wgProdServer, "", $url);
 			}
@@ -878,28 +903,34 @@ class SkinWikihowskin extends SkinTemplate {
 			$count++;
 			if ($count >= $linkslimit) break;
 		}
+
 		// main page stuff
 		if ($dayslimit > 8) {
 			$html .= $this->featuredArticlesLine($popular, wfMsg('populararticles'));
 			$html .= $this->featuredArticlesLine(Title::makeTitle(NS_SPECIAL, "Randomizer"), wfMsg('or_a_random_article') ) ;
 		}
-		$html .= "</tr></table>";
+		$html .= "</table>";
+
+		// expires every 5 minutes
+		$wgMemc->set($cachekey, $html, 5 * 60);
+
 		return $html;
 	}
 
-	function getFeaturedArticlesBoxWide($dayslimit = 11, $linkslimit = 4, $ismainpage = true ) {
-		global $wgStylePath, $wgUser, $wgServer, $wgScriptPath, $wgTitle, $wgLang, $IP, $wgProdServer;
+	function getFeaturedArticlesBoxWide($dayslimit = 11, $linkslimit = 4, $ismainpage = true) {
+		global $wgUser, $wgServer, $wgTitle, $IP, $wgProdServer;
+
 		$sk = $wgUser->getSkin();
 		require_once("$IP/extensions/wikihow/FeaturedArticles.php");
 		$feeds = FeaturedArticles::getFeaturedArticles($dayslimit);
-	$html = '';
+		$html = '';
 
-	if ($ismainpage) {
+		if ($ismainpage) {
 			$html .= "
 	<div class='featured_articles_header' id='featuredArticles_header'>
 	  	  <h1>" . wfMsg('featured_articles') . "</h1><a href='/feed.rss'><img src='".wfGetPad('/skins/WikiHow/images/rssIcon.png')."' alt='' class='rss' id='rssIcon' name='rssIcon' /> " . wfMsg('rss') . "</a>
 		</div>\n";
-	}
+		}
 
 		$html .= "<div class='featured_articles_inner' id='featuredArticles'>
 		  <table class='featuredArticle_Table'><tr>";
@@ -914,8 +945,10 @@ class SkinWikihowskin extends SkinTemplate {
 			$url = $item[0];
 			$d = $item[1];
 			if ($d > $now) continue;
-			$url = str_replace("$wgServer$wgScriptPath/", "", $url);
-			$url = str_replace("http://www.wikihow.com/", "", $url);
+			$url = str_replace("$wgServer/", "", $url);
+			if ($wgServer != 'http://www.wikihow.com') {
+				$url = str_replace("http://www.wikihow.com/", "", $url);
+			}
 			if (isset($wgProdServer)) {
 				$url = str_replace($wgProdServer, "", $url);
 			}
@@ -944,9 +977,9 @@ class SkinWikihowskin extends SkinTemplate {
 		if ($ismainpage) {
 		# nav stuff
 
-		$langKeys = array('mainpage_fewer_featured_articles', 'mainpage_more_featured_articles');
-		$js = WikiHow_i18n::genJSMsgs($langKeys);
-		$html .= "{$js}{$hidden}
+			$langKeys = array('mainpage_fewer_featured_articles', 'mainpage_more_featured_articles');
+			$js = WikiHow_i18n::genJSMsgs($langKeys);
+			$html .= "{$js}{$hidden}
 			<div id='featuredNav'><a href='{$popular->getFullURL()}'>" . wfMsg('mainpage_view_popular_articles') . "</a>
 			<img src='".wfGetPad('/skins/WikiHow/images/actionArrow.png')."' alt='' />
 				 <a href='/Special:Randomizer' accesskey='x'>" . wfMsg('mainpage_view_random_article') . "</a>
@@ -967,7 +1000,6 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 
 	function getRADLinks($use_chikita_sky) {
-		global $wgTitle;
 		$channels = wikihowAds::getCustomGoogleChannels('rad_left', $use_chikita_sky);
 		$links = wfMsg('rad_links_new', $channels[0], $channels[1]);
 		$links = preg_replace('/\<[\/]?pre\>/', '', $links);
@@ -982,11 +1014,14 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 
 	function getTopCategory($title = null) {
-		global $wgTitle, $wgContLang;
-		if (!$title)
-			$title = $wgTitle;
+		global $wgContLang;
+		if (!$title) {
+			// an optimization because memcache is hit
+			$parenttree = WikiHow::getCurrentParentCategoryTree();
+		} else {
+			$parenttree = $title->getParentCategoryTree();
+		}
 		$catNamespace = $wgContLang->getNSText(NS_CATEGORY) . ":";
-		$parenttree = $title->getParentCategoryTree();
 		$parenttree_tier1 = $parenttree;
 
 		$result = null;
@@ -1007,63 +1042,7 @@ class SkinWikihowskin extends SkinTemplate {
 		return $result;
 	}
 
-	function flattenCategoryTree($tree) {
-		if (is_array($tree)) {
-			$results = array();
-			foreach ($tree as $key=>$value) {
-				$results[] = $key;
-				$x = self::flattenCategoryTree($value);
-				if (is_array($x))
-					return array_merge($results, $x);
-				else
-					return $results;
-			}
-		} else {
-			$results = array();
-			$results[] = $tree;
-			return $results;
-		}
-	}
-
-	function cleanUpCategoryTree($tree) {
-		$results = array();
-		if (!is_array($tree)) return $results;
-		foreach ($tree as $cat) {
-			$t = Title::newFromText($cat);
-			if ($t)
-				$results[]= $t->getText();
-		}
-		return $results;
-	}
-
-	function getCategoryChannelMap() {
-		global $wgMemc;
-		$key = wfMemcKey('googlechannel', 'category', 'tree');
-		$tree = $wgMemc->get( $key );
-		if (!$tree) {
-			$tree = array();
-			$content = wfMsgForContent('category_ad_channel_map');
-			preg_match_all("/^#.*/im", $content, $matches);
-			foreach ($matches[0] as $match) {
-				$match = str_replace("#", "", $match);
-				$cats = split(",", $match);
-				$channel= trim(array_pop($cats));
-				foreach($cats as $c) {
-					$c = trim($c);
-					if (isset($tree[$c]))
-						$tree[$c] .= ",$channel";
-					else
-						$tree[$c] = $channel;
-				}
-			}
-			$wgMemc->set($key, $tree, time() + 3600);
-		}
-		return $tree;
-
-	}
-
 	function getCustomGoogleChannels($type, $use_chikita_sky) {
-
 		global $wgTitle, $wgLang, $IP;
 
 		$channels = array();
@@ -1152,11 +1131,11 @@ class SkinWikihowskin extends SkinTemplate {
 		}
 
 		// do the categories
-		$tree = $wgTitle->getParentCategoryTree();
-		$tree = $this->flattenCategoryTree($tree);
-		$tree = $this->cleanUpCategoryTree($tree);
+		$tree = WikiHow::getCurrentParentCategoryTree();
+		$tree = wikihowAds::flattenCategoryTree($tree);
+		$tree = wikihowAds::cleanUpCategoryTree($tree);
 
-		$map = $this->getCategoryChannelMap();
+		$map = wikihowAds::getCategoryChannelMap();
 		foreach ($tree as $cat) {
 			if (isset($map[$cat])) {
 				$channels[] = $map[$cat];
@@ -1221,7 +1200,7 @@ class SkinWikihowskin extends SkinTemplate {
 	const BREADCRUMB_SEPARATOR = '&raquo;';
 
 	function getCategoryLinks($usebrowser) {
-		global $wgOut, $wgTitle, $wgUseCategoryBrowser, $wgUser;
+		global $wgOut, $wgUser;
 		global $wgContLang;
 
 		if( !$usebrowser && count( $wgOut->mCategoryLinks ) == 0 ) return '';
@@ -1249,9 +1228,9 @@ class SkinWikihowskin extends SkinTemplate {
 			$s .= ' ';
 
 			# get a big array of the parents tree
-			$parenttree = $wgTitle->getParentCategoryTree();
+			$parenttree = WikiHow::getCurrentParentCategoryTree();
 			if (is_array($parenttree)) {
-				$parenttree = array_reverse($wgTitle->getParentCategoryTree());
+				$parenttree = array_reverse($parenttree);
 			} else {
 				return $s;
 			}
@@ -1298,7 +1277,7 @@ class SkinWikihowskin extends SkinTemplate {
 		if (is_array($this->mAuthors)) return;
 
 		$articleID = $wgTitle->getArticleID();
-		$cachekey = wfMemcKey('ld-auth-' . $articleID);
+		$cachekey = wfMemcKey('loadauth', $articleID);
 		$this->mAuthors = $wgMemc->get($cachekey);
 		if (is_array($this->mAuthors)) return;
 
@@ -1320,12 +1299,14 @@ class SkinWikihowskin extends SkinTemplate {
 		while ($row = $dbr->fetchObject($res)) {
 			if ($row->rev_user == 0) {
 				$this->mAuthors['anonymous'] = 1;
-			} else if (!isset($this->mAuthors[$row->user_text]))  {
+			} elseif (!isset($this->mAuthors[$row->user_text]))  {
 				$this->mAuthors[$row->rev_user_text] = 1;
 			}
 		}
 
-		$wgMemc->set($cachekey, $this->mAuthors);
+		if ($this->mAuthors) {
+			$wgMemc->set($cachekey, $this->mAuthors);
+		}
 	}
 	
 	function isQuickBounceUrl($mwMsg = 'clicky_urls') {
@@ -1403,27 +1384,42 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 
 	function formatAuthorList($authors, $showAllLink = true) {
-		global $wgTitle, $wgRequest;
-		if (!$wgTitle || !($wgTitle->getNamespace() == NS_MAIN || $wgTitle->getNamespace() == NS_PROJECT)) return '';
+		global $wgTitle, $wgRequest, $wgMemc;
+
+		if (!$wgTitle
+			|| ($wgTitle->getNamespace() != NS_MAIN
+				&& $wgTitle->getNamespace() != NS_PROJECT))
+		{
+			return '';
+		}
+
 		$action = $wgRequest->getVal('action', 'view');
 		if ($action != 'view') return '';
+
+		$articleID = $wgTitle->getArticleId();
+		$authors_hash = md5( print_r($authors, true) );
+		$cachekey = wfMemcKey('authors', $articleID, $authors_hash);
+		$val = $wgMemc->get($cachekey);
+		if ($val !== null) return $val;
+
 		$links = array();
 		foreach ($authors as $u => $p) {
 			if ($u == 'anonymous') {
 				$links[] = "<a href='/wikiHow:Anonymous'>" .wfMsg('anonymous') . "</a>";
 			} else {
 				$user = User::newFromName($u);
-				if (!$user)  {
-					//echo "no user for $u";
-					continue;
-				}
-				$name = $user->getRealName() != "" ? $user->getRealName() : $user->getName();
+				if (!$user) continue;
+				$name = $user->getRealName();
+				if (!$name) $name = $user->getName();
 				$links[] = "<a href='{$user->getUserPage()->getLocalURL()}'>{$name}</a>";
 			}
 		}
 		$html = implode(", ", $links);
-		if($showAllLink)
+		if ($showAllLink) {
 			$html .=  " (" . $this->makeLinkObj($wgTitle, wfMsg('see_all'), "action=credits")  . ")";
+		}
+
+		$wgMemc->set($cachekey, $html);
 
 		return $html;
 	}
@@ -1742,28 +1738,27 @@ class WikiHowTemplate extends QuickTemplate {
 
 			// add to category list here
 			$categories = array("STUB","Hobbies-and-Crafts","Food-and-Entertaining");
-			$parentCategories = $wgTitle->getParentCategoryTree();
+			$parentCategories = WikiHow::getCurrentParentCategoryTree();
 			if (!$this->findCategory($categories, $parentCategories)) {
 				return wfMsg('pagetitle', '');
 			}
 
-			list($details, ) = self::getTitleExtraInfo($wgTitle);
+			$dbr = wfGetDB(DB_SLAVE);
+			$wikitext = Wikitext::getWikitext($wgTitle);
+			if ($wikitext) {
+				list($stepsText, ) = Wikitext::getStepsSection($wikitext, true);
+				list($details, ) = self::getTitleExtraInfo($wikitext, $stepsText);
+			} else {
+				$details = '';
+			}
+
 			return wfMsg('pagetitle', $details);
 		}
 	}
 	
-	public static function getTitleExtraInfo($title) {
-		$r = Revision::newFromTitle($title);
-		if ($r == null) return '';
-
-		$wikitext = $r->getText();
-		$num_steps = 0;
-		list($stepsText, ) = Wikitext::getStepsSection($wikitext, true);
-		if ($stepsText) {
-			// has steps section, so assume valid candidate for detailed title
-			$num_steps = preg_match_all('/^#[^*]/im', $stepsText, $matches);
-		}
-		$num_photos = preg_match_all('/\[\[Image:/im', $wikitext, $matches);
+	public static function getTitleExtraInfo($wikitext, $stepsText) {
+		$num_steps = Wikitext::countSteps($stepsText);
+		$num_photos = Wikitext::countImages($wikitext);
 
 		$stepsDetail = '';
 		if ($num_steps >= 5 && $num_steps <= 25) {
@@ -1938,7 +1933,7 @@ class WikiHowTemplate extends QuickTemplate {
 	
 	//gotta be in the Recipes category and have an ingredients section
 	public function checkForRecipeMicrodata() {
-		global $wgTitle, $wgUser, $wgRequest;
+		global $wgTitle, $wgUser, $wgRequest, $wgArticle;
 		if ($wgTitle->getNamespace() == NS_MAIN &&
 			$wgTitle->exists() &&
 			$wgRequest->getVal('oldid') == '' &&
@@ -1946,9 +1941,8 @@ class WikiHowTemplate extends QuickTemplate {
 			
 			$sk = $wgUser->getSkin();
 			if ($sk->mCategories['Recipes'] != null) {
-				$a = new Article($wgTitle);
 				$wikihow = new WikiHow();
-				$wikihow->loadFromArticle($a);
+				$wikihow->loadFromArticle($wgArticle);
 				$index = $wikihow->getSectionNumber('ingredients');
 				if ($index != -1) {
 					self::$showRecipeTags = true;
@@ -1987,7 +1981,7 @@ class WikiHowTemplate extends QuickTemplate {
 		$body= "";
 		for ($i = 0; $i < sizeof($parts); $i++) {
 			if ($i == 0) {
-			
+
 				if ($body == "") {
 					// if there is no alt tag for the intro image, so it to be the title of the page
 					preg_match("@<img.*mwimage101[^>]*>@", $parts[$i], $matches);
@@ -2377,13 +2371,13 @@ class WikiHowTemplate extends QuickTemplate {
 	function logTopCat() {
 		global $wgTitle, $wgUser;
 		$sk = $wgUser->getSkin();
-		$cat = $sk->getTopCategory($wgTitle);
+		$cat = $sk->getTopCategory();
 		if (!$cat)
 			return;
 		$dbw = wfGetDB(DB_MASTER);
 		$sql = "INSERT LOW_PRIORITY INTO cat_views (cv_user, cv_cat, cv_views) values ({$wgUser->getID()}, "
 			. $dbw->addQuotes($cat) . ", 1) ON DUPLICATE KEY UPDATE cv_views=cv_views +1";
-		$dbw->query($sql);
+		$dbw->query($sql, __METHOD__);
 	}
 
 	/**
@@ -2483,19 +2477,18 @@ class WikiHowTemplate extends QuickTemplate {
 <?
 	}
 
-        function setCategories(){
-            global $wgTitle, $wgUser, $wgCategoryNames;
+        function setCategories() {
+            global $wgUser;
 
             $sk = $wgUser->getSkin();
 
-            $tree = $wgTitle->getParentCategoryTree();
-
+            $tree = WikiHow::getCurrentParentCategoryTree();
             if ($tree != null) {
                 foreach($tree as $key => $path) {
                     $catString = str_replace("Category:", "", $key);
                     $sk->mCategories[$catString] = $catString;
 
-                    $subtree = $sk->flattenCategoryTree($path);
+                    $subtree = wikihowAds::flattenCategoryTree($path);
                     for ($i = 0; $i < count($subtree); $i++) {
                         $catString = str_replace("Category:", "", $subtree[$i]);
                         $sk->mCategories[$catString] = $catString;
@@ -2515,7 +2508,7 @@ class WikiHowTemplate extends QuickTemplate {
 	 * @access private
 	 */
 	function execute() {
-		global $wgArticle, $wgScriptPath, $wgUser, $wgLang, $wgTitle, $wgRequest, $wgParser, $wgGoogleSiteVerification;
+		global $wgArticle, $wgUser, $wgLang, $wgTitle, $wgRequest, $wgParser, $wgGoogleSiteVerification;
 		global $wgOut, $wgScript, $wgStylePath, $wgLanguageCode, $wgForumLink;
 		global $wgContLang, $wgXhtmlDefaultNamespace, $wgContLanguageCode;
 		global $wgWikiHowSections, $IP, $wgServer, $wgServerName, $wgIsDomainTest;
@@ -2551,7 +2544,7 @@ class WikiHowTemplate extends QuickTemplate {
 		$sk = $wgUser->getSkin();
 		$cp = Title::newFromText("CreatePage", NS_SPECIAL);
 
-                $this->setCategories();
+		$this->setCategories();
 		wikihowAds::getGlobalChannels();
 
 		if ($action == "view" && $wgUser->getID() > 0) {
@@ -2752,7 +2745,7 @@ class WikiHowTemplate extends QuickTemplate {
 				if (!$use_chikita_sky) {
 					$ads = $sk->getGoogleAds($use_chikita_sky);
 				} else {
-					$cats = $wgTitle->getParentCategories();
+					$cats = WikiHow::getCurrentParentCategories();
 					$query = "";
 					foreach($cats as $c=>$x) {
 						$query = $c;
@@ -2799,7 +2792,7 @@ class WikiHowTemplate extends QuickTemplate {
 				$subject .= ":";
 			}
 			if ($wgTitle->getNamespace() == NS_USER_TALK) {
-				//$link = "<a href=\"$wgScriptPath/$subject" . $wgTitle->getDBKey() . "\">".wfMsg('authorpage', $sk->getUsernameFromTitle())."</a>";
+				//$link = "<a href=\"/$subject" . $wgTitle->getDBKey() . "\">".wfMsg('authorpage', $sk->getUsernameFromTitle())."</a>";
 				//$return_to_article.= "<br/>".wfMsg('returnto',$link);
 				$return_to_article = "<br/>" . $sk->makeLinkObj($wgTitle->getSubjectPage(), wfMsg('returnto', wfMsg('authorpage', $wgTitle->getText())));
 			} else {
@@ -2993,7 +2986,7 @@ class WikiHowTemplate extends QuickTemplate {
 		$featured = false;
 		if (false && $wgTitle->getNamespace() == NS_MAIN) {
 			$dbr = wfGetDB(DB_SLAVE);
-			$page_isfeatured = $dbr->selectField('page', 'page_is_featured', array("page_id={$wgTitle->getArticleID()}"));
+			$page_isfeatured = $dbr->selectField('page', 'page_is_featured', array("page_id={$wgTitle->getArticleID()}"), __METHOD__);
 			$featured = ($page_isfeatured == 1);
 		}
 
@@ -3656,7 +3649,7 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 
 	<?
 		if (($wgTitle->getNamespace() == NS_MAIN || $wgTitle->getNamespace() == NS_PROJECT)  && $action == 'view' && !$isMainPage) {
-			$catlinks = $sk->getCategoryLinks($false);
+			$catlinks = $sk->getCategoryLinks(false);
 			$authors = $sk->getAuthorFooter();
 			if ($authors != "" || is_array($this->data['language_urls']) || $catlinks != "") {
 	?>
@@ -3846,13 +3839,13 @@ EOHTML;
 				<?
 			}
 
-			if($wgUser->getID() == 0 && !$isMainPage && $action == 'view')
-					echo wikihowAds::getAdUnitPlaceholder(2, true);
+			if ($wgUser->getID() == 0 && !$isMainPage && $action == 'view')
+				echo wikihowAds::getAdUnitPlaceholder(2, true);
 
 	?>
 
          <!-- Sidebar Widgets -->
-		<? foreach ( $sk->mSidebarWidgets as $sbWidget) { ?>
+		<? foreach ($sk->mSidebarWidgets as $sbWidget) { ?>
   	      <?= $sbWidget ?>
 		<? } ?>
          <!-- END Sidebar Widgets -->
@@ -4044,8 +4037,10 @@ $trackData[] = ($wgUser->getId() > 0) ? "usertype:loggedin" : "usertype:loggedou
 $nsURLs = array(NS_USER => "/User", NS_USER_TALK => "/User_talk", NS_IMAGE => "/Image");
 $gaqPage = $nsURLs[$wgTitle->getNamespace()];
 $trackUrl = sizeof($gaqPage) ? $gaqPage : $wgTitle->getFullUrl();
-$trackUrl = str_replace("$wgServer$wgScriptPath", "", $trackUrl);
-$trackUrl = str_replace("http://www.wikihow.com", "", $trackUrl);
+$trackUrl = str_replace("$wgServer", "", $trackUrl);
+if ($wgServer != 'http://www.wikihow.com') {
+	$trackUrl = str_replace("http://www.wikihow.com", "", $trackUrl);
+}
 $trackUrl .= '::';
 $trackUrl .= "," . implode(",", $trackData) . ",";
 ?>

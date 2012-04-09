@@ -7,18 +7,26 @@ class IntroImageAdder extends UnlistedSpecialPage {
 	}
 
 	/**	
-	 * checkForIntroImage
-	 * Checks an article to see if it contains an image in the intro section
+	 * checkForProblems
+	 * - Checks an article to see if it contains an image in the intro section
+	 * - Checks an article to see if there's a {{nointroimg}} template
 	 **/
-	function checkForIntroImage($t) {
+	function checkForProblems($t) {
 		$r = Revision::newFromTitle($t);
 		$intro = Article::getSection($r->getText(), 0);
 
+		//check for intro image
 		if (preg_match('/\[\[Image:(.*?)\]\]/', $intro)) {
 			return true;
-		} else {
-			return false;
 		}
+		
+		//check for {{nointroimg}} template
+		if (preg_match('/{{nointroimg}}/', $intro)) {
+			return true;
+		}
+		
+		//all clear?
+		return false;
 	}
 
 	/**	
@@ -239,8 +247,8 @@ $content
 			//protected article?
 			if ($t->isProtected()) $b_good = false;
 			
-			//does it have an intro image already?
-			if ($this->checkForIntroImage( $t ) ) {
+			//check the wikitext for problems
+			if ($this->checkForProblems( $t ) ) {
 	 			$b_good = false;
 				$dbw = wfGetDB(DB_MASTER);
 				$dbw->update('imageadder', array('imageadder_hasimage'=>1), array("imageadder_page"=>$pageid));

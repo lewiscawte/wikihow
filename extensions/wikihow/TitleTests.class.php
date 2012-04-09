@@ -32,6 +32,11 @@ class TitleTests {
 		$this->row = $row;
 	}
 
+	// get memcache key
+	private static function getCachekey($pageid) {
+		return wfMemcKey('titletests', $pageid);
+	}
+
 	// factory function to create a new object using pageid
 	public static function newFromTitle($title) {
 		global $wgMemc, $wgLanguageCode;
@@ -47,7 +52,7 @@ class TitleTests {
 			return null;
 		}
 
-		$cachekey = wfMemcKey('titletests-' . $pageid);
+		$cachekey = self::getCachekey($pageid);
 		$row = $wgMemc->get($cachekey);
 		if ($row === null) {
 			$dbr = wfGetDB(DB_SLAVE);
@@ -84,23 +89,36 @@ class TitleTests {
 		return $oldPageTitle;
 	}
 
+	private static function getWikitext($title) {
+		$dbr = wfGetDB(DB_SLAVE);
+		$wikitext = Wikitext::getWikitext($dbr, $title);
+		$stepsText = '';
+		if ($wikitext) {
+			list($stepsText, ) = Wikitext::getStepsSection($wikitext, true);
+		}
+		return array($wikitext, $stepsText);
+	}
+
+	
 	private static function genTitle($title, $test, $custom) {
 		$titleTxt = $title->getText();
 		$howto = wfMsg('howto', $titleTxt);
 		$detailsFunc = array('WikiHowTemplate', 'getTitleExtraInfo');
+
+		list($wikitext, $stepsText) = self::getWikitext($title);
 
 		switch ($test) {
 		case self::TITLE_CUSTOM: // Custom
 			$title = $custom;
 			break;
 		case self::TITLE_SITE_PREVIOUS: // How to XXX: N steps (with pictures) - wikiHow
-			list($details, $steps) = call_user_func($detailsFunc, $title);
+			list($details, $steps) = call_user_func($detailsFunc, $wikitext, $stepsText);
 			$inner = $howto . $details;
 			$title = wfMsg('pagetitle', $inner);
 			break;
 		default:
 		case 3: // How to XXX: N steps (with pictures) - wikiHow
-			list($details, $steps) = call_user_func($detailsFunc, $title);
+			list($details, $steps) = call_user_func($detailsFunc, $wikitext, $stepsText);
 			$inner = $howto . $details;
 			$title = wfMsg('pagetitle', $inner);
 			// first, try articlename + metadata + wikihow
@@ -122,21 +140,45 @@ class TitleTests {
 			}
 			break;
 
-/*
-		case 1: // How to XXX - wikiHow (no change)
-			$title = wfMsg('pagetitle', $howto);
+		// start of new Title Tests from Chris's March 29 email
+		case 12: // How to XXX: N Tips - wikiHow
+		case 13: // N Tips on How to XXX - wikiHow
+		case 14: // How to XXX: Step-by-Step Instructions
+		case 15: // How to XXX: N Methods - wikiHow
+		case 16: // N Ways to XXX - wikiHow
+		case 17: // How to XXX with Step-by-Step Pictures
+			if (12 == $test) {
+				$steps = Wikitext::countSteps($stepsText);
+				$inner = "$howto: $steps Tips";
+			} elseif (13 == $test) {
+				$steps = Wikitext::countSteps($stepsText);
+				$inner = "$steps Tips on $howto";
+			} elseif (14 == $test) {
+				$inner = "$howto: Step-by-Step Instructions";
+			} elseif (15 == $test) {
+				$methods = Wikitext::countAltMethods($stepsText);
+				if (1 == $methods) $methods = 2; // per chris and eliz to fix bad grammar
+				if (!$methods) { // hack for 0 alt methods
+					return self::genTitle($title, self::TITLE_DEFAULT, '');
+				}
+				$inner = "$howto: $methods Methods";
+			} elseif (16 == $test) {
+				$methods = Wikitext::countAltMethods($stepsText);
+				if (1 == $methods) $methods = 2; // per chris and eliz to fix bad grammar
+				if (!$methods) { // hack for 0 alt methods
+					return self::genTitle($title, self::TITLE_DEFAULT, '');
+				}
+				$inner = "$methods Ways to $titleTxt";
+			} elseif (17 == $test) {
+				$inner = "$howto with Step-by-Step Pictures";
+			}
+
+			$title = wfMsg('pagetitle', $inner);
+			if (strlen($title) > self::MAX_TITLE_LENGTH) {
+				$title = $inner;
+			}
 			break;
-		case 2: // How to XXX
-			$title = $howto;
-			break;
-		case 4: // How to XXX: N steps (with pictures)
-			list($details, ) = call_user_func($detailsFunc, $title);
-			$title = $howto . $details;
-			break;
-		case 5: // How to XXX - wikiHow, the free how-to guide
-			$title = $howto . ' - wikiHow, the free how-to guide';
-			break;
-*/
+
 		}
 		return $title;
 	}
@@ -167,7 +209,7 @@ class TitleTests {
 				'tt_page' => $title->getDBkey(),
 				'tt_test' => $test),
 			__METHOD__);
-		$cachekey = wfMemcKey('titletests-' . $pageid);
+		$cachekey = self::getCachekey($pageid);
 		$wgMemc->delete($cachekey);
 	}
 
@@ -187,7 +229,7 @@ class TitleTests {
 				'tt_test' => self::TITLE_CUSTOM,
 				'tt_custom' => $custom),
 			__METHOD__);
-		$cachekey = wfMemcKey('titletests-' . $pageid);
+		$cachekey = self::getCachekey($pageid);
 		$wgMemc->delete($cachekey);
 	}
 
@@ -215,7 +257,7 @@ class TitleTests {
 		$dbw->delete('title_tests',
 			array('tt_pageid' => $pageid),
 			__METHOD__);
-		$cachekey = wfMemcKey('titletests-' . $pageid);
+		$cachekey = self::getCachekey($pageid);
 		$wgMemc->delete($cachekey);
 	}
 

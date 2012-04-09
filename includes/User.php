@@ -3017,7 +3017,8 @@ class User {
 			$dbw = wfGetDB(DB_MASTER);
 			$count = $dbw->selectField('facebook_connect',
 				array('count(*)'),
-				array('wh_user' => $this->mId)
+				array('wh_user' => $this->mId),
+				__METHOD__
 			);
 			$this->mIsFacebook = $count > 0;
 			$this->mLoadedFacebook = true;
@@ -3044,7 +3045,7 @@ class User {
 
 		if ($botsCached) return $botsCached;
 
-		$key = wfMemcKey('bot_ids1');
+		$key = wfMemcKey('botids');
 		$bots = $wgMemc->get($key);
 		if (!is_array($bots)) {
 			$bots = array();

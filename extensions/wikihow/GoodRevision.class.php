@@ -45,7 +45,7 @@ class GoodRevision {
 	private function __construct(&$title, $articleID) {
 		$this->title = $title;
 		$this->articleID = $articleID ? $articleID : $title->getArticleID();
-		$this->cachekey = wfMemcKey('gr-' . $this->articleID);
+		$this->cachekey = wfMemcKey('goodrev', $this->articleID);
 	}
 
 	/**

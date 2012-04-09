@@ -81,7 +81,7 @@ class CommunityDashboard extends UnlistedSpecialPage {
 			$result = array('error' => '');
 			print json_encode($result);
 		} else {
-			$wgOut->setHTMLTitle(wfMsg('cd-html-title'));
+			$wgOut->setHTMLTitle( wfMsg('pagetitle', wfMsg('cd-html-title')) );
 
 			$html = $this->displayContainer();
 			$wgOut->addHTML($html);

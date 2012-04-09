@@ -9,12 +9,12 @@ function getSearchKeyStopWords() {
 		return $cacheResult;
 	}
 
-	$sql = "SELECT stop_words FROM stop_words limit 1;";
+	$sql = "SELECT stop_words FROM stop_words limit 1";
 	$stop_words = null;
-	$db =& wfGetDB( DB_SLAVE );
-	$res = $db->query( $sql, 'WH generateSearchKey' );
-	if ( $db->numRows( $res ) ) {
-		while ( $row = $db->fetchObject( $res ) ) {
+	$db = wfGetDB(DB_SLAVE);
+	$res = $db->query($sql, __FUNCTION__);
+	if ( $db->numRows($res) ) {
+		while ( $row = $db->fetchObject($res) ) {
 			$stop_words = split(", ", $row->stop_words);
 		}
 	}
@@ -56,36 +56,23 @@ function updateSearchIndex($new, $old) {
 			|| $new->getNamespace() == 16) )
 	{
 		$dbw->delete( 'skey',
-			array(
-				'skey_title' => $new->getDBKey(),
-				'skey_namespace' => $new->getNamespace() ) );
+			array('skey_title' => $new->getDBKey(),
+				  'skey_namespace' => $new->getNamespace()),
+			__FUNCTION__ );
 		$dbw->insert( 'skey',
-			array(
-				'skey_title' => $new->getDBKey(),
-				'skey_namespace' => $new->getNamespace(),
-				'skey_key' => generateSearchKey($new->getText()) ) );
+			array('skey_title' => $new->getDBKey(),
+				  'skey_namespace' => $new->getNamespace(),
+				  'skey_key' => generateSearchKey($new->getText()) ),
+			__FUNCTION__ );
 	}
 
 	if ($old != null) {
 		$dbw->delete( 'skey',
-			array(
-				'skey_title' => $old->getDBKey(),
-				'skey_namespace' => $old->getNamespace() ) );
+			array('skey_title' => $old->getDBKey(),
+				  'skey_namespace' => $old->getNamespace()),
+			__FUNCTION__ );
 	}
 }
-
-function wfTitleMoveComplete($title, &$newtitle, &$user, $oldid, $newid) {
-	updateSearchIndex($title, $newtitle);
-	return true;
-}
-$wgHooks['TitleMoveComplete'][] = array('wfTitleMoveComplete');
-
-function wfArticleSaveComplete($p0, $title, $p2, $p3, $p5, $p6, $p7) {
-	updateSearchIndex($title->mTitle, null);
-	wfMarkUndoneEditAsPatrolled();
-	return true;
-}
-$wgHooks['ArticleSaveComplete'][] = array('wfArticleSaveComplete');
 
 function wfMarkUndoneEditAsPatrolled() {
 	global $wgRequest;
@@ -99,9 +86,34 @@ function wfMarkUndoneEditAsPatrolled() {
 	return true;
 }
 
+function wfTitleMoveComplete($title, &$newtitle, &$user, $oldid, $newid) {
+	updateSearchIndex($title, $newtitle);
+	return true;
+}
+$wgHooks['TitleMoveComplete'][] = array('wfTitleMoveComplete');
+
+function wfArticleSaveComplete($article, $user, $p2, $p3, $p5, $p6, $p7) {
+	global $wgMemc;
+
+	if ($article) {
+		updateSearchIndex($article->getTitle(), null);
+	}
+	wfMarkUndoneEditAsPatrolled();
+
+	// In WikiHowSkin.php we cache the info for the author line. we want to
+	// remove this if that article was edited so that old info isn't cached.
+	if ($article) {
+		$cachekey = wfMemcKey('loadauth', $article->getID());
+		$wgMemc->delete($cachekey);
+	}
+
+	return true;
+}
+$wgHooks['ArticleSaveComplete'][] = array('wfArticleSaveComplete');
+
 function wfImageConvert($cmd) {
 	global $wgMemc;
-	$key = wfMemcKey("convert_" . md5($cmd));
+	$key = wfMemcKey('imgconvert', md5($cmd));
 	if ($wgMemc->get($key)) {
 		return false;
 	}
@@ -111,20 +123,27 @@ function wfImageConvert($cmd) {
 $wgHooks['ImageConvert'][] = array('wfImageConvert');
 
 function wfUpdateCatInfoMask(&$article, &$user) {
-	$t = $article->getTitle();
-	if ($t && $t->getNamespace() == NS_MAIN) {
-		$mask = $t->getCategoryMask();
-		$dbw = wfGetDB(DB_MASTER);
-		$dbw->update('page', array('page_catinfo'=>$mask), array('page_id'=>$article->getID()));
+	if ($article) {
+		$title = $article->getTitle();
+		if ($title && $title->getNamespace() == NS_MAIN) {
+			$mask = $title->getCategoryMask();
+			$dbw = wfGetDB(DB_MASTER);
+			$dbw->update('page',
+				array('page_catinfo' => $mask),
+				array('page_id' => $article->getID()),
+				__FUNCTION__);
+		}
 	}
 	return true;
 }
 $wgHooks['ArticleSaveComplete'][] = array('wfUpdateCatInfoMask');
 
 function wfUpdatePageFeaturedFurtherEditing($article, $user, $text, $summary, $flags) {
-	$t = $article->getTitle();
-	if (!$t || $t->getNamespace() != NS_MAIN) {
-		return true;
+	if ($article) {
+		$t = $article->getTitle();
+		if (!$t || $t->getNamespace() != NS_MAIN) {
+			return true;
+		}
 	}
 
 	$templates = split("\n", wfMsgForContent('templates_further_editing'));
@@ -167,3 +186,14 @@ $wgHooks['OutputPageBeforeHTML'][] = array('wfSetPage404IfNotExists');
 // implemented in ArticleMetaInfo.class.php
 $wgHooks['ArticleSaveComplete'][] = array('ArticleMetaInfo::refreshMetaDataCallback');
 
+$wgHooks['AddCacheControlHeaders'][] = array('wfAddCacheControlHeaders');
+
+function wfAddCacheControlHeaders() {
+	global $wgTitle, $wgRequest;
+
+	if ($wgRequest && $wgTitle && $wgTitle->getText() == wfMsg('mainpage')) {
+		$wgRequest->response()->header("X-T:MP");
+	}
+
+	return true;
+}

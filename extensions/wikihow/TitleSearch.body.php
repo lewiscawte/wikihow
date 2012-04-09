@@ -16,7 +16,7 @@ class TitleSearch extends UnlistedSpecialPage {
 
 		$key = generateSearchKey($text);
 
-		$cacheKey = wfMemcKey('title_search:' . $limit . ':' . $key);
+		$cacheKey = wfMemcKey('title_search', $limit, $key);
 		$result = $wgMemc->get($cacheKey);
 		if ($result !== null) {
 			return $result;

@@ -1,8 +1,7 @@
 <?php
 
 /*
- * Curls through all the article pages on the site
- * on spare1.
+ * Curls through all the article pages on the site on the spare host.
  */
 
 require_once("commandLine.inc");
@@ -19,7 +18,7 @@ $pages = array();
 while ( !feof( $fi ) ) { 
 	$fcontent = fgets($fi);
 	$tcontent = trim($fcontent);
-	$tcontent = str_replace("http://www.", "http://spare1.", $tcontent);
+	$tcontent = str_replace("http://www.wikihow.com", "http://" . WH_SPARE_HOST, $tcontent);
 	
 	$pages[] = $tcontent;
 }
@@ -41,7 +40,7 @@ function getResults($url) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_USERPWD, "wikihow:wikihow2006");
+		curl_setopt($ch, CURLOPT_USERPWD, WH_DEV_ACCESS_AUTH);
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);
         $contents = curl_exec($ch);

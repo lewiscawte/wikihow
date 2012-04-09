@@ -561,5 +561,31 @@ class WikiHow {
 		return trim($text);
 	}
 
+	public static function getCurrentParentCategories() {
+		global $wgTitle, $wgMemc;
+
+		$cachekey = wfMemcKey('parentcats', $wgTitle->getArticleId());
+		$cats = $wgMemc->get($cachekey);
+		if ($cats) return $cats;
+
+		$cats = $wgTitle->getParentCategories();
+
+		$wgMemc->set($cachekey, $cats);
+		return $cats;
+	}
+
+	public static function getCurrentParentCategoryTree() {
+		global $wgTitle, $wgMemc;
+
+		$cachekey = wfMemcKey('parentcattree', $wgTitle->getArticleId());
+		$cats = $wgMemc->get($cachekey);
+		if ($cats) return $cats;
+
+		$cats = $wgTitle->getParentCategoryTree();
+
+		$wgMemc->set($cachekey, $cats);
+		return $cats;
+	}
+
 }
 

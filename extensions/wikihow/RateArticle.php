@@ -40,7 +40,7 @@ $wgAutoloadClasses['AccuracyPatrol'] = dirname( __FILE__ ) . '/RateArticle.body.
 function wfGetRatingForArticle($id, $minvotes) {
 	global $wgMemc;
 
-	$cachekey = wfMemcKey('rating-' . $id . '-' . $minvotes);
+	$cachekey = wfMemcKey('rating', $id, $minvotes);
 	$ret = -1;
 	$mres = $wgMemc->get($cachekey);
 	if ($mres === null) {

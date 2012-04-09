@@ -282,6 +282,10 @@ class LoadBalancer {
 		$key = 'masterpos:' . $index;
 		$memcPos = $wgMemc->get( $key );
 		if ( $memcPos ) {
+// test whether this block of code is even used! (I can't find the 
+// memcache->set call for this key, which makes me think we shouldn't be 
+// getting it.)
+mail('reuben@wikihow.com', "GOT $key = $memcPos", "x");
 			list( $file, $pos ) = explode( ' ', $memcPos );
 			# If the saved position is later than the requested position, return now
 			if ( $file == $this->mWaitForFile && $this->mWaitForPos <= $pos ) {

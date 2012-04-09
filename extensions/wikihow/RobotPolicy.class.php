@@ -110,7 +110,7 @@ class RobotPolicy {
 		if ($wgTitle) {
 			$articleID = $wgTitle->getArticleID();
 			if ($articleID) {
-				$cachekey = wfMemcKey('bad-tpl-' . $articleID);
+				$cachekey = wfMemcKey('badtmpl', $articleID);
 				$result = $wgMemc->get($cachekey);
 				if ($result === null) {
 					$dbr = self::getDB();

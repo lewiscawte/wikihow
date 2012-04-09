@@ -2,15 +2,16 @@
 
 require_once('commandLine.inc');
 
-define('REPORTS_HOST', 'spare1.wikihow.com');
+define('REPORTS_HOST', WH_SPARE_HOST);
 define('REPORTS_DIR', '/x/dashboard');
+
 if (true) {
 	// use the revision table
 	$table = "revision";
 	$join = " left join page on page_id = rev_page " ;
-	$cond = " page_namespace = 0 "; 
+	$cond = " page_namespace = 0 ";
 	$andcond = " and $cond ";
-	$where = " where page_namespace = 0 "; 
+	$where = " where page_namespace = 0 ";
 } else {
 	// use the rev_tmp table
 	$table = "rev_tmp";
@@ -22,8 +23,8 @@ $wgTitle = Title::newFromText("Main Page");
 
 function selectField($dbw, $sql) {
 	#wfDebug("Dashboard: $sql\n");
-	$res = $dbw->query($sql);
-	if ($row = $dbw->fetchObject($res)) 
+	$res = $dbw->query($sql, __FILE__);
+	if ($row = $dbw->fetchObject($res))
 		foreach($row as $k=>$v)
 		return $v;
 	return null;
@@ -35,7 +36,7 @@ function getNumCreatedThenDeleted($dbw, $cutoff, $cutoff2 = null) {
 	else
 		$sql = "select ar_title, ar_page_id, min(ar_timestamp) as M from archive where ar_namespace=0 group by ar_page_id having M >= '$cutoff'";
 	wfDebug("Dashboard: $sql\n");
-	$res = $dbw->query($sql);
+	$res = $dbw->query($sql, __FUNCTION__);
 	return $dbw->numRows($res);
 }
 
@@ -55,14 +56,16 @@ function getDateStr($ts) {
 
 function getWikiBirthdays($start, $w_cutoff, $dbw) {
 	$result = "";
-	$thisyear = date("Y") - 1; 
+	$thisyear = date("Y") - 1;
 	$ago = 1;
 	while ($thisyear > 2004) {
-		$ts1 = preg_replace("@^20[0-9]{2}@", $thisyear, $w_cutoff); 
-		$ts2 = preg_replace("@^20[0-9]{2}@", $thisyear, $start); 
+		$ts1 = preg_replace("@^20[0-9]{2}@", $thisyear, $w_cutoff);
+		$ts2 = preg_replace("@^20[0-9]{2}@", $thisyear, $start);
 		$result .= "Between " . getDateStr($ts1) . " and " . getDateStr($ts2) . " <ol>";
-		$res = $dbw->select('user', array('user_name', 'user_registration'),
-			 array("user_registration > '$ts1'", "user_registration <= '$ts2'", "user_editcount >= 200"));
+		$res = $dbw->select('user',
+			array('user_name', 'user_registration'),
+			array("user_registration > '$ts1'", "user_registration <= '$ts2'", "user_editcount >= 200"),
+			 __FUNCTION__);
 		while ($row = $dbw->fetchObject($res)) {
 			$x = User::newFromName($row->user_name);
 			$result .= "<li> " . getUserLink($x) . " (" . getDateStr($row->user_registration) . ") - " . getUserToolLinks($x) . "</li>";
@@ -80,7 +83,7 @@ function newlyActiveUsers($cutoff, $start, $dbw, $tdstyle, $editcount, $period) 
 	$sql = "select rev_user, rev_user_text, max(rev_timestamp) as M, count(*) as C from $table $join $where group by rev_user having C >= $editcount and M >'{$cutoff}' and M <'{$start}';";
 	wfDebug("Dashboard new editors who became active this month/week: $sql\n");
 	echo "<!-- $sql --->";
-	$res = $dbw->query($sql);
+	$res = $dbw->query($sql, __FUNCTION__);
 	while ($row = $dbw->fetchObject($res)) {
 		$count = selectField($dbw, "select count(*) from $table $join where rev_user=" . $row->rev_user . "  $andcond and rev_timestamp < '" . $cutoff . "'");
 		if ($count < $editcount ) {
@@ -96,35 +99,33 @@ function newlyActiveUsers($cutoff, $start, $dbw, $tdstyle, $editcount, $period) 
 
 function articleStats($dbw, $cutoff, $cutoff2 = null) {
 	global $wgBotIds;
-	$notbot = " NOT IN (" . implode($wgBotIds) . ")"; 
+	$notbot = " NOT IN (" . implode($wgBotIds) . ")";
 
 	$result = "";
-	$result .= "\n<ul><li>Articles that have been deleted : "  . 
-		nf($dbw->selectField('logging', array('count(*)'), 
-		array('log_type' => 'delete', 
-			  "log_timestamp > '{$cutoff}'", 
-			  $cutoff2 ? "log_timestamp < '{$cutoff2}'" : "1=1",
-			  'log_namespace' => 0
-			)));
+	$result .= "\n<ul><li>Articles that have been deleted : "  .
+		nf($dbw->selectField('logging', array('count(*)'),
+			array('log_type' => 'delete',
+				"log_timestamp > '{$cutoff}'",
+				$cutoff2 ? "log_timestamp < '{$cutoff2}'" : "1=1",
+				'log_namespace' => 0),
+			__FUNCTION__));
 
 	$d = getNumCreatedThenDeleted($dbw, $cutoff, $cutoff2);
-	$result .= "\n</li><li> Articles that have been created : "  . 
+	$result .= "\n</li><li> Articles that have been created : "  .
 		nf($dbw->selectField('newarticlepatrol', array('count(*)'),
-		array(
-			  "nap_timestamp > '{$cutoff}'",
-			  $cutoff2 ?  "nap_timestamp < '{$cutoff2}'" : "1=1",
-			 
-			)) + $d);
+			array("nap_timestamp > '{$cutoff}'",
+				$cutoff2 ?  "nap_timestamp < '{$cutoff2}'" : "1=1"
+			), __FUNCTION__) + $d);
 
 	$result .= "- (" . nf($d) . " deleted) \n</li><li>New articles that have been boosted: ".
 		nf($dbw->selectField(array('recentchanges', 'newarticlepatrol'), array('count(*)'),
 		array(
-			'rc_new=1', 
-			'rc_namespace='. NS_MAIN, 
+			'rc_new=1',
+			'rc_namespace='. NS_MAIN,
 			"rc_timestamp > '{$cutoff}'",
-			"nap_page=rc_cur_id", 
-			"nap_patrolled=1")));		
-	
+			"nap_page=rc_cur_id",
+			"nap_patrolled=1"), __FUNCTION__));
+
 	$result .= "\n<li> Videos that have been embedded: "  .
 		nf($dbw->selectField(array('revision', 'page'),
 		array('count(*)'),
@@ -133,16 +134,16 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			  $cutoff2 ?  "rev_timestamp < '{$cutoff2}'" : "1=1",
 			 "page_id = rev_page",
 				'page_namespace' => NS_VIDEO
-			)));
+			), __FUNCTION__));
 
-	$result .= "\n</li><li> Photos uploaded: "  . 
+	$result .= "\n</li><li> Photos uploaded: "  .
 		nf($dbw->selectField('logging', array('count(*)'),
 		array('log_type' => 'upload',
 			  "log_timestamp > '{$cutoff}'",
 			  $cutoff2 ?  "log_timestamp < '{$cutoff2}'" : "1=1",
-			)));
+			), __FUNCTION__));
 
-	$result .= "\n</li><li>Main namespace edits : "  . 
+	$result .= "\n</li><li>Main namespace edits : "  .
 	   nf($dbw->selectField(array('revision', 'page'),
 		array('count(*)'),
 		array(
@@ -151,9 +152,9 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			 "page_id = rev_page",
 			   'page_namespace' => NS_MAIN,
 				'rev_user ' . $notbot,
-			)));
+			), __FUNCTION__));
 
-	$result .= "\n</li><li> User talk namespace edits : "  .         
+	$result .= "\n</li><li> User talk namespace edits : "  .
 	   nf($dbw->selectField(array('revision', 'page'),
 		array('count(*)'),
 		array(
@@ -162,9 +163,9 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			 "page_id = rev_page",
 				'page_namespace' => NS_USER_TALK,
 				'rev_user ' . $notbot,
-			)));
+			), __FUNCTION__));
 
-	$result .= "\n</li><li> Reverted main namespace edits : "  .         
+	$result .= "\n</li><li> Reverted main namespace edits : "  .
 	   nf($dbw->selectField(array('revision', 'page'),
 		array('count(*)'),
 		array(
@@ -173,7 +174,7 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			 "page_id = rev_page",
 			  'page_namespace' => NS_MAIN,
 			 "rev_comment like 'Reverted%'"
-			)));
+			), __FUNCTION__));
 
 	$result .= "\n</li><li> User registrations : " .
 		nf($dbw->selectField(array('user'),
@@ -181,25 +182,25 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			array(
 				"user_registration> '{$cutoff}'",
 				$cutoff2 ? "user_registration < '{$cutoff2}'" : "1=1",
-				"user_name NOT like 'Anonymous%'")));
+				"user_name NOT like 'Anonymous%'"), __FUNCTION__));
 
 	$result .= "</ul>";
 	return $result;
 }
 
-function getActivityChange ($dbw, $c1, $c2, $decline) {
+function getActivityChange($dbw, $c1, $c2, $decline) {
 	// how many edits in previous period?
 	global $table, $join, $where, $cond, $andcond;
 	$sql = "SELECT rev_user, rev_user_text, count(*) as C from  $table $join
 		WHERE rev_timestamp < '{$c1}' and rev_timestamp > '{$c2}' $andcond group by rev_user having C >= 100;";
 	#echo $sql . "\n";
 	wfDebug("Dashboard activity change: $sql\n");
-	$res = $dbw->query($sql);
+	$res = $dbw->query($sql, __FUNCTION__);
 	while ($row = $dbw->fetchObject($res)) {
-		// how many edits in current period? 
+		// how many edits in current period?
 		$add = false;
 		$old = $row->C;
-		$new  = selectField($dbw, "select count(*) from $table $join where rev_user=" . $row->rev_user . " and rev_timestamp > '" . $c1 . "' $andcond;");
+		$new  = selectField($dbw, "select count(*) from $table $join where rev_user=" . $row->rev_user . " and rev_timestamp > '" . $c1 . "' $andcond");
 		if ($decline) {
 			if ($new == 0 || $new / $old <= 0.5)
 				$add = true;
@@ -232,8 +233,8 @@ function getTopCreators($dbw, $cutoff, $start) {
 	global $wgBotIds;
 	$result = "<ol>";
 	$sql = "select fe_user, fe_user_text, count(*) as C from firstedit where fe_timestamp > '{$cutoff}' and fe_timestamp < '{$start}' "
-			. " and fe_user NOT IN (0, " . implode(", ", $wgBotIds) . ") group by fe_user order by C desc limit 20;";
-	$res = $dbw->query($sql);
+			. " and fe_user NOT IN (0, " . implode(", ", $wgBotIds) . ") group by fe_user order by C desc limit 20";
+	$res = $dbw->query($sql, __FUNCTION__);
 	wfDebug("Dashboard top creators: $sql\n");
 	while ($row = $dbw->fetchObject($res)) {
 		$x = User::newFromName($row->fe_user_text);
@@ -253,12 +254,12 @@ function getTopCreators($dbw, $cutoff, $start) {
 function getTopCreators2($dbw, $cutoff, $start) {
 	global $table, $join, $where, $cond, $andcond;
 	$result = "<ol>";
-	$sql = "select nap_page from newarticlepatrol left join page on nap_page = page_id where page_namespace = 0 
+	$sql = "select nap_page from newarticlepatrol left join page on nap_page = page_id where page_namespace = 0
 			and nap_timestamp > '{$cutoff}' and nap_timestamp < '{$start}'; ";
 	wfDebug("Dashboard top creators: $sql\n");
 
 	debugMsg("getting nap $nap ");
-	$res = $dbw->query($sql);
+	$res = $dbw->query($sql, __FUNCTION__);
 	$pages = array();
 	$revisions = array();
 	while ($row = $dbw->fetchObject($res)) {
@@ -327,22 +328,23 @@ function getUserLink($x) {
  */
 $dbw = wfGetDB(DB_MASTER);
 
-// get the cutoff dates which we are going to run the report for 
+// get the cutoff dates which we are going to run the report for
 $start = time();
 if (isset($argv[0])) {
 	$start = wfTimestamp(TS_UNIX, $argv[0] . "000000");
 }
 $w_cutoff 	= wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 7); // 7 days
 $ww_cutoff 	= wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 14); // 14 days
+$wf_cutoff	= wfTimestamp(TS_MW, $start + 60 * 60 * 24 * 7); // 7 days forward
 $m_cutoff 	= wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 30); // 30 days
 $mm_cutoff 	= wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 60); // 60 days
 $start 		= wfTimestamp(TS_MW, $start); // convert it over to a ts_mw
 $now  		= wfTimestampNow();
 
 // a list of bots, because we want to exclude them from the report
-$wgBotIds = array(); 
+$wgBotIds = array();
 $dbr = wfGetDB(DB_SLAVE);
-$res = $dbr->select('user_groups', array('ug_user'), array('ug_group'=>'Bot'));
+$res = $dbr->select('user_groups', array('ug_user'), array('ug_group'=>'Bot'), __FILE__);
 while ($row = $dbr->fetchObject($res)) {
 	$wgBotIds[] = $row->ug_user;
 }
@@ -356,14 +358,14 @@ echo "\n\n<!-- " . date("r") . " starting ... --->\n";
 // it'll make it quicker to do lookups than to do a lookup on the whole revision table
 if ($wgServer != "http://wiki112.wikidiy.com" && $table == "rev_tmp") {
 	$sql = "
-	create temporary table rev_tmp (    
-		rev_id int(8) unsigned NOT NULL,    
-		`rev_page` int(8) unsigned NOT NULL default '0',     
-		`rev_user` int(5) unsigned NOT NULL default '0',     
-		`rev_user_text` varchar(255) character set latin1 collate latin1_bin NOT NULL default '',     
+	create temporary table rev_tmp (
+		rev_id int(8) unsigned NOT NULL,
+		`rev_page` int(8) unsigned NOT NULL default '0',
+		`rev_user` int(5) unsigned NOT NULL default '0',
+		`rev_user_text` varchar(255) character set latin1 collate latin1_bin NOT NULL default '',
 		`rev_timestamp` varchar(14) character set latin1 collate latin1_bin NOT NULL default '',
-		KEY `rev_id` (`rev_id`), 
-		KEY `rev_page` (`rev_page`), 
+		KEY `rev_id` (`rev_id`),
+		KEY `rev_page` (`rev_page`),
 		KEY `rev_timestamp` (`rev_timestamp`),
 		KEY `user_timestamp` (`rev_user`,`rev_timestamp`),
 		KEY `usertext_timestamp` (`rev_user_text`,`rev_timestamp`)
@@ -371,9 +373,9 @@ if ($wgServer != "http://wiki112.wikidiy.com" && $table == "rev_tmp") {
 	echo $sql;
 	#$dbw->query($sql);
 
-	$sql = "insert into rev_tmp 
+	$sql = "insert into rev_tmp
 			select rev_id, rev_page, rev_user, rev_user_text, rev_timestamp from
-			revision, page where page_id=rev_page and page_namespace=0 and rev_user > 0 
+			revision, page where page_id=rev_page and page_namespace=0 and rev_user > 0
 			and rev_user NOT IN (" . implode(",", $wgBotIds) . "); ";
 	#$dbw->query($sql);
 	echo $sql; exit;
@@ -386,7 +388,7 @@ echo "\n\n<!-- " . date("r") . " user stats ... --->\n";
 // get the group of "very active users", they are the ones with 500+ edits
 $users = array();
 wfDebug("Dashboard getting users with > 500 edits: $sql\n");
-$res = $dbw->query("select rev_user, count(*) as C from $table $join $where group by rev_user having C > 500 order by C desc;");
+$res = $dbw->query("select rev_user, count(*) as C from $table $join $where group by rev_user having C > 500 order by C desc", __FILE__);
 while ($row = $dbw->fetchObject($res)) {
 	$users[$row->rev_user] = $row->C;
 }
@@ -406,10 +408,9 @@ foreach ($users as $u => $c) {
 echo "</ol></td></tr><tr><td {$tdstyle}>";
 
 echo "<h2>Users who have 100+ edits in the past month </h2><ol>" ;
-$sql = "select rev_user_text, count(*) as C from $table $join where rev_timestamp > '{$m_cutoff} ' and rev_timestamp <  '{$start}' $andcond group by rev_user_text having C >= 100 order by C desc;";
-#echo $sql . "\n";
+$sql = "select rev_user_text, count(*) as C from $table $join where rev_timestamp > '{$m_cutoff} ' and rev_timestamp <  '{$start}' $andcond group by rev_user_text having C >= 100 order by C desc";
 wfDebug("Dashboard 100+ edits in past month: $sql\n");
-$res = $dbw->query($sql);
+$res = $dbw->query($sql, __FILE__);
 while ($row = $dbw->fetchObject($res)) {
 	$x = User::newFromName($row->rev_user_text);
 	echo "<li> " . getUserLink($x) . " - ". nf($row->C) . getUserToolLinks($x) . "</li>\n";
@@ -417,8 +418,7 @@ while ($row = $dbw->fetchObject($res)) {
 echo "</ol></td><td {$tdstyle}>";
 
 echo "<h2>Users who have 25+ edits in the past week</h2><ol>" ;
-$sql = "select rev_user_text, count(*) as C from $table $join where rev_timestamp > '{$w_cutoff}' and rev_timestamp < '{$start}' $andcond group by rev_user_text having C >= 25 order by C desc;";
-#echo $sql . "\n";
+$sql = "select rev_user_text, count(*) as C from $table $join where rev_timestamp > '{$w_cutoff}' and rev_timestamp < '{$start}' $andcond group by rev_user_text having C >= 25 order by C desc";
 wfDebug("Dashboard 25+ edits in past week: $sql\n");
 $res = $dbw->query($sql);
 while ($row = $dbw->fetchObject($res)) {
@@ -429,9 +429,8 @@ echo "</ol></td></tr><tr><td {$tdstyle}>";
 
 echo "<h2> Top 100 editors for the past month </h2><ol>" ;
 $sql =  "select rev_user_text, count(*) as C from $table $join where rev_timestamp > '$m_cutoff' and rev_timestamp < '$start' $andcond group by rev_user_text order by C desc LIMIT 100;";
-#echo $sql . "\n";
 wfDebug("Dashboard top 100 editors in past month: $sql\n");
-$res = $dbw->query($sql);
+$res = $dbw->query($sql, __FILE__);
 while ($row = $dbw->fetchObject($res)) {
 	$x = User::newFromName($row->rev_user_text);
 	echo "<li> " . getUserLink($x) . " - " . nf($row->C) . getUserToolLinks($x). "</li>\n";
@@ -442,7 +441,7 @@ echo "<h2> Top 50 editors for the past week </h2><ol>" ;
 $sql = "select rev_user_text, count(*) as C from $table $join where rev_timestamp > '{$w_cutoff}' $andcond group by rev_user_text order by C desc LIMIT 50;";
 #echo $sql . "\n";
 wfDebug("Dashboard top 50 editors in past week: $sql\n");
-$res = $dbw->query($sql);
+$res = $dbw->query($sql, __FILE__);
 while ($row = $dbw->fetchObject($res)) {
 	$x = User::newFromName($row->rev_user_text);
 	echo "<li> " . getUserLink($x) . " - ".  nf($row->C) . getUserToolLinks($x) . "</li>\n";
@@ -457,24 +456,23 @@ echo "</ol></td><tr></tr><td {$tdstyle}>";
 // who had 100+ edits 2 months ago?
 echo "\n\n<!-- " . date("r") . " changes in activity levels --->\n";
 echo "<h2> Editors with a declining activity level this month</h2>" ;
-wfDebug("Dashboard decling activty this month: ");
-$res = $dbw->query($sql);
-echo getActivityChange ($dbw, $m_cutoff, $mm_cutoff, true);
+wfDebug("Dashboard declining activity this month: ");
+echo getActivityChange($dbw, $m_cutoff, $mm_cutoff, true);
 echo "</td><td {$tdstyle}>";
 
 echo "<h2> Editors with a declining activity level this week</h2>" ;
-wfDebug("Dashboard decling activty this week: ");
-echo getActivityChange ($dbw, $w_cutoff, $ww_cutoff, true);
+wfDebug("Dashboard declining activity this week: ");
+echo getActivityChange($dbw, $w_cutoff, $ww_cutoff, true);
 echo "</td><tr></tr><td {$tdstyle}>";
 
 echo "<h2> Editors with a increasing activity level this month</h2>50% more activity than last month\n" ;
-wfDebug("Dashboard decling activty this increasing activity level this month: ");
-echo getActivityChange ($dbw, $m_cutoff, $mm_cutoff, false);
+wfDebug("Dashboard declining activity this increasing activity level this month: ");
+echo getActivityChange($dbw, $m_cutoff, $mm_cutoff, false);
 echo "</td><td {$tdstyle}>";
 
 echo "<h2> Editors with a increasing activity level this week</h2>50% more activity than last week\n" ;
-wfDebug("Dashboard decling activty this increasing activity level this week: ");
-echo getActivityChange ($dbw, $w_cutoff, $ww_cutoff, false);
+wfDebug("Dashboard declining activity this increasing activity level this week: ");
+echo getActivityChange($dbw, $w_cutoff, $ww_cutoff, false);
 echo "</td><tr></tr><td {$tdstyle}>";
 
 /*******
@@ -499,49 +497,50 @@ echo "</tr><tr><td {$tdstyle}>";
 echo "\n\n<!-- " . date("r") . " top article creators --->\n";
 echo "<h2> Top 20 authors who started articles this month </h2>" ;
 wfDebug("Dashboard top 20 authors who started articles this month ");
-echo getTopCreators($dbw, $m_cutoff, $start);	
-	echo "</td><td {$tdstyle}>";
-    
-	echo "<h2> Top 20 authors who started articles this week </h2>" ;
-	wfDebug("Dashboard top 20 authors who started articles this week ");
-	echo getTopCreators($dbw, $w_cutoff, $start);	
-	echo "</td></tr></table>";
+echo getTopCreators($dbw, $m_cutoff, $start);
 
-	echo "\n\n<!-- " . date("r") . " article stats --->\n";
-	echo "<h1> Article stats</h2>";
-   
-	// get number of users who had 5+ edits this week 
-	$sql = "select rev_user_text, count(*) as C from $table $join where rev_timestamp > '$w_cutoff' and rev_timestamp < '{$start}' $andcond group by rev_user_text having C >= 5 order by C desc;";
-    #echo $sql . "\n";
-	wfDebug("Dashboard active 5 edits or more: $sql\n ");
-    $res = $dbw->query($sql);
-	$active_five_edits_more = $dbw->numRows($res);
+echo "</td><td {$tdstyle}>";
 
-	$sql = "select count(distinct(page_id)) from templatelinks left join page on tl_from = page_id and tl_title in ('Stub', 'Copyedit', 'Merge', 'Format', 'Cleanup', 'Accuracy');";
-	wfDebug("Dashboard articles in problem categories $sql \n");
-	echo "<ul><li>Articles in problem categories (as of " . getDateStr($now) . ") " . nf(selectField($dbw, $sql)) . "</li></ul>";
-	echo "<ul><li>wikihow contributors who participated 5 or more times this week: " . nf($active_five_edits_more) . "</li></ul>";
-	$sql = "select count(*) from templatelinks where tl_title='Rising-star-discussion-msg-2';";
-	wfDebug("Dashboard number of rising starts $sql \n");
-	echo "<ul><li>Number of Rising Stars: (as of " . getDateStr($now) . ") " . nf(selectField($dbw, $sql)) . "</li></ul>";
-	
-	echo "<table class='dashboard' style='font-family: Arial; margin-left:auto; margin-right:auto; width: 90%;'><tr><td {$tdstyle}>";
-	echo "<h3>Article stats for the past week</h3>" . articleStats($dbw, $w_cutoff, $start) . "\n";	
-	echo "</td><td {$tdstyle}>";
-	echo "<h3>Article stats for the past month</h3>" . articleStats($dbw, $m_cutoff, $start) . "\n" ;	
-	echo "</td></tr></table>";
+echo "<h2> Top 20 authors who started articles this week </h2>" ;
+wfDebug("Dashboard top 20 authors who started articles this week ");
+echo getTopCreators($dbw, $w_cutoff, $start);
+echo "</td></tr></table>";
 
-	/*******
-	 *
-	 *  Wiki birthdays 
-	 *
-	 */
-	echo "\n\n<!-- " . date("r") . " wiki birthdays --->\n";
-	echo "<table class='dashboard' style='font-family: Arial; margin-left:auto; margin-right:auto; width: 90%;'><tr><td {$tdstyle}>";
-	echo "<h3>Wiki Birthdays</h3>For users with 200+ edits<br/><br/>";
-	echo getWikiBirthdays($start, $w_cutoff, $dbw); 
-	echo "</td><td {$tdstyle}>";
-	echo "</td></tr></table>";
+echo "\n\n<!-- " . date("r") . " article stats --->\n";
+echo "<h1> Article stats</h2>";
 
-	echo "</body>";
+// get number of users who had 5+ edits this week
+$sql = "select rev_user_text, count(*) as C from $table $join where rev_timestamp > '$w_cutoff' and rev_timestamp < '{$start}' $andcond group by rev_user_text having C >= 5 order by C desc";
+wfDebug("Dashboard active 5 edits or more: $sql\n ");
+$res = $dbw->query($sql, __FILE__);
+$active_five_edits_more = $dbw->numRows($res);
+
+$sql = "select count(distinct(page_id)) from templatelinks left join page on tl_from = page_id and tl_title in ('Stub', 'Copyedit', 'Merge', 'Format', 'Cleanup', 'Accuracy');";
+wfDebug("Dashboard articles in problem categories $sql \n");
+echo "<ul><li>Articles in problem categories (as of " . getDateStr($now) . ") " . nf(selectField($dbw, $sql)) . "</li></ul>";
+echo "<ul><li>wikihow contributors who participated 5 or more times this week: " . nf($active_five_edits_more) . "</li></ul>";
+$sql = "select count(*) from templatelinks where tl_title='Rising-star-discussion-msg-2';";
+wfDebug("Dashboard number of rising starts $sql \n");
+echo "<ul><li>Number of Rising Stars: (as of " . getDateStr($now) . ") " . nf(selectField($dbw, $sql)) . "</li></ul>";
+
+echo "<table class='dashboard' style='font-family: Arial; margin-left:auto; margin-right:auto; width: 90%;'><tr><td {$tdstyle}>";
+echo "<h3>Article stats for the past week</h3>" . articleStats($dbw, $w_cutoff, $start) . "\n";
+echo "</td><td {$tdstyle}>";
+echo "<h3>Article stats for the past month</h3>" . articleStats($dbw, $m_cutoff, $start) . "\n" ;
+echo "</td></tr></table>";
+
+/*******
+ *
+ *  Wiki birthdays
+ *
+ */
+echo "\n\n<!-- " . date("r") . " wiki birthdays --->\n";
+echo "<table class='dashboard' style='font-family: Arial; margin-left:auto; margin-right:auto; width: 90%;'><tr><td {$tdstyle}>";
+echo "<h3>Wiki Birthdays</h3>For users with 200+ edits<br/><br/>";
+//switch order of inputs since now we're looking forward
+echo getWikiBirthdays($wf_cutoff, $start, $dbw);
+echo "</td><td {$tdstyle}>";
+echo "</td></tr></table>";
+
+echo "</body>";
 

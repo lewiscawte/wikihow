@@ -193,5 +193,35 @@ class WikiPhoto {
 		}
 	}
 
+	/** 
+	 * Wikiphoto has an exclude list so that important community member articles
+	 * can't have their photos overwritten. This is done by never uploading
+	 * new photos for a given articleID.
+	 */
+	public static function checkExcludeList($articleID) {
+		static $excludes = null;
+		if (!$excludes) {
+			$list = ConfigStorage::dbGetConfig('wikiphoto-article-exclude-list');
+			$excludes = array();
+			$lines = preg_split('@[\r\n]+@', $list);
+			foreach ($lines as $line) {
+				$line = trim($line);
+				if ($line) {
+					if (preg_match('@^[0-9]+$@', $line)) {
+						$id = $line;
+					} else {
+						$title = self::getArticleTitleNoCheck($line);
+						$id = $title ? $title->getArticleID() : 0;
+					}
+					if ($id) {
+						$excludes[$id] = true;
+					}
+				}
+			}
+		}
+
+		return @$excludes[ strval($articleID) ];
+	}
+
 }
 

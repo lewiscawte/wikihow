@@ -63,9 +63,9 @@ class RefreshDashboardStats {
 			self::log($logMsg);
 			if (!empty($stopMsg)) break;
 
-			$until_five_seconds = self::REFRESH_SECONDS - $delta;
-			if ($until_five_seconds >= 0.0) {
-				$secs = (int)ceil($until_five_seconds);
+			$until_refresh_seconds = self::REFRESH_SECONDS - $delta;
+			if ($until_refresh_seconds >= 0.0) {
+				$secs = (int)ceil($until_refresh_seconds);
 				sleep($secs);
 			}
 

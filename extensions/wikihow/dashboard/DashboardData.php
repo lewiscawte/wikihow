@@ -88,7 +88,7 @@ class DashboardData {
 	/**
 	 * Compile all the "global" (ie, not user-specific) stats needed to
 	 * display the community dashboard page.  This call is made every 5-15
-	 * seconds on the spare1 server.  We try to detect DB errors and return
+	 * seconds on the spare host.  We try to detect DB errors and return
 	 * false from this function so that if there are any errors, the
 	 * daemon can restart itself.
 	 */

@@ -1288,7 +1288,8 @@ class Title {
 
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select( 'protected_titles', '*', 
-			array ('pt_namespace' => $this->getNamespace(), 'pt_title' => $this->getDBkey()) );
+			array('pt_namespace' => $this->getNamespace(), 'pt_title' => $this->getDBkey()),
+			__METHOD__ );
 
 		if ($row = $dbr->fetchRow( $res )) {
 			return $row;
@@ -1675,7 +1676,7 @@ class Title {
 
 		# Backwards-compatibility: also load the restrictions from the page record (old format).
 
-		if ( $oldFashionedRestrictions == NULL ) {
+		if ( $oldFashionedRestrictions === NULL ) {
 			$oldFashionedRestrictions = $dbr->selectField( 'page', 'page_restrictions', array( 'page_id' => $this->getArticleId() ), __METHOD__ );
 		}
 
@@ -2719,19 +2720,19 @@ class Title {
 		$dbr = wfGetDB( DB_SLAVE );
 		$categorylinks = $dbr->tableName( 'categorylinks' );
 
-		# NEW SQL
-		$sql = "SELECT * FROM $categorylinks"
-		     ." WHERE cl_from='$titlekey'"
+		// XXCHANGED
+		$sql = "SELECT cl_to FROM $categorylinks"
+		     ." WHERE cl_from = '$titlekey'"
 			 ." AND cl_from <> '0'"
 			 ." ORDER BY cl_sortkey";
 
-		$res = $dbr->query ( $sql ) ;
+		$res = $dbr->query($sql, __METHOD__);
 
-		if($dbr->numRows($res) > 0) {
-			while ( $x = $dbr->fetchObject ( $res ) )
-				//$data[] = Title::newFromText($wgContLang->getNSText ( NS_CATEGORY ).':'.$x->cl_to);
-				$data[$wgContLang->getNSText ( NS_CATEGORY ).':'.$x->cl_to] = $this->getFullText();
-			$dbr->freeResult ( $res ) ;
+		if ($dbr->numRows($res) > 0) {
+			while ( $row = $dbr->fetchObject ($res) )
+				$key = $wgContLang->getNSText(NS_CATEGORY) . ':' . $row->cl_to;
+				$data[$key] = $this->getFullText();
+			$dbr->freeResult($res);
 		} else {
 			$data = array();
 		}

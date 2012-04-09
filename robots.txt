@@ -138,6 +138,7 @@ Disallow: /*action=watch*
 Disallow: /User:*/profilebox
 Disallow: /*usertype:logged
 Disallow: /Special:
+Disallow: /api.php
 Noindex: /w/
 Noindex: /forum/
 Noindex: /index.php
@@ -149,6 +150,7 @@ Noindex: /*action=watch*
 Noindex: /User:*/profilebox
 Noindex: /*usertype:logged
 Noindex: /Special:
+Noindex: /api.php
 Noindex: /User_talk:1
 Noindex: /User_talk:2
 Noindex: /User_talk:3

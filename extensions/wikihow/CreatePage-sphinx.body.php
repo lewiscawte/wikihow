@@ -226,7 +226,7 @@ class SuggestionSearch extends UnlistedSpecialPage {
 		$text = trim($text);
 		$limit = intval($limit);
 
-		$cacheKey = wfMemcKey('match_suggest_titles:' . $limit . ':' .$text);
+		$cacheKey = wfMemcKey('matchsuggesttitles', $limit, $text);
 		$result = $wgMemc->get($cacheKey);
 		if ($result !== null) {
 			return $result;
@@ -234,13 +234,13 @@ class SuggestionSearch extends UnlistedSpecialPage {
 
 		$key = generateSearchKey($text);
 
-		$db =& wfGetDB( DB_MASTER );
+		$db = wfGetDB( DB_MASTER );
 
 		$base = "SELECT suggested_titles.st_title FROM suggested_titles WHERE ";
 		$sql = $base . " CONVERT(st_title USING latin1) LIKE " . $db->addQuotes($text . "%"). " AND st_used = 0 ";
-		$sql .= " LIMIT $limit;";
+		$sql .= " LIMIT $limit";
 		$result = array();
-		$res = $db->query( $sql, 'WH SuggestionSearch::matchKeyTitles1' );
+		$res = $db->query( $sql, __METHOD__ );
 		while ( $row = $db->fetchObject($res) ) {
 			$con = array();
 			$con[0] = $row->st_title;
@@ -257,8 +257,8 @@ class SuggestionSearch extends UnlistedSpecialPage {
 		// SQL injections
 		$base = "SELECT suggested_titles.st_title FROM suggested_titles WHERE ";
 		$sql = $base . " st_key LIKE '%" . str_replace(" ", "%", $key) . "%' AND st_used = 0 ";
-		$sql .= " LIMIT $limit;";
-		$res = $db->query( $sql, 'WH SuggestionSearch::matchKeyTitles2' );
+		$sql .= " LIMIT $limit";
+		$res = $db->query( $sql, __METHOD__ );
 		while ( count($result) < $limit && $row = $db->fetchObject($res) ) {
 			if (!isset($gotit[$row->st_title])) {
 				$con = array();

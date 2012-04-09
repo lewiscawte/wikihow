@@ -20,7 +20,7 @@ class ThumbsNotifications extends UnlistedSpecialPage {
 		$revId = intval($wgRequest->getVal('rev'));
 		$giverIds = $dbw->strencode($wgRequest->getVal('givers'));
 		$sql = "UPDATE thumbs SET thumb_notified = 1 WHERE thumb_rev_id = $revId and thumb_giver_id IN ($giverIds)";
-		$result = $dbw->query($sql);
+		$result = $dbw->query($sql, __METHOD__);
 
 		$wgOut->setArticleBodyOnly(true);
 		echo json_encode($result);
@@ -61,10 +61,10 @@ class ThumbsNotifications extends UnlistedSpecialPage {
 			ORDER BY 
 				MAX(thumb_timestamp) DESC";
 
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		$notifications = array();
-		while($row = $dbr->fetchObject($res)) {
+		while ($row = $dbr->fetchObject($res)) {
 			$notification = array();
 			$notification['revid'] =  $row->thumb_rev_id;
 			$notification['givers'] = $row->givers;

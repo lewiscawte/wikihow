@@ -650,7 +650,7 @@ Event.observe(window, 'load', pbInitForm);
 		global $wgMemc, $wgUser;
 
 		$username = urldecode($username);
-		$cacheKey = wfMemcKey("pb-thumbs-$username-$limit");
+		$cacheKey = wfMemcKey('pb_thumbs', $username, $limit);
 		$result = $wgMemc->get($cacheKey);
 
 		$profileOwner = $wgUser->getId() != 0 && 'User:' . $wgUser->getName() == $pagename;
@@ -849,7 +849,8 @@ Event.observe(window, 'load', pbInitForm);
 	function fetchCreatedData($username, $limit){
 		global $wgMemc, $wgUser;
 
-		$result = $wgMemc->get(wfMemcKey("pb-fetchCreatedData" . $username . "-" . $limit));
+		$cachekey = wfMemcKey('pb_fetchCreatedData', $username, $limit);
+		$result = $wgMemc->get($cachekey);
 		$profileOwner = $wgUser->getId() != 0 && 'User:' . $wgUser->getName() == $pagename;
 		if (!profileOwner && $result) {
 			return result;
@@ -878,7 +879,7 @@ Event.observe(window, 'load', pbInitForm);
 
 		$dbr->freeResult($res);
 
-		$wgMemc->get(wfMemcKey("pb-fetchCreatedData" . $username . "-" . $limit), $results);
+		$wgMemc->get($cachekey, $results);
 
 		return $results;
 	}

@@ -1,4 +1,5 @@
 <?
+
 class AuthorEmailNotification extends SpecialPage {
 
 	function __construct() {
@@ -149,7 +150,7 @@ class AuthorEmailNotification extends SpecialPage {
 	 **************************************/
 	function notifyFeatured($title) {
 
-		$dbw = &wfGetDB(DB_MASTER);
+		$dbw = wfGetDB(DB_MASTER);
 		$track_title = '?utm_source=featured_email&utm_medium=email&utm_term=article_title&utm_campaign=featured_email';
 		echo "notifyFeatured en_page: ".$title->getArticleID()." notifyFeatured attempting.\n";
 

@@ -1,8 +1,9 @@
 <?php
-#
-# Clear out and rebuild the skey table. skey table is used for searching
-# wikiHow.
-#
+//
+// Clear out and rebuild the skey table. skey table is used for searching
+// wikiHow. We believe the skey table is used to check either suggested
+// titles or existing titles in the CreatePage and TitleSearch special pages. 
+//
 
 require_once('commandLine.inc');
 
