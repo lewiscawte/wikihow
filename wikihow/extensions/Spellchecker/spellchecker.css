@@ -1,0 +1,170 @@
+.misspell{color:red;}
+
+#spch-content{
+	height:450px;
+	overflow-y: scroll;
+	border:1px solid #999;
+}
+
+#spch-edit{
+	display:none;
+	width:600px;
+	margin:0 auto;
+}
+
+#spch-title{
+    background-color: #F5F5F5;
+    border: 1px solid #CDCDCD;
+    border-radius: 10px 10px 0 0;
+    margin: 0 auto;
+    width: 600px;
+}
+
+#spch-head {
+	background-color: #F5F5F5;
+	padding: 20px 0px 10px 20px;
+	border-top: 1px solid #111;
+	border-bottom: 1px dashed #111;
+	margin-bottom:20px;
+}
+
+#spch-title h1 {
+    font-size: 1.5em;
+    padding: 10px 15px;
+}
+
+#spch-head h1 {
+	font-size: 1.6em;
+	padding:0;
+}
+
+#spch-options{
+	font-size:1em;
+	float:right;
+}
+
+#spch-options #spch-yes {
+	margin-right: 1.3em;
+	float: right;
+}
+#spch-options #spch-skip {
+	float:right; 
+	padding: 0 14px 0 0;
+	font-weight: bold;
+	line-height: 26px;	
+}
+
+.spch-button-yes {
+	background:url(../editfinder/editfinder_yes.png) no-repeat scroll left top transparent;
+	height:26px;
+	line-height:25px;
+	width:153px;
+	padding-left: 10px;
+	font-size: .9em;
+}
+.spch-button-yes:hover { background-position: 0 -29px; }
+.spch-button-yes:active { background-position: 0 -57px; }
+
+#spch-skip{
+	width: 111px;
+}
+
+#spch-skip a{
+	float:left;
+}
+
+#spch-skip-arrow {
+	background: url(../editfinder/editfinder_yes.png) no-repeat scroll -165px 0 transparent;
+	width: 9px;
+	height: 10px;
+	float: right;
+	margin: 8px 0 0 4px;
+}
+
+#spch-instructions{
+	float: left;
+    margin-bottom: 15px;
+    margin-top: 5px;
+}
+
+#spch-id{display:none;}
+
+#spch-preview{
+	width: 600px;
+	margin: 0 auto;
+	border: 1px solid #CDCDCD;
+	overflow-x: hidden;
+	padding: 25px 0;
+	display: none;
+}
+
+#spch-summary{
+	margin-top:20px;
+}
+
+#article #spch-help{
+	font-size: 0.9em;
+    margin-top: 5px;
+	padding-bottom:0px;
+}
+
+a.clickfail {
+	color: #888;
+	cursor: default;
+	background-position: 0 -87px;
+}
+a.clickfail:hover { 
+	text-decoration: none;
+	background-position: 0 -87px; 
+}
+
+#spch-cancel{
+	line-height:26px;
+	margin-left:10px;
+}
+
+#spch-buttons{
+	margin-top:10px;
+}
+
+#spch-container{
+	margin-top:-15px;
+}
+
+.spch-word{
+	float: left;
+    margin-top: 3px;
+    width: 200px
+}
+
+#spch-words{
+	margin-top:10px;
+	padding-top:10px;
+	border-top:1px solid #666666;
+}
+
+.spch-message{
+	line-height:26px;
+	clear:both;
+}
+
+.spch-add{
+	float:left;
+}
+
+#spch-add-words{
+	font-size:0.9em;
+}
+
+.ui-dialog{
+	position:fixed;
+}
+
+#spch-error{
+	display: none;
+}
+
+.spch-waiting{
+	margin:0 auto;
+	width:32px;
+}
