@@ -582,4 +582,33 @@ class WikiHow {
 		return trim( $text );
 	}
 
+	public static function getCurrentParentCategories() {
+		global $wgTitle, $wgMemc;
+
+		$cacheKey = wfMemcKey( 'parentcats', $wgTitle->getArticleId() );
+		$cats = $wgMemc->get( $cacheKey );
+		if ( $cats ) {
+			return $cats;
+		}
+
+		$cats = $wgTitle->getParentCategories();
+
+		$wgMemc->set( $cacheKey, $cats );
+		return $cats;
+	}
+
+	public static function getCurrentParentCategoryTree() {
+		global $wgTitle, $wgMemc;
+
+		$cacheKey = wfMemcKey( 'parentcattree', $wgTitle->getArticleId() );
+		$cats = $wgMemc->get( $cacheKey );
+		if ( $cats ) {
+			return $cats;
+		}
+
+		$cats = $wgTitle->getParentCategoryTree();
+
+		$wgMemc->set( $cacheKey, $cats );
+		return $cats;
+	}
 }

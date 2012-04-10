@@ -498,6 +498,10 @@ class MobileArticleBuilder extends MobileHtmlBuilder {
 				$firstImage = '';
 			}
 		} 
+		
+		if ($this->t->getDBkey() == "Develop-Self-Esteem") {
+			$firstImage = false;
+		}
 
 		if (!$firstImage) {
 			$thumb = null;

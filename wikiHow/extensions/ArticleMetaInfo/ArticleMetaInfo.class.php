@@ -32,7 +32,7 @@ class ArticleMetaInfo {
 		$this->title = $title;
 		$articleID = $title->getArticleID();
 		$namespace = $title->getNamespace();
-		$this->cachekey = wfMemcKey('metadata-' . $namespace . '-' . $articleID);
+		$this->cachekey = wfMemcKey('metadata', $namespace, $articleID);
 	}
 
 	/**
@@ -305,7 +305,10 @@ class ArticleMetaInfo {
 		$this->loadInfo();
 
 		// needs description
-		if ($this->row && !$this->row['ami_desc']) {
+		if ($this->row
+			&& $this->row['ami_desc_style'] != self::DESC_STYLE_ORIGINAL
+			&& !$this->row['ami_desc'])
+		{
 			if ($this->populateDescription()) {
 				$this->saveInfo();
 			}
@@ -421,7 +424,6 @@ class ArticleMetaInfo {
 	 */
 	private function loadInfo() {
 		global $wgMemc;
-		$fname = __METHOD__;
 
 		if ($this->row) return;
 
@@ -431,7 +433,7 @@ class ArticleMetaInfo {
 			$namespace = MW_MAIN;
 			$dbr = $this->getDB();
 			$sql = 'SELECT * FROM article_meta_info WHERE ami_id=' . $dbr->addQuotes($articleID) . ' AND ami_namespace=' . intval($namespace);
-			$res = $dbr->query($sql, $fname);
+			$res = $dbr->query($sql, __METHOD__);
 			$this->row = $dbr->fetchRow($res);
 
 			if (!$this->row) {
@@ -461,7 +463,6 @@ class ArticleMetaInfo {
 	private function saveInfo() {
 		global $wgMemc;
 
-		$fname = __METHOD__;
 		if (empty($this->row)) {
 			throw new Exception(__METHOD__ . ': nothing loaded');
 		}
@@ -482,7 +483,7 @@ class ArticleMetaInfo {
 
 		$dbw = $this->getDB('write');
 		$sql = 'REPLACE INTO article_meta_info SET ' . $dbw->makeList($this->row, LIST_SET);
-		$res = $dbw->query($sql, $fname);
+		$res = $dbw->query($sql, __METHOD__);
 		$wgMemc->set($this->cachekey, $this->row);
 	}
 

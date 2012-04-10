@@ -167,6 +167,46 @@ class Wikitext {
 	}
 
 	/**
+	 * Count alternate methods in the Steps section.
+	 */
+	public static function countAltMethods( $stepsText ) {
+		$count = preg_match_all( '@^===@m', $stepsText, $m );
+		return $count;
+	}
+
+	/**
+	 * Count the number of tips in the Tips section.
+	 */
+	public static function countTips( $wikitext ) {
+		list( $tips, ) = self::getSection( $wikitext, wfMsg( 'tips' ), true );
+		$count = 0;
+		if ( $tips ) {
+			$count = preg_match_all( '@\s*\*@m', $tips, $m );
+		}
+		return $count;
+	}
+
+	/**
+	 * Count the number of steps in the Steps section.
+	 */
+	public static function countSteps( $stepsText ) {
+		$num_steps = 0;
+		if ( $stepsText ) {
+			// has steps section, so assume valid candidate for detailed title
+			$num_steps = preg_match_all( '/^#[^*]/im', $stepsText, $m );
+		}
+		return $num_steps;
+	}
+
+	/**
+	 * Count the number of images in a block of wikitext
+	 */
+	public static function countImages( $wikitext ) {
+		$num_images = preg_match_all( '/\[\[Image:/im', $wikitext, $m );
+		return $num_images;
+	}
+
+	/**
 	 * Extract the given section from the wikitext of an article
 	 */
 	private static function getSection( $wikitext, $sectionMsg, $withHeader ) {
@@ -205,14 +245,40 @@ class Wikitext {
 	}
 
 	/**
-	 * Split Steps section into different steps (returned as an array).
+	 * Split an alternate method, or the Steps section, into different
+	 * steps (returned as an array).
 	 */
-	public static function splitSteps( $stepsText ) {
-		$steps = preg_split( '@^\s*#@m', $stepsText );
+	public static function splitSteps( $wikitext ) {
+		$steps = preg_split( '@^#@m', $wikitext );
 		for ( $i = 1; $i < count( $steps ); $i++ ) {
 			$steps[$i] = '#' . $steps[$i];
 		}
 		return $steps;
+	}
+
+ 	/**
+	 * Check if a piece of wikitext is a step (ie, starts with "#").
+	 */
+	/*public static function isStep( $wikitext ) {
+		return preg_match( '@^#@m', $wikitext ) > 0;
+	}*/
+
+	/**
+	 * Split a Steps section into different methods (returned as an array).
+	 */
+	public static function splitAltMethods( $wikitext ) {
+		$parts = preg_split( '@^=@m', $wikitext );
+		$methods = array();
+		foreach ( $parts as $i => $part ) {
+			if ( $i == 0 ) {
+				if ( !empty( $part ) ) {
+					$methods[] = $part;
+				}
+			} else {
+				$methods[] = '=' . $part;
+			}
+		}
+		return $methods;
 	}
 
 	/**
@@ -389,4 +455,124 @@ class Wikitext {
 		}
 	}
 
+	/**
+	 * Enlarge the images in the wikitext for the given title objects.
+	 * @return (array) first element any error string (empty if no error);
+	 *   2nd element is number of images found/changed
+	 */
+	public static function enlargeImages( $title, $recenter, $px, $introPx = 0 ) {
+		static $dbr = null;
+		if ( !$dbr ) {
+			$dbr = wfGetDB( DB_SLAVE );
+		}
+
+		$err = '';
+		$numImages = 0;
+		$stepsText = '';
+
+		$wikitext = self::getWikitext( $dbr, $title );
+//debugging
+//$t = Title::newFromText('Make Chocolate Covered Peeps');
+//$r = Revision::loadFromTitle($dbr, $t, 7544205);
+//$wikitext = $r->getText();
+		if ( $wikitext ) {
+			list( $stepsText, $sectionID ) = 
+				self::getStepsSection( $wikitext, true );
+		}
+
+		if ( !$stepsText ) {
+			$err = 'Unable to load wikitext';
+		} else {
+			list( $stepsText, $numImages, $err ) = 
+				self::enlargeImagesInWikitext( $stepsText, $recenter, $px, false );
+			if ( !$err ) {
+				$wikitext = self::replaceStepsSection( $wikitext, $sectionID, $stepsText, true );
+
+				$comment = $recenter ?
+					'Enlarging and centering Steps photos' :
+					'Enlarging Steps photos to ' . $px . ' pixels';
+
+				if ( $introPx ) {
+					$intro = self::getIntro( $wikitext );
+					list( $intro, $introImages, $err ) = 
+						self::enlargeImagesInWikitext( $intro, '', $introPx, true );
+					$numImages += $introImages;
+					$wikitext = self::replaceIntro( $wikitext, $intro );
+					
+					$comment .= '; enlarging intro image';
+				}
+
+				if ( !$err ) {
+					$err = self::saveWikitext( $title, $wikitext, $comment );
+				}
+			}
+		}
+
+		return array( $err, $numImages );
+	}
+
+	/**
+	 * Enlarge the images in a section of wikitext. Currently tested with
+	 * both intro and steps sections.
+	 */
+	private static function enlargeImagesInWikitext( $text, $recenter, $px, $isIntro ) {
+		$orientation = $recenter ? 'center' : '';
+
+		$methods = self::splitAltMethods( $text );
+
+		$numImages = 0;
+
+		foreach ( $methods as &$method ) {
+			if ( !$isIntro ) {
+				$steps = self::splitSteps( $method );
+			} else {
+				$steps = array( $text );
+			}
+
+			foreach ( $steps as &$step ) {
+				if ( $isIntro || self::isStep( $step, false ) ) {
+					list( $tokenText, $images ) = self::cutImages( $step );
+
+					$step = $tokenText;
+					$numImages += count( $images );
+
+					foreach ( $images as $image ) {
+						$tag = $image['tag'];
+						$modtag = self::changeImageTag( $tag, $px, $orientation );
+						if ( $recenter ) {
+							$step = str_replace( $image['token'], '', $step );
+							$step = trim( $step );
+							// make sure we don't re-add <br> tags in case
+							// this article's images were already enlarged
+							if ( !preg_match( '@<br><br>$@', $step ) ) {
+								$step .= '<br><br>';
+							}
+							$step .= "$modtag\n";
+						} else {
+							$step = str_replace( $image['token'], $modtag, $step );
+						}
+					}
+				}
+			}
+
+			self::ensureNewlineTerminatedStrings( $steps );
+			$method = join( '', $steps );
+		}
+
+		self::ensureNewlineTerminatedStrings( $methods );
+		$text = join( '', $methods );
+		return array( $text, $numImages, $err );
+	}
+
+	/**
+	 * Ensure that all strings in an array of strings are newline terminated.
+	 */
+	private static function ensureNewlineTerminatedStrings( &$arr ) {
+		foreach ( $arr as &$str ) {
+			$len = mb_strlen( $str );
+			if ( $len > 0 && $str{$len - 1} != "\n" ) {
+				$str .= "\n";
+			}
+		}
+	}
 }

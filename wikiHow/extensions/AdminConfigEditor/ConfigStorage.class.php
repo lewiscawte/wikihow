@@ -76,7 +76,7 @@ class ConfigStorage {
 
 	// consistently generate a memcache key
 	private static function getMemcKey($key) {
-		return wfMemcKey('cfg-' . $key);
+		return wfMemcKey('cfg', $key);
 	}
 }
 

@@ -60,9 +60,10 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:articles_written:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
 
 		$dbr = wfGetDB(DB_SLAVE);
@@ -96,7 +97,7 @@ class Leaderboard extends SpecialPage {
 				rc_user_text AS user_text
 			FROM $recentchanges,$page
 			WHERE rc_cur_id=page_id AND rc_timestamp >= '".$starttimestamp."' AND $condstext" . $bot;
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		// Setup array for new articles
 		while ( ($row = $dbr->fetchObject($res)) != null) {
@@ -113,7 +114,7 @@ class Leaderboard extends SpecialPage {
 			}
 		}
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -124,9 +125,8 @@ class Leaderboard extends SpecialPage {
 		global $wgMemc;
 
 		$key = "leaderboard:risingstars_received:$starttimestamp";
-		$key = wfMemcKey($key);
-
-		$cache = $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$cache = $wgMemc->get($cachekey);
 		if ($cache) {
 			return $cache;
 		}
@@ -147,7 +147,7 @@ class Leaderboard extends SpecialPage {
 				cnt DESC
 			LIMIT 30";
 
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		$data = array();
 		while ($row = $dbr->fetchObject($res)) {
@@ -155,7 +155,7 @@ class Leaderboard extends SpecialPage {
 			$data[$u->getName()] = number_format($row->cnt, 0, "", ',');
 		}
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -171,9 +171,10 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:risingstars_received:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
 
 		$dbr = wfGetDB(DB_SLAVE);
@@ -190,7 +191,7 @@ class Leaderboard extends SpecialPage {
 				"FROM recentchanges  ".
 				"WHERE rc_timestamp >= '$starttimestamp' AND rc_comment like 'Marking new article as a Rising Star from From%'   ". $bot .
 				"AND rc_namespace=".NS_TALK." ";
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 		//$total_risingstar = $dbr->numRows($res);
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			$t = Title::newFromText($row->rc_title);
@@ -211,7 +212,7 @@ class Leaderboard extends SpecialPage {
 			}
 		}
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -227,9 +228,10 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:risingstars_nabed:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
 		$dbr = wfGetDB(DB_SLAVE);
 		$data = array();
@@ -245,7 +247,7 @@ class Leaderboard extends SpecialPage {
 				"FROM recentchanges  ".
 				"WHERE rc_timestamp >= '$starttimestamp' AND rc_comment like 'Marking new article as a Rising Star from From%'   ". $bot .
 				"AND rc_namespace=".NS_TALK." AND rc_user_text != 'WRM' ";
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			$t = Title::newFromText($row->rc_title);
@@ -261,7 +263,7 @@ class Leaderboard extends SpecialPage {
 			}
 		}
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -277,9 +279,10 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:requested_topics:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
 
 		$dbr = wfGetDB(DB_SLAVE);
@@ -302,7 +305,7 @@ class Leaderboard extends SpecialPage {
  					"WHERE fe_timestamp >= '$starttimestamp' AND st_isrequest IS NOT NULL" . $bot;
 		}
 
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			if ($getArticles) {
@@ -315,7 +318,7 @@ class Leaderboard extends SpecialPage {
 			}
 		}
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 	
@@ -331,10 +334,12 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:spellchecked:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
+
 		$dbr = wfGetDB(DB_SLAVE);
 		$data = array();
 
@@ -346,7 +351,7 @@ class Leaderboard extends SpecialPage {
 				"WHERE log_type='spellcheck' AND log_user = ".$u->getID()."  and log_timestamp >= '$starttimestamp' ".
 				"ORDER BY log_timestamp DESC ".
 				"LIMIT 30";
-			$res = $dbr->query($sql);
+			$res = $dbr->query($sql, __METHOD__);
 
 			while ( ($row = $dbr->fetchObject($res)) != null) {
 				$t = Title::newFromText($row->log_title);
@@ -369,7 +374,7 @@ class Leaderboard extends SpecialPage {
 			WHERE log_type='spellcheck' and log_timestamp >= '$starttimestamp' " . $bot .
             "GROUP BY log_user ORDER BY C desc limit 30;";
 
-			$res = $dbr->query($sql);
+			$res = $dbr->query($sql, __METHOD__);
 
 			while ( ($row = $dbr->fetchObject($res)) != null) {
 				$u = User::newFromName( $row->user_name );
@@ -380,7 +385,7 @@ class Leaderboard extends SpecialPage {
 				}
 			}
 		}
-		$wgMemc->set($key,$data, 60 * 15);
+		$wgMemc->set($cachekey, $data, 60 * 15);
 		return $data;
 	}
 
@@ -397,10 +402,12 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:articles_nabed:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
+
 		$dbr = wfGetDB(DB_SLAVE);
 		$data = array();
 
@@ -412,7 +419,7 @@ class Leaderboard extends SpecialPage {
 				"WHERE nap_patrolled=1 and nap_user_ci = ".$u->getID()."  and nap_timestamp_ci >= '$starttimestamp' ".
 				"ORDER BY nap_timestamp_ci DESC ".
 				"LIMIT 30";
-			$res = $dbr->query($sql);
+			$res = $dbr->query($sql, __METHOD__);
 
 			while ( ($row = $dbr->fetchObject($res)) != null) {
 				$t = Title::newFromID($row->nap_page);
@@ -442,7 +449,7 @@ class Leaderboard extends SpecialPage {
 			WHERE log_type='nap' and log_timestamp >= '$starttimestamp' " . $bot .
             "GROUP BY log_user ORDER BY C desc limit 30;";
 
-			$res = $dbr->query($sql);
+			$res = $dbr->query($sql, __METHOD__);
 
 			while ( ($row = $dbr->fetchObject($res)) != null) {
 				$u = User::newFromName( $row->user_name );
@@ -453,7 +460,7 @@ class Leaderboard extends SpecialPage {
 				}
 			}
 		}
-		$wgMemc->set($key,$data, 60 * 15);
+		$wgMemc->set($cachekey, $data, 60 * 15);
 		return $data;
 	}
 
@@ -470,10 +477,12 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:rc_edits:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
+
 		$dbr = wfGetDB(DB_SLAVE);
 		$data = array();
 
@@ -498,7 +507,7 @@ class Leaderboard extends SpecialPage {
 				"GROUP BY log_user ORDER BY C DESC LIMIT 30;";
 		}
 
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			if ($row->log_user > 0) {
@@ -516,7 +525,7 @@ class Leaderboard extends SpecialPage {
 				}
 			}
 		}
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -532,10 +541,12 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:qc_patrol:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
+
 		$dbr = wfGetDB(DB_SLAVE);
 		$data = array();
 
@@ -553,12 +564,12 @@ class Leaderboard extends SpecialPage {
 			(SELECT user_name, count(*) as C from qc_vote_archive left join wiki_shared.user on qcv_user=user_id 
 				WHERE qc_timestamp > '{$starttimestamp}' $bot group by qcv_user order by C desc limit 25) ) t1
 			group by user_name  order by C desc limit 25";	
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( $row = $dbr->fetchObject($res)) {
 			$data[$row->user_name] = $row->C;
 		}
-		$wgMemc->set($key,$data, 300);
+		$wgMemc->set($cachekey, $data, 300);
 		return $data;
 	}
 
@@ -574,10 +585,12 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:rc_quick_edits:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
+
 		$dbr = wfGetDB(DB_SLAVE);
 		$data = array();
 
@@ -592,7 +605,7 @@ class Leaderboard extends SpecialPage {
 			"FROM recentchanges ".
 			"WHERE rc_comment like 'Quick edit while patrolling' and rc_timestamp >= '$starttimestamp'". $bot .
 			"GROUP BY rc_user_text,rc_title ";
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			if ($getArticles) {
@@ -607,7 +620,7 @@ class Leaderboard extends SpecialPage {
 		}
 
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -624,9 +637,10 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:total_edits:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
 
 		$dbr = wfGetDB(DB_SLAVE);
@@ -645,7 +659,7 @@ class Leaderboard extends SpecialPage {
 			"WHERE rev_page=page_id and page_namespace NOT IN (2, 3, 18) and rev_timestamp >= '$starttimestamp' AND rev_user_text != 'WRM' ".
 			$bot .
 			"ORDER BY rev_timestamp desc";
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			if ($getArticles) {
@@ -662,7 +676,7 @@ class Leaderboard extends SpecialPage {
 			}
 		}
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -678,10 +692,12 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:articles_categorized:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
+
 		$dbr = wfGetDB(DB_SLAVE);
 		$data = array();
 
@@ -697,7 +713,7 @@ class Leaderboard extends SpecialPage {
 			"FROM recentchanges ".
 			"WHERE rc_comment like 'categorization' and rc_timestamp >= '$starttimestamp' ". $bot . 
 			"GROUP BY rc_user_text,rc_title" ;
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			if ($getArticles) {
@@ -711,7 +727,7 @@ class Leaderboard extends SpecialPage {
 
 		}
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -727,9 +743,10 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:images_added:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
 
 		$dbr = wfGetDB(DB_SLAVE);
@@ -745,7 +762,7 @@ class Leaderboard extends SpecialPage {
 		$sql = "SELECT img_user_text,img_name FROM image ".
 			"WHERE img_timestamp >= '$starttimestamp'" . $bot;
 
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			if ($getArticles) {
@@ -758,7 +775,7 @@ class Leaderboard extends SpecialPage {
 
 		}
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -774,9 +791,10 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:repair_$templatetype:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
 
 		$dbr = wfGetDB(DB_SLAVE);
@@ -793,7 +811,7 @@ class Leaderboard extends SpecialPage {
 			"FROM logging ".
 			"WHERE log_type='EF_$templatetype' and log_timestamp >= '$starttimestamp' ". $bot.
 			"GROUP BY log_user ORDER BY C DESC LIMIT 30";
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			if ($row->log_user > 0) {
@@ -811,7 +829,7 @@ class Leaderboard extends SpecialPage {
 				}
 			}
 		}
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -827,9 +845,10 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:nfd:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
 
 		$dbr = wfGetDB(DB_SLAVE);
@@ -846,7 +865,7 @@ class Leaderboard extends SpecialPage {
 			"FROM logging ".
 			"WHERE log_type='nfd' and log_action='vote' and log_timestamp >= '$starttimestamp' ". $bot.
 			"GROUP BY log_user ORDER BY C DESC LIMIT 30";
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( ($row = $dbr->fetchObject($res)) != null) {
 			if ($row->log_user > 0) {
@@ -864,7 +883,7 @@ class Leaderboard extends SpecialPage {
 				}
 			}
 		}
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
 
@@ -881,10 +900,12 @@ class Leaderboard extends SpecialPage {
 			$key = "leaderboard:videos_reviewed:$starttimestamp";
 		}
 
-		$key = wfMemcKey($key);
-		if ($wgMemc->get($key)) {
-			return $wgMemc->get($key);
+		$cachekey = wfMemcKey($key);
+		$val = $wgMemc->get($cachekey);
+		if ($val) {
+			return $val;
 		}
+
 		$dbr = wfGetDB(DB_SLAVE);
 		$data = array();
 
@@ -909,7 +930,7 @@ class Leaderboard extends SpecialPage {
             	"WHERE va_timestamp >= '$starttimestamp' and va_user={$id}";
 		}
 
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 
 		while ( $row = $dbr->fetchObject($res)) {
 			if ($getArticles) {
@@ -922,11 +943,9 @@ class Leaderboard extends SpecialPage {
 			}
 		}
 
-		$wgMemc->set($key,$data, 3600);
+		$wgMemc->set($cachekey, $data, 3600);
 		return $data;
 	}
-
-
 
 	function showArticles($page, $starttimestamp, $user) {
 		global $wgOut;

@@ -2,10 +2,10 @@
 
 class FeaturedArticles {
 
-	function getNumberOfDays( $default, $title_article = 'RSS-feed' ) {
+	public static function getNumberOfDays( $default, $feedTitle = 'RSS-feed' ) {
 		$header = '==Number of Days==';
 		$header_len = strlen( $header );
-		$t = Title::newFromText( $title_article, NS_PROJECT );
+		$t = Title::newFromText( $feedTitle, NS_PROJECT );
 		$r = Revision::newFromTitle( $t );
 		$text = $r->getText();
 
@@ -24,7 +24,7 @@ class FeaturedArticles {
 		return trim( $days );
 	}
 
-	function getDatesForFeed( $numdays ) {
+	public static function getDatesForFeed( $numdays ) {
 		global $wgRSSOffsetHours;
 
 		$result = array();
@@ -55,19 +55,30 @@ class FeaturedArticles {
 		return $result;
 	}
 
-	function getFeaturedArticles( $numdays, $title_article = 'RSS-feed' ) {
-		global $wgRSSOffsetHours;
+	public static function getFeaturedArticles( $numdays, $feedTitle = 'RSS-feed' ) {
+		global $wgRSSOffsetHours, $wgMemc;
+		static $texts = array(); // local cache so that we retrieve text once
 
-		$feeds = array();
-		$t = Title::newFromText( $title_article, NS_PROJECT );
-		$r = Revision::newFromTitle( $t );
-
-		if ( !$r ) {
+		$titleHash = md5( $feedTitle );
+		$cacheKey = wfMemcKey( 'featured', $numdays, $titleHash );
+		$feeds = $wgMemc->get( $cacheKey );
+		if ( $feeds ) {
 			return $feeds;
 		}
 
-		$text = $r->getText();
-		$dates = FeaturedArticles::getDatesForFeed( $numdays );
+		if ( !$texts[$titleHash] ) {
+			$title = Title::newFromText( $feedTitle, NS_PROJECT );
+			$rev = Revision::newFromTitle( $title );
+
+			if ( !$rev ) {
+				return array();
+			}
+
+			$texts[$titleHash] = $rev->getText();
+		}
+
+		$text = $texts[$titleHash];
+		$dates = self::getDatesForFeed( $numdays );
 		$d_count = array();
 		$feeds = array();
 		foreach ( $dates as $d ) {
@@ -138,6 +149,8 @@ class FeaturedArticles {
 			}
 			$feeds[] = $item;
 		}
+
+		$wgMemc->set( $cacheKey, $feeds, 5 * 60 ); // 5 minutes
 
 		return $feeds;
 	}

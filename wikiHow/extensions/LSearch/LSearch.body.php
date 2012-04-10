@@ -283,7 +283,7 @@ class LSearch extends SpecialPage {
 		global $wgMemc;
 
 		$enc_q = urlencode( $this->mQ );
-		$cachekey = wfMemcKey( 'supp' . $this->mStart . ':' . $enc_q );
+		$cachekey = wfMemcKey( 'supp', $this->mStart, $enc_q );
 		$results = $wgMemc->get( $cachekey );
 		$results = null;
 

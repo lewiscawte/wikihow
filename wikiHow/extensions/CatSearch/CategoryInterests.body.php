@@ -92,12 +92,12 @@ class CategoryInterests extends UnlistedSpecialPage {
 		global $wgMemc;
 		$cats = array();
 		foreach ($categories as $category) {
-			$key = wfMemcKey("ci-subcats-$category");
+			$key = wfMemcKey('catint_subcats', $category);
 			$subcats = $wgMemc->get($key);
 			if (!$subcats) {
 				$t = Title::newFromText($category, NS_CATEGORY);
 				$subcats = self::getSubCategories($t);
-				$wgMemc->set($key, $subcats, time + 60 * 60 * 24);
+				$wgMemc->set($key, $subcats, 60 * 60 * 24);
 			}
 			$cats =	array_merge($cats,$subcats);
 		}

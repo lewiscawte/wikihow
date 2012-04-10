@@ -81,8 +81,9 @@ class WikihowShare {
 
 		$key = wfMemcKey( "pinterest:{$title->getArticleID()}" );
 
-		if ( $wgMemc->get( $key ) ) {
-			return $wgMemc->get( $key );
+		$val = $wgMemc->get( $key );
+		if ( $val ) {
+			return $val;
 		}
 
 		$sk = $wgUser->getSkin();

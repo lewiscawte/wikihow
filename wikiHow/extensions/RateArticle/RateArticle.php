@@ -74,7 +74,7 @@ function wfRateArticleCreateTables( $updater ) {
 function wfGetRatingForArticle( $id, $minVotes ) {
 	global $wgMemc;
 
-	$cacheKey = wfMemcKey( 'rating-' . $id . '-' . $minVotes );
+	$cacheKey = wfMemcKey( 'rating', $id, $minVotes );
 	$ret = -1;
 	$mres = $wgMemc->get( $cacheKey );
 	if ( $mres === null ) {

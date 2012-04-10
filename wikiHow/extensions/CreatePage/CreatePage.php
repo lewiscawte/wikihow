@@ -1,26 +1,25 @@
 <?php
 
-if ( !defined( 'MEDIAWIKI' ) ) {
-exit(1);
-}
+if ( !defined( 'MEDIAWIKI' ) ) exit(1);
 
 /**#@+
- * A simple extension that allows users to enter a title before creating a page. 
+ * A simple extension that allows users to enter a title before creating a 
+ * page. 
  * 
  * @package MediaWiki
  * @subpackage Extensions
  *
- *
- *
  * @author Travis Derouin <travis@wikihow.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU General Public License 2.0 or later
  */
+
 $wgExtensionCredits['specialpage'][] = array(
 	'name' => 'CreatePage',
 	'author' => 'Travis Derouin',
 	'description' => 'Provides a basic way entering a title and searching for potential duplicate articles before creating a page',
 	'url' => 'http://www.wikihow.com/WikiHow:CreatePage-Extension',
 );
+
 $wgExtensionMessagesFiles['CreatePage'] = dirname(__FILE__) . '/CreatePage.i18n.php';
 
 $wgSpecialPages['CreatePage'] = 'CreatePage';
@@ -54,14 +53,18 @@ $wgHooks['ArticleInsertComplete'][] = array("wfProcessNewArticle");
 $wgHooks['ArticleDeleteComplete'][] = array("wfRemoveFromFirstEdit");
 $wgHooks['AddNewAccount'][] = array("wfCheckForNewAccountsFromProxy");
 
-$wgLogTypes[]                   	= 'suggestion';
-$wgLogNames['suggestion']          = 'suggestionlogpage';
-$wgLogHeaders['suggestion']        = 'suggestionlogtext';
+$wgLogTypes[] = 'suggestion';
+$wgLogNames['suggestion'] = 'suggestionlogpage';
+$wgLogHeaders['suggestion'] = 'suggestionlogtext';
 
-$wgLogTypes[]                       = 'redirects';
-$wgLogNames['redirects']   			= 'redirects';
-$wgLogHeaders['redirects'] 			= 'redirectstext';
+$wgLogTypes[] = 'redirects';
+$wgLogNames['redirects'] = 'redirects';
+$wgLogHeaders['redirects'] = 'redirectstext';
 $wgLogActions['redirects/added'] = 'redirects_logsummary';
+
+function wfGetSuggTitlesMemcKey($articleID) {
+	return wfMemcKey("suggtitles:" . $articleID);
+}
 
 function wfClearSuggestionsCache($t) {
 	global $wgMemc;
@@ -72,98 +75,105 @@ function wfClearSuggestionsCache($t) {
 			array('st_title' => $t->getDBKey(), 'sl_sugg = st_id')
 		);
 	while ($row = $dbr->fetchObject($res)) {
-    	$key = "suggested_titles_:" . $row->sl_page;
-    	$wgMemc->set($key, null);
+		$key = wfGetSuggTitlesMemcKey($row->sl_page);
+		$wgMemc->delete($key);
 	}
 	return true;
 }
+
 function wfCheckSuggestionOnDelete($article, $user, $reason) {
-    try {
-        $dbr = wfGetDB(DB_SLAVE);
-        $t = $article->getTitle();
-        if (!$t || $t->getNamespace() != NS_MAIN)
-            return true;
-        $dbw = wfGetDB(DB_MASTER);
-        $key = generateSearchKey(trim($t));
-        $dbw->update('suggested_titles',
-                    array('st_used' => 0),
+	try {
+		$dbr = wfGetDB(DB_SLAVE);
+		$t = $article->getTitle();
+		if (!$t || $t->getNamespace() != NS_MAIN)
+			return true;
+		$dbw = wfGetDB(DB_MASTER);
+		$key = generateSearchKey(trim($t));
+		$dbw->update('suggested_titles',
+					array('st_used' => 0),
 					array('st_key' => $key), 
-					"wfCheckSuggestionOnSave");
+					__FUNCTION__);
 		wfClearSuggestionsCache($t);
-    } catch (Exception $e) {
-        return true;
-    }
-    return true;
+	} catch (Exception $e) {
+		return true;
+	}
+	return true;
 }
 
 function wfCheckSuggestionOnMove( &$ot, &$nt, &$wgUser, $pageid, $redirid) {
-    $dbw = wfGetDB(DB_MASTER);
-    $dbw->update('suggested_titles',
-        array('st_used' => 1, 'st_created' => wfTimestampNow(TS_MW)),
-        array('st_title' => $nt->getDBKey()),
-        "wfCheckSuggestionOnMove");
+	$dbw = wfGetDB(DB_MASTER);
+	$dbw->update('suggested_titles',
+		array('st_used' => 1, 'st_created' => wfTimestampNow(TS_MW)),
+		array('st_title' => $nt->getDBKey()),
+		__FUNCTION__);
 	wfClearSuggestionsCache($nt);
-    return true;
+	return true;
 }
 
-/* 
-	When a new article is created, mark the suggsted as used in the DB
-*/
+// When a new article is created, mark the suggsted as used in the DB
 function wfCheckSuggestionOnSave($article, $user, $text, $summary, $p5, $p6, $p7) {
-    try {
-        $dbr = wfGetDB(DB_SLAVE);
-        $t = $article->getTitle();
-        if (!$t || $t->getNamespace() != NS_MAIN)
-            return true;
-        $num_revisions = $dbr->selectField('revision', 'count(*)', array('rev_page=' . $article->getId()));
+	try {
+		$dbr = wfGetDB(DB_SLAVE);
+		$t = $article->getTitle();
+		if (!$t || $t->getNamespace() != NS_MAIN)
+			return true;
+		$num_revisions = $dbr->selectField('revision',
+			'count(*)',
+			array('rev_page=' . $article->getId()),
+			__FUNCTION__);
 		// < 2 for race conditions
-        if ($num_revisions < 2) {
-            $dbw = wfGetDB(DB_MASTER);
+		if ($num_revisions < 2) {
+			$dbw = wfGetDB(DB_MASTER);
 			$key = generateSearchKey(trim($t));
-            $dbw->update('suggested_titles',
-                    array('st_used' => 1, 'st_created' => wfTimestampNow(TS_MW)), 
-					array('st_key' => $key), "wfCheckSuggestionOnSave");
+			$dbw->update('suggested_titles',
+					array('st_used' => 1,
+						'st_created' => wfTimestampNow(TS_MW)), 
+					array('st_key' => $key),
+					__FUNCTION__);
 			wfClearSuggestionsCache($t);
-        }
-        if ($num_revisions == 1) {
-            $email = $dbw->selectField('suggested_titles', array('st_notify'),
-                array('st_title' => $t->getDBKey()));
-            if ($email) {
-                $dbw->insert('suggested_notify', array('sn_page' => $article->getId(),
-                            'sn_notify' => $email,
-                            'sn_timestamp' => wfTimestampNow(TS_MW)));
-            }
-        }
-    } catch (Exception $e) {
-        return true;
-    }
-    return true;
+		}
+		if ($num_revisions == 1) {
+			$email = $dbw->selectField('suggested_titles',
+				array('st_notify'),
+				array('st_title' => $t->getDBKey()),
+				__FUNCTION__);
+			if ($email) {
+				$dbw->insert('suggested_notify',
+					array('sn_page' => $article->getId(),
+						'sn_notify' => $email,
+						'sn_timestamp' => wfTimestampNow(TS_MW)),
+					__FUNCTION__);
+			}
+		}
+	} catch (Exception $e) {
+		return true;
+	}
+	return true;
 }
-
 
 function wfGetTopCategory($title = null) {
-    global $wgTitle;
-    if (!$title)
-        $title = $wgTitle;
-    $parenttree = $title->getParentCategoryTree();
-    $parenttree_tier1 = $parenttree;
+	global $wgTitle;
+	if (!$title)
+		$title = $wgTitle;
+	$parenttree = $title->getParentCategoryTree();
+	$parenttree_tier1 = $parenttree;
 
-    $result = null;
-    while ((!$result || $result == "WikiHow") && is_array($parenttree)) {
-        $a = array_shift($parenttree);
-        if (!$a) {
-            $keys = array_keys($parenttree_tier1);
-            $result = str_replace("Category:", "", $keys[0]);
-            break;
-        }
-        $last = $a;
-        while (sizeof($a) > 0 && $a = array_shift($a) ) {
-            $last = $a;
-        }
-        $keys = array_keys($last);
-        $result = str_replace("Category:", "", $keys[0]);
-    }
-    return  Title::makeTitle(NS_CATEGORY, $result);
+	$result = null;
+	while ((!$result || $result == "WikiHow") && is_array($parenttree)) {
+		$a = array_shift($parenttree);
+		if (!$a) {
+			$keys = array_keys($parenttree_tier1);
+			$result = str_replace("Category:", "", $keys[0]);
+			break;
+		}
+		$last = $a;
+		while (sizeof($a) > 0 && $a = array_shift($a) ) {
+			$last = $a;
+		}
+		$keys = array_keys($last);
+		$result = str_replace("Category:", "", $keys[0]);
+	}
+	return  Title::makeTitle(NS_CATEGORY, $result);
 }
 
 function wfGetSuggestedTitles($t) {
@@ -174,50 +184,58 @@ function wfGetSuggestedTitles($t) {
 		return $html;
 	}
 
-    // use memcached to store results
-    $key = wfMemcKey("suggested_titles_:" . $t->getArticleID());
+	// use memcached to store results
+	$key = wfGetSuggTitlesMemcKey( $t->getArticleID() );
 	$result = $wgMemc->get($key);
-    if ($result) {
-        return $result;
-    }
+	if ($result) {
+		return $result;
+	}
 
-	wfProfileIn("wfGetSuggestedTitles");
+	wfProfileIn(__FUNCTION__);
 	$dbr = wfGetDB(DB_SLAVE);
-    $group = date("W") % 5;
+	$group = date("W") % 5;
 
+	$res = $dbr->select('suggested_links',
+				array('sl_sugg'),
+				array('sl_page' => $t->getArticleID()),
+				array('ORDER BY' => 'sl_sort'),
+				__FUNCTION__);
+	$ids = array();
+	while ($row=$dbr->fetchObject($res)) {
+		$ids[] = $row->sl_sugg;
+	}
 
-    $res = $dbr->select('suggested_links',
-                array('sl_sugg'),
-                array('sl_page' => $t->getArticleID()),
-                array('ORDER BY' => 'sl_sort')
-            );
-    $ids = array();
-    while ($row=$dbr->fetchObject($res)) {
-        $ids[] = $row->sl_sugg;
-    }
 	$randStr = wfRandom();
-    if (sizeof($ids) == 0) {
-        $top = wfGetTopCategory($t);
-        if ($top)
-            $res = $dbr->query("select st_title from suggested_titles where st_used = 0 and st_patrolled=1 
-                and st_group = $group and st_category = " . $dbr->addQuotes($top->getText()) . " 
-				and st_random > $randStr limit 5;");
-    } else {
-        $sql = "(" . implode(", ", $ids) . ")";
-        $sql = "select st_title from suggested_titles where st_used = 0 and st_patrolled=1 
-				and st_group = $group and st_id in $sql limit 5;";
-        $res = $dbr->query($sql);
-    }
+	if (sizeof($ids) == 0) {
+		$top = wfGetTopCategory($t);
+		if ($top) {
+			$sql = "SELECT st_title FROM suggested_titles
+				WHERE st_used = 0 and st_patrolled = 1 
+					and st_group = $group
+					and st_category = " . $dbr->addQuotes($top->getText()) . " 
+					and st_random > $randStr limit 5";
+			$res = $dbr->query($sql, __FUNCTION__);
+		}
+	} else {
+		$sql = "(" . implode(", ", $ids) . ")";
+		$sql = "SELECT st_title FROM suggested_titles
+			WHERE st_used = 0 and st_patrolled = 1 
+				and st_group = $group and st_id
+				in $sql limit 5";
+		$res = $dbr->query($sql, __FUNCTION__);
+	}
 
-    if ($dbr->numRows($res) == 0) {
-        $top = wfGetTopCategory($t);
-        if ($top) {
-            $sql = "select st_title from suggested_titles where st_used = 0 and st_patrolled=1 
-                and st_group = $group and st_category = " . $dbr->addQuotes($top->getText()) 
-			. "  and st_random > $randStr limit 5;";
-            $res = $dbr->query($sql);
-        }
-    }
+	if ($dbr->numRows($res) == 0) {
+		$top = wfGetTopCategory($t);
+		if ($top) {
+			$sql = "SELECT st_title FROM suggested_titles
+				WHERE st_used = 0 and st_patrolled = 1 
+					and st_group = $group
+					and st_category = " . $dbr->addQuotes($top->getText()) . "
+					and st_random > $randStr limit 5";
+			$res = $dbr->query($sql, __FUNCTION__);
+		}
+	}
 
 	while ($row = $dbr->fetchObject($res)) {
 		$title = Title::newFromText($row->st_title);
@@ -229,8 +247,8 @@ function wfGetSuggestedTitles($t) {
 		$html = "<h2>" . wfMsg('suggested_titles_section') . "</h2><div id='suggested_titles'>". wfMsg('suggested_titles_section_description') 
 		. "<br/><br/><ul id='gatSuggestedTitle'>{$html}</ul></div>";
 	}
-    $wgMemc->set($key, $html);
-	wfProfileOut("wfGetSuggestedTitles");
+	$wgMemc->set($key, $html);
+	wfProfileOut(__FUNCTION__);
 	return $html;
 }
 
@@ -242,13 +260,11 @@ function wfGetTitlesToImprove($t) {
 		return $html;
 	$dbr = wfGetDB(DB_SLAVE);
 	$sk = $wgUser->getSkin();
-	$res = $dbr->select(
-			array('improve_links'),
+	$res = $dbr->select('improve_links',
 			array('il_namespace', 'il_title'), 
 			array('il_from'=>$t->getArticleID()),
-			"wfGetTitlesToImprove", 
-			array('LIMIT' => 5)
-		);
+			__FUNCTION__, 
+			array('LIMIT' => 5));
 
 	while ($row = $dbr->fetchObject($res)) {
 		$title = Title::makeTitle($row->il_namespace, $row->il_title);
@@ -264,14 +280,13 @@ function wfGetTitlesToImprove($t) {
 . wfMsg('titles_to_improve_description') . "
 <br/><br/>
 <ul>{$html}</ul>
-</div>
-		";
+</div> ";
 	}
 	return $html;
 }
 
-
-// update the first edit table and set the cookie that will show the follow up dialog for the user
+// update the first edit table and set the cookie that will show the 
+// follow up dialog for the user
 function wfProcessNewArticle(&$article, &$user, $text) {	
 	global $wgCookieExpiration, $wgCookiePath, $wgCookieDomain, $wgCookieSecure, $wgCookiePrefix;
 
@@ -288,8 +303,8 @@ function wfProcessNewArticle(&$article, &$user, $text) {
 
 	$id = $title->getArticleID();
 	$ids[]  = $id;
-   	$exp = time() + $wgCookieExpiration;
-   	setcookie( $wgCookiePrefix.'ArticlesCreated', implode(",", $ids), $exp, $wgCookiePath, $wgCookieDomain, $wgCookieSecure );
+	$exp = time() + $wgCookieExpiration;
+	setcookie( $wgCookiePrefix.'ArticlesCreated', implode(",", $ids), $exp, $wgCookiePath, $wgCookieDomain, $wgCookieSecure );
 
 	if (preg_match("@#REDIRECT@", $text)) {
 		return true;
@@ -309,14 +324,13 @@ function wfRemoveFromFirstEdit(&$article, &$user, $reason) {
 	return true;
 }
 
-
 function wfShowFollowUpOnCreation($article, $details) {
 	global $wgTitle, $wgRequest, $wgOut, $wgUser, $wgCookiePrefix;
 
 	try {
-        $t = $article->getTitle();
-        if (!$t || $t->getNamespace() != NS_MAIN) {
-            return true;        
+		$t = $article->getTitle();
+		if (!$t || $t->getNamespace() != NS_MAIN) {
+			return true;        
 		}
 
 		// short circuit the database look ups because they are frigging slow
@@ -345,7 +359,7 @@ function wfShowFollowUpOnCreation($article, $details) {
 
 			$wgOut->addHTML('<script type="text/javascript" language="javascript" src="' . wfGetPad('/extensions/min/f/extensions/wikihow/winpop.js?rev=') . WH_SITEREV . '"></script>
 								<script type="text/javascript" language="javascript" src="' . wfGetPad('/extensions/min/f/extensions/wikihow/authoremails.js?rev=') . WH_SITEREV . '"></script>
-  	                     <link rel="stylesheet" href="' . wfGetPad('/extensions/min/f/extensions/wikihow/winpop.css?rev=') . WH_SITEREV . '" type="text/css" />');
+						 <link rel="stylesheet" href="' . wfGetPad('/extensions/min/f/extensions/wikihow/winpop.css?rev=') . WH_SITEREV . '" type="text/css" />');
 
 			if ($wgUser->getID() == 0) {
 
@@ -414,27 +428,25 @@ function wfShowFollowUpOnCreation($article, $details) {
 	return true;
 }
 
-
 function wfCheckForCashSpammer($article, $user, $text, $summary, $flags, $p1, $p2, $flags) {
-    if ($text) {
-        if ($article->getTitle()->getText() == "Yrt291x"
+	if ($text) {
+		if ($article->getTitle()->getText() == "Yrt291x"
 			|| $article->getTitle()->getText() == "Spam Blacklist") 
 				return true;
-        $msg = preg_replace('@<\![-]+-[\n]+|[-]+>@U', '', wfMsg('yrt291x'));
-        $msgs = split("\n", $msg);
-        foreach ($msgs as $m) {
-            $m = trim($m);
-            if ($m == "") continue;
-            if (stripos($text, $m) !== false) {
-                return false;
-            }
-        }
-    }
-    return true;
+		$msg = preg_replace('@<\![-]+-[\n]+|[-]+>@U', '', wfMsg('yrt291x'));
+		$msgs = split("\n", $msg);
+		foreach ($msgs as $m) {
+			$m = trim($m);
+			if ($m == "") continue;
+			if (stripos($text, $m) !== false) {
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 function wfTrackEditToken($user, $token, $title, $guided) {
-
 	global $wgLanguageCode;
 	if ($wgLanguageCode != 'en');
 		return true;
@@ -447,9 +459,10 @@ function wfTrackEditToken($user, $token, $title, $guided) {
 					'et_page' 			=> $title->getArticleID(),
 					'et_timestamp_start'=> wfTimestampNow(), 
 					'et_guided' 		=> ($guided?1:0)
-				)
-		); 
+				),
+			__FUNCTION__); 
 }
+
 function wfTrackEditCompletion($article, $user, $text, $summary, $p5, $p6, $p7) {
 	global $wgLanguageCode;
 	if ($wgLanguageCode != 'en');
@@ -464,31 +477,29 @@ function wfTrackEditCompletion($article, $user, $text, $summary, $p5, $p6, $p7) 
 					'et_completed' => 1,
 					'et_timestamp_completed' => wfTimestampNow(),
 			), 
-			array(
-					'et_token'	=> $token,
-			)
-		);
+			array('et_token'	=> $token),
+			__FUNCTION__);
 	}
 	return true;
 }
 
-//Anon users get a pop-up after an article edit
-function wfSetAnonPopUp(&$article, &$user, $text, $summary) {
+// Anon users get a pop-up after an article edit
+/*function wfSetAnonPopUp(&$article, &$user, $text, $summary) {
 	global $wgCookieExpiration, $wgCookiePath, $wgCookieDomain, $wgCookieSecure, $wgCookiePrefix;
 	$t = $article->getTitle();
 	if ($t->getNamespace() == NS_MAIN 
 		&& $t->getFullText() != wfMsg('mainpage') 
 		&& $user->getId() == 0 
-		&& !isset($_COOKIE[$wgCookiePrefix . 'AnonPoppedEdit'])
-	) {
-		//set trigger cookie
+		&& !isset($_COOKIE[$wgCookiePrefix . 'AnonPoppedEdit']))
+	{
+		// set trigger cookie
 		$exp = time() + $wgCookieExpiration;
 		setcookie( $wgCookiePrefix.'NeedPostEditPopUp', 'pop', $exp, $wgCookiePath, $wgCookieDomain, $wgCookieSecure );
 	}
 	return true;
-}
+}*/
 
-function wfShowAnonPopUp() {
+/*function wfShowAnonPopUp() {
 	global $wgCookieExpiration, $wgCookiePath, $wgCookieDomain, $wgCookieSecure, $wgCookiePrefix, $wgOut;
 	if (isset($_COOKIE[$wgCookiePrefix.'NeedPostEditPopUp'])) {
 		//remove trigger cookie
@@ -499,9 +510,10 @@ function wfShowAnonPopUp() {
 		setcookie( $wgCookiePrefix.'AnonPoppedEdit', 1, $exp, $wgCookiePath, $wgCookieDomain, $wgCookieSecure );
 	}
 	return true;
-}
+}*/
 
 function wfCheckForNewAccountsFromProxy($user) {
 	wfProxyCheck();
 	return true;
 }
+

@@ -31,7 +31,7 @@ class Newarticleboost extends SpecialPage {
 				    AND page_is_redirect = 0 
 				    AND nap_patrolled = 0
 					AND nap_timestamp < '$one_hour_ago'";
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 		$row = $dbr->fetchObject($res);
 
 		return $row->C;
@@ -64,8 +64,13 @@ class Newarticleboost extends SpecialPage {
 			'count(*) as count',
 			array('nap_patrolled' => 1,
 				'nap_user_ci' => $userId,
-				'nap_timestamp_ci > "' . $starttimestamp . '"'));
+				'nap_timestamp_ci > "' . $starttimestamp . '"'),
+			__METHOD__);
 		return $row;
+	}
+
+	private static function getNabbedCachekey($page) {
+		return wfMemcKey('nabbed', $page);
 	}
 
 	/**
@@ -74,7 +79,19 @@ class Newarticleboost extends SpecialPage {
 	 * @return boolean true iff it's been nabbed
 	 */
 	public function isNABbed(&$dbr, $page) {
-		$nap_patrolled = $dbr->selectField('newarticlepatrol', 'nap_patrolled', array('nap_page' => $page));
+		global $wgMemc;
+
+		$cachekey = self::getNabbedCachekey($page);
+		$val = $wgMemc->get($cachekey);
+		if ($val !== null) return $val;
+
+		$nap_patrolled = $dbr->selectField(
+			'newarticlepatrol',
+			'nap_patrolled',
+			array('nap_page' => $page),
+			__METHOD__);
+
+		$wgMemc->set($cachekey, $nap_patrolled, 5 * 60); // cache for 5 minutes
 
 		if ($nap_patrolled === '0') {
 			$boosted = false;
@@ -152,7 +169,7 @@ class Newarticleboost extends SpecialPage {
 				  GROUP BY page_title
 				  ORDER BY nap_page DESC
 				  LIMIT $offset, $limit";
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 		$wgOut->addHTML("<table width='100%' class='nablist'><tr class='toprow'><td>#</td><td>Article</td><td title='Was this article from the Suggested Title list?'>ST?</td><td style='width:180px;'>Created</td></tr>");
 		$index = 0;
 		while ($row = $dbr->fetchObject($res)) {
@@ -273,7 +290,8 @@ class Newarticleboost extends SpecialPage {
 					'rc_id',
 					array('rc_id<=' . $maxrcid,
 						'rc_cur_id=' . $aid,
-						'rc_patrolled=0'));
+						'rc_patrolled=0'), 
+					__METHOD__);
 				while ($row = $dbw->fetchObject($res)) {
 					RecentChange::markPatrolled( $row->rc_id );
 					PatrolLog::record( $row->rc_id, false );
@@ -288,7 +306,10 @@ class Newarticleboost extends SpecialPage {
 		if ($wgRequest->getVal('nap_skip') && $wgRequest->getVal('page') ) {
 			// if article was skipped, clear the checkout of the 
 			// article, so others can NAB it
-			$dbw->update('newarticlepatrol', array('nap_user_co=0'), array("nap_page", $aid));
+			$dbw->update('newarticlepatrol',
+				array('nap_user_co=0'),
+				array("nap_page", $aid),
+				__METHOD__);
 		}
 
 		$title = $this->getNextUnpatrolledArticle($dbw, $aid);
@@ -310,10 +331,17 @@ class Newarticleboost extends SpecialPage {
 	 * Mark an article as NAB'bed.
 	 */
 	private static function markNabbed(&$dbw, $aid, $userid) {
+		global $wgMemc;
+
+		$wgMemc->delete( self::getNabbedCachekey($aid) );
+
 		$ts = wfTimestampNow();
 		$dbw->update('newarticlepatrol',
-			array('nap_timestamp_ci' => $ts, 'nap_user_ci' => $userid, 'nap_patrolled' => '1'),
-			array('nap_page' => $aid));
+			array('nap_timestamp_ci' => $ts,
+				'nap_user_ci' => $userid,
+				'nap_patrolled' => '1'),
+			array('nap_page' => $aid),
+			__METHOD__);
 
 		wfRunHooks('NABMarkPatrolled', array($aid));
 	}
@@ -345,7 +373,7 @@ class Newarticleboost extends SpecialPage {
 				    {$cat}
 				  ORDER BY nap_page DESC
 				  LIMIT 1";
-		$res = $dbw->query($sql);
+		$res = $dbw->query($sql, __METHOD__);
 
 		$id = 0;
 		if (($row = $dbw->fetchObject($res)) != null) {
@@ -522,7 +550,7 @@ class Newarticleboost extends SpecialPage {
 		}
 
 		if (!$not_found) {
-			$in_nab = $dbr->selectField('newarticlepatrol', 'count(*)', array('nap_page'=>$title->getArticleID())) > 0;
+			$in_nab = $dbr->selectField('newarticlepatrol', 'count(*)', array('nap_page'=>$title->getArticleID()), __METHOD__) > 0;
 			if (!$in_nab) {
 				$wgOut->addHTML("<p>Error: This article is not in the NAB list.</p>");
 				$not_found = true;
@@ -539,9 +567,9 @@ class Newarticleboost extends SpecialPage {
 
 		$locked = false;
 
-		$min_timestamp = $dbr->selectField("revision", "min(rev_timestamp)", "rev_page=" . $title->getArticleId());
-		$first_user = $dbr->selectField("revision", "rev_user_text", array("rev_page=" . $title->getArticleId(), 'rev_timestamp' => $min_timestamp));
-		$first_user_id = $dbr->selectField("revision", "rev_user", array("rev_page=" . $title->getArticleId(), 'rev_timestamp' => $min_timestamp));
+		$min_timestamp = $dbr->selectField("revision", "min(rev_timestamp)", "rev_page=" . $title->getArticleId(), __METHOD__);
+		$first_user = $dbr->selectField("revision", "rev_user_text", array("rev_page=" . $title->getArticleId(), 'rev_timestamp' => $min_timestamp), __METHOD__);
+		$first_user_id = $dbr->selectField("revision", "rev_user", array("rev_page=" . $title->getArticleId(), 'rev_timestamp' => $min_timestamp), __METHOD__);
 		$user = new User();
 		if ($first_user_id) {
 			$user->setId($first_user_id);
@@ -555,22 +583,22 @@ class Newarticleboost extends SpecialPage {
 		$display_name = $user->getRealName() ? $user->getRealName() : $user->getName();
 
 		$wgOut->setPageTitle(wfMsg('nap_title', $title->getFullText()));
-		$count = $dbr->selectField('suggested_titles', array('count(*)'), array('st_title' => $title->getDBKey()));
+		$count = $dbr->selectField('suggested_titles', array('count(*)'), array('st_title' => $title->getDBKey()), __METHOD__);
 		$extra = $count > 0 ? ' - from Suggested Titles database' : '';
 		$wgOut->addWikiText(wfMsg('nap_writtenby', $user->getName(), $display_name, $extra));
 
-		$wgOut->addHTML(wfMsgExt('nap_quicklinks', 'parseinline', $this->me->getFullText() . "/" . $title->getFullText() ));
+		$wgOut->addHTML( wfMsgExt('nap_quicklinks', 'parseinline', $this->me->getFullText() . "/" . $title->getFullText()) );
 
 		/// CHECK TO SEE IF ARTICLE IS LOCKED OR ALREADY PATROLLED
 		$aid = $title->getArticleID();
 		$half_hour_ago = wfTimestamp(TS_MW, time() - 30 * 60);
 
-		$patrolled = $dbr->selectField('newarticlepatrol', 'nap_patrolled', array("nap_page=$aid"));
+		$patrolled = $dbr->selectField('newarticlepatrol', 'nap_patrolled', array("nap_page=$aid"), __METHOD__);
 		if ($patrolled) {
 			$locked = true;
 			$wgOut->addHTML(wfMsgExt("nap_patrolled", 'parse'));
 		} else {
-			$user_co = $dbr->selectField('newarticlepatrol', 'nap_user_co', array("nap_page=$aid", "nap_timestamp_co > '$half_hour_ago'"));
+			$user_co = $dbr->selectField('newarticlepatrol', 'nap_user_co', array("nap_page=$aid", "nap_timestamp_co > '$half_hour_ago'"), __METHOD__);
 			if ($user_co != '' && $user_co != 0 && $user_co != $wgUser->getId()) {
 				$x = User::newFromId($user_co);
 				$wgOut->addHTML(wfMsgExt("nap_usercheckedout", 'parse', $x->getName()));
@@ -578,7 +606,7 @@ class Newarticleboost extends SpecialPage {
 			} else {
 				// CHECK OUT THE ARTICLE TO THIS USER
 				$ts = wfTimestampNow();
-				$dbw->update('newarticlepatrol', array('nap_timestamp_co' => $ts, 'nap_user_co' => $wgUser->getId()), array("nap_page = $aid"));
+				$dbw->update('newarticlepatrol', array('nap_timestamp_co' => $ts, 'nap_user_co' => $wgUser->getId()), array("nap_page = $aid"), __METHOD__);
 			}
 		}
 
@@ -684,7 +712,7 @@ class Newarticleboost extends SpecialPage {
 		$wgOut->addHTML("<a name='user' id='anchor-user'></a>");
 		$used_templates = array();
 		if ($ut_id > 0) {
-			$res = $dbr->select('templatelinks', array('tl_title'), array('tl_from=' . $ut_id));
+			$res = $dbr->select('templatelinks', array('tl_title'), array('tl_from=' . $ut_id), __METHOD__);
 			while($row = $dbr->fetchObject($res)) {
 				$used_templates[] = strtolower($row->tl_title);
 			}
@@ -741,7 +769,7 @@ class Newarticleboost extends SpecialPage {
 		$wgOut->addHTML("</div>");
 
 		/// ACTION INFORMATION
-		$maxrcid = $dbr->selectField('recentchanges', 'max(rc_id)', array('rc_cur_id=' . $aid));
+		$maxrcid = $dbr->selectField('recentchanges', 'max(rc_id)', array('rc_cur_id=' . $aid), __METHOD__);
 		$wgOut->addHTML("<div class='nap_section'>");
 		$wgOut->addHTML("<a name='action' id='anchor-action'></a>");
 		$wgOut->addHTML("<div class='nap_header'> " . wfMsg('nap_action') . "</div>");
@@ -753,7 +781,7 @@ class Newarticleboost extends SpecialPage {
 		$wgOut->addHTML("<input type='hidden' name='prevuser' value='" . $user->getName() . "'/>");
 		$wgOut->addHTML("<input type='hidden' name='maxrcid' value='{$maxrcid}'/>");
 		$wgOut->addHTML("<table><tr><td valign='top'>");
-		$suggested = $dbr->selectField('suggested_titles', 'count(*)', array('st_title'=>$title->getDBKey()));
+		$suggested = $dbr->selectField('suggested_titles', 'count(*)', array('st_title'=>$title->getDBKey()), __METHOD__);
 		if ($suggested > 0) {
 			$wgOut->addHTML(wfMsg('nap_suggested_warning'));
 		}
@@ -1028,7 +1056,7 @@ class NABStatus extends SpecialPage {
 		$wgOut->addHTML("<br/>" . wfMsg('nap_userswhoboosted') . "<br/><br/><center>
 			<table width='500px' align='center' class='status'>" );
 
-		$total = $dbr->selectField('logging', 'count(*)',  array ('log_type'=>'nap', "log_timestamp>'$days_ago'"));
+		$total = $dbr->selectField('logging', 'count(*)',  array ('log_type'=>'nap', "log_timestamp>'$days_ago'"), __METHOD__);
 
 		$sql = "SELECT log_user, count(*) AS C
 				  FROM logging WHERE log_type = 'nap'
@@ -1037,7 +1065,7 @@ class NABStatus extends SpecialPage {
 				  ORDER BY C DESC
 				  LIMIT 20";
 
-		$res = $dbr->query($sql);
+		$res = $dbr->query($sql, __METHOD__);
 		$index = 1;
 		$wgOut->addHTML("<tr>
 			<td></td>
@@ -1236,12 +1264,13 @@ class NABClean extends UnlistedSpecialPage {
 	}
 
 	public function execute($par) {
-		global $wgRequest, $wgOut;
+		global $wgRequest, $wgOut, $wgMemc;
 		$target = isset($par) ? $par : $wgRequest->getVal('page');
 		$dbw = wfGetDB(DB_MASTER);
-		$in_nab = $dbw->selectField('newarticlepatrol', 'count(*)', array('nap_page' => $target));
+		$in_nab = $dbw->selectField('newarticlepatrol', 'count(*)', array('nap_page' => $target), __METHOD__);
 		if ($in_nab) {
-			$dbw->delete('newarticlepatrol', array('nap_page' => $target));
+			$dbw->delete('newarticlepatrol', array('nap_page' => $target), __METHOD__);
+			$wgMemc->delete( self::getNabbedCachekey($target) );
 			$wgOut->addHTML('<p>Deleted from NAB.</p>');
 		} else {
 			$wgOut->addHTML('<p>Could not find in NAB!</p>');

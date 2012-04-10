@@ -50,9 +50,10 @@ class GoogleAjaxSearch extends SpecialPage {
 
 		$q = urlencode($q);
 
-		$key = wfMemcKey("goog_ajax_" . md5($q . $site) . "_" . $limit);	
-		if ($wgMemc->get($key) ) {
-			return $wgMemc->get($key);
+		$key = wfMemcKey('googajax', md5($q . $site), $limit);	
+		$val = $wgMemc->get($key);
+		if ($val) {
+			return $val;
 		}
 
 		$hash = array();

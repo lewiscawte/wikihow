@@ -99,9 +99,21 @@ function wfTitleMoveComplete( $title, &$newTitle, &$user, $oldId, $newId ) {
 }
 $wgHooks['TitleMoveComplete'][] = 'wfTitleMoveComplete';
 
-function wfArticleSaveComplete( $p0, $title, $p2, $p3, $p5, $p6, $p7 ) {
-	updateSearchIndex( $title->mTitle, null );
+function wfArticleSaveComplete( $article, $user, $p2, $p3, $p5, $p6, $p7 ) {
+	global $wgMemc;
+
+	if ( $article ) {
+		updateSearchIndex( $article->getTitle(), null );
+	}
 	wfMarkUndoneEditAsPatrolled();
+
+	// In WikiHowSkin.php we cache the info for the author line. we want to
+	// remove this if that article was edited so that old info isn't cached.
+	if ( $article ) {
+		$cachekey = wfMemcKey( 'loadauth', $article->getID() );
+		$wgMemc->delete( $cachekey );
+	}
+
 	return true;
 }
 
@@ -126,7 +138,7 @@ function wfMarkUndoneEditAsPatrolled() {
 
 function wfImageConvert( $cmd ) {
 	global $wgMemc;
-	$key = wfMemcKey( 'convert_' . md5( $cmd ) );
+	$key = wfMemcKey( 'imgconvert', md5( $cmd ) );
 	if ( $wgMemc->get( $key ) ) {
 		return false;
 	}
@@ -136,25 +148,29 @@ function wfImageConvert( $cmd ) {
 $wgHooks['ImageConvert'][] = 'wfImageConvert';
 
 function wfUpdateCatInfoMask( &$article, &$user ) {
-	$t = $article->getTitle();
-	if ( $t && $t->getNamespace() == NS_MAIN ) {
-		$mask = $t->getCategoryMask();
-		$dbw = wfGetDB( DB_MASTER );
-		$dbw->update(
-			'page',
-			array( 'page_catinfo '=> $mask ),
-			array( 'page_id' => $article->getID() ),
-			__FUNCTION__
-		);
+	if ( $article ) {
+		$title = $article->getTitle();
+		if ( $title && $title->getNamespace() == NS_MAIN ) {
+			$mask = $title->getCategoryMask();
+			$dbw = wfGetDB( DB_MASTER );
+			$dbw->update(
+				'page',
+				array( 'page_catinfo '=> $mask ),
+				array( 'page_id' => $article->getID() ),
+				__FUNCTION__
+			);
+		}
 	}
 	return true;
 }
 $wgHooks['ArticleSaveComplete'][] = 'wfUpdateCatInfoMask';
 
 function wfUpdatePageFeaturedFurtherEditing( $article, $user, $text, $summary, $flags ) {
-	$t = $article->getTitle();
-	if ( !$t || $t->getNamespace() != NS_MAIN ) {
-		return true;
+	if ( $article ) {
+		$t = $article->getTitle();
+		if ( !$t || $t->getNamespace() != NS_MAIN ) {
+			return true;
+		}
 	}
 
 	$templates = explode( "\n", wfMsgForContent( 'templates_further_editing' ) );
@@ -206,3 +222,15 @@ function wfSetPage404IfNotExists() {
 
 // implemented in ArticleMetaInfo.class.php
 $wgHooks['ArticleSaveComplete'][] = 'ArticleMetaInfo::refreshMetaDataCallback';
+
+$wgHooks['AddCacheControlHeaders'][] = 'wfAddCacheControlHeaders';
+
+function wfAddCacheControlHeaders() {
+	global $wgTitle, $wgRequest;
+
+	if ( $wgRequest && $wgTitle && $wgTitle->getText() == wfMsgForContent( 'mainpage' ) ) {
+		$wgRequest->response()->header( 'X-T:MP' );
+	}
+
+	return true;
+}
