@@ -1,0 +1,24 @@
+.txt_strike {
+	 text-decoration: line-through;
+}
+
+#chk_praise_content {
+	display: none;
+}
+
+.chk_praise {
+	margin: 5px 5px 5px 0;
+	padding: 10px;
+	height: 15px;
+	background:#FFFFCC;
+	display: none;
+}
+
+#chk_praise_data {
+	display: none;
+}
+
+
+.chk_close {
+	float: right;
+}
