@@ -1,7 +1,13 @@
 <?php
-
+/**
+ * Internationalization file for the Community Dashboard extension.
+ *
+ * @file
+ * @ingroup Extensions
+ */
 $messages = array();
 
+/** English */
 $messages['en'] = array(
 	'cd-html-title' => 'Community Dashboard',
 	'cd-settings' => 'settings',
@@ -89,5 +95,38 @@ $messages['en'] = array(
 	'cd-spl-countdescription' => 'articles to spell check',
 	'cd-spl-countdescription-adjusted' => 'articles to spell check until goal',
 	'cd-spl-usercount' => 'Articles spell checked',
-
+	// Administrator interface at Special:AdminCommunityDashboard
+	'admincommunitydashboard-settings-fmt-error' => 'settings format error',
+	'admincommunitydashboard-page-title' => 'Admin - Change Community Dashboard Settings',
+	'admincommunitydashboard-got-bad-settings' => 'Bad settings received',
+	'admincommunitydashboard-reset-cmd-dispatched' => '<span class="dlabel">reset status:</span> command dispatched',
+	'admincommunitydashboard-curl-error' => 'cURL error: $1',
+	'admincommunitydashboard-refresh-data-control' => 'Refresh Data Control',
+	'admincommunitydashboard-status' => 'Status',
+	'admincommunitydashboard-btn-save' => 'save',
+	'admincommunitydashboard-btn-cancel' => 'cancel',
+	'admincommunitydashboard-loading' => 'loading ...',
+	'admincommunitydashboard-actions' => 'Actions',
+	'admincommunitydashboard-refresh-status' => 'refresh status',
+	'admincommunitydashboard-restart-script' => 'restart script',
+	'admincommunitydashboard-use-caution' => '(use caution)',
+	'admincommunitydashboard-widget-customization' => 'Widget Customization',
+	'admincommunitydashboard-order' => 'Order',
+	'admincommunitydashboard-priority' => 'Priority',
+	'admincommunitydashboard-widget' => 'Widget',
+	'admincommunitydashboard-maxima' => 'Maxima',
+	'admincommunitydashboard-baselines-goals' => 'Baselines / Goals',
+	'admincommunitydashboard-low-max' => 'Low max',
+	'admincommunitydashboard-placeholder-example' => 'e.g. $1',
+	'admincommunitydashboard-mid-max' => 'Mid max',
+	'admincommunitydashboard-high-max' => 'High max',
+	'admincommunitydashboard-natural-goal' => 'natural goal',
+	'admincommunitydashboard-custom-goal' => 'custom goal',
+	'admincommunitydashboard-current' => "current: '''$1'''",
+	'admincommunitydashboard-current-unknown' => "''current value unknown''",
+	'admincommunitydashboard-js-choose-3' => 'You must choose 3 or fewer community priorities',
+	'admincommunitydashboard-js-network-error' => 'network error',
+	'admincommunitydashboard-js-restarting-script' => 'restarting script now ... refresh page if you need to restart again',
+	'admincommunitydashboard-js-saving-error' => 'saving error: $1',
+	'admincommunitydashboard-js-error-occurred' => 'error occurred: $1',
 );
