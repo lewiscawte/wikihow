@@ -30,7 +30,7 @@ $wgExtensionCredits['parserhook'][] = array(
 	'author' => 'Travis Derouin',
 	'description' => 'Adds <nowiki>{{ARTICLESSTARTED}}</nowiki>, ' .
 		'<nowiki>{{PATROLCOUNT}}</nowiki> and <nowiki>{{NABCOUNT}}</nowiki> ' .
-		'magic words for showing articles created by user, articles patrolled' .
+		'magic words for showing articles created by user, articles patrolled ' .
 		'by user and articles boosted by user, respectively',
 );
 
