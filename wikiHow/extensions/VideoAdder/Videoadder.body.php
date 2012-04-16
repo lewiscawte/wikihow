@@ -1,7 +1,5 @@
 <?
 
-require_once('WikiHow.php');
-
 class Videoadder extends SpecialPage {
 
     function __construct() {
@@ -337,10 +335,9 @@ class Videoadder extends SpecialPage {
 			$vid	= $results[1];
 			$id 	= str_replace("http://gdata.youtube.com/feeds/api/videos/", "", $vid['ID']);
 
-			$who = new WikiHow();
-			$who->loadFromArticle(new Article($title));
+			$who = WikiHow::newFromTitle($title);
 			$intro = $who->getSection("summary");
-			$intro = $who->removeWikitext($intro);
+			$intro = WikiHow::removeWikitext($intro);
 
 			$wgOut->addHTML("<div id='va_title'><a href='#' onclick='va_skip(); return false;' class='button white_button_100 ' style='float:right;' onmouseover='button_swap(this);' onmouseout='button_unswap(this);'>Skip</a><span>Article: </span><a href='{$title->getFullURL()}' target='new'>" .  wfMsg("howto", $title->getText()) . "</a></div>
 							<div id='va_more' class='off'></div><a href='#' id='va_introlink'>View article introduction</a> | <a href='{$title->getFullURL()}' target='_blank'>Open article in new window</a>

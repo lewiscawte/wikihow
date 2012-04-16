@@ -129,7 +129,7 @@ The wikiHow Team',
                         <td class="header" align="left">
                            <table width="100%" height="90" border="0" cellspacing="0" cellpadding="0">
                               <tr>
-                                 <td><img src="http://pad1.whstatic.com/skins/WikiHow/images/wikihow.png" ></td>
+                                 <td><img src="$1/skins/WikiHow/images/wikihow.png" ></td>
                               </tr>
                            </table>
                         </td>

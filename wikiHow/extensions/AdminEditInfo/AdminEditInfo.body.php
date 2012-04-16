@@ -3,9 +3,6 @@
 if (!defined('MEDIAWIKI')) die();
 
 global $IP;
-require_once("$IP/maintenance/WikiPhoto.class.php");
-require_once("$IP/extensions/wikihow/ArticleMetaInfo.class.php");
-require_once("$IP/extensions/wikihow/TitleTests.class.php");
 require_once("$IP/skins/WikiHowSkin.php");
 
 class AdminEditInfo extends UnlistedSpecialPage {

@@ -109,8 +109,8 @@ function wfArticleSaveComplete( $article, $user, $p2, $p3, $p5, $p6, $p7 ) {
 
 	// In WikiHowSkin.php we cache the info for the author line. we want to
 	// remove this if that article was edited so that old info isn't cached.
-	if ( $article ) {
-		$cachekey = wfMemcKey( 'loadauth', $article->getID() );
+	if ( $article && class_exists( 'SkinWikihowskin' ) ) {
+		$cachekey = SkinWikihowskin::getLoadAuthorsCachekey( $article->getID() );
 		$wgMemc->delete( $cachekey );
 	}
 
@@ -223,8 +223,6 @@ function wfSetPage404IfNotExists() {
 // implemented in ArticleMetaInfo.class.php
 $wgHooks['ArticleSaveComplete'][] = 'ArticleMetaInfo::refreshMetaDataCallback';
 
-$wgHooks['AddCacheControlHeaders'][] = 'wfAddCacheControlHeaders';
-
 function wfAddCacheControlHeaders() {
 	global $wgTitle, $wgRequest;
 
@@ -234,3 +232,12 @@ function wfAddCacheControlHeaders() {
 
 	return true;
 }
+
+$wgHooks['AddCacheControlHeaders'][] = 'wfAddCacheControlHeaders';
+
+// Add to the list of available JS vars on every page
+function wfAddJSglobals( &$vars ) {
+	$vars['wgCDNbase'] = wfGetPad( '' );
+	return true;
+}
+$wgHooks['MakeGlobalVariablesScript'][] = 'wfAddJSGlobals';

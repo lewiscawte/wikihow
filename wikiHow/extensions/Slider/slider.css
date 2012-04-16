@@ -80,17 +80,40 @@ a#slider_close_button:hover { text-decoration: none; }
 	margin-bottom: 0;
 }
 
-#slider_thanks .tta_plus1 {
+#slider_thanks_02 {
+	border-top: 4px solid #645349;
+	background: url(/extensions/wikihow/slider/wikisquare.png) #FFF no-repeat left top;
+	height: 70px;
+	padding: 8px;
+	font-size: .9em;
+	-moz-box-shadow: -3px 3px 4px #BFBFBF;
+	-webkit-box-shadow: -3px 3px 4px #BFBFBF;
+	box-shadow: -3px 3px 4px #BFBFBF;
+	margin-bottom: 0;
+}
+
+.tta_plus1 {
 	float: left;
 	margin: 7px 0 0 10px;
 }
 
-#slider_thanks .tta_text {
+.tta_plus1_02 {
+	float: left;
+	margin: 7px 0 0 100px;
+}
+
+.tta_text {
 	padding: 10px 0 0 80px;
 	font-size: 1.5em;    
 }
 
-#slider_thanks .tta_first {
+.tta_text_02 {
+	color: #D94E37;
+	padding: 10px 0 0 165px;
+	font-size: 1.5em;    
+}
+
+.tta_first {
 	font-size: 1.2em;
 	font-weight: bold;
 }

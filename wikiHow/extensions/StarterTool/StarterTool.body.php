@@ -1,7 +1,5 @@
 <?
 
-require_once('WikiHow.php');
-
 class StarterTool extends UnlistedSpecialPage {
 
 	function __construct() {

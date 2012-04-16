@@ -1117,7 +1117,6 @@ class Copyrightchecker extends UnlistedSpecialPage {
 		wfLoadExtensionMessages('Newarticleboost');
 
 		require_once("$IP/extensions/wikihow/GoogleSearch.php");
-		require_once("$IP/extensions/wikihow/WikiHow.php");
 
 		$title = Title::newFromURL($target);
 		$rev = Revision::newFromTitle($title);

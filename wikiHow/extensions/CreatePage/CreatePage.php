@@ -92,7 +92,7 @@ function wfCheckSuggestionOnDelete($article, $user, $reason) {
 		$dbw->update('suggested_titles',
 					array('st_used' => 0),
 					array('st_key' => $key), 
-					__FUNCTION__);
+					__METHOD__);
 		wfClearSuggestionsCache($t);
 	} catch (Exception $e) {
 		return true;
@@ -105,7 +105,7 @@ function wfCheckSuggestionOnMove( &$ot, &$nt, &$wgUser, $pageid, $redirid) {
 	$dbw->update('suggested_titles',
 		array('st_used' => 1, 'st_created' => wfTimestampNow(TS_MW)),
 		array('st_title' => $nt->getDBKey()),
-		__FUNCTION__);
+		__METHOD__);
 	wfClearSuggestionsCache($nt);
 	return true;
 }
@@ -120,7 +120,7 @@ function wfCheckSuggestionOnSave($article, $user, $text, $summary, $p5, $p6, $p7
 		$num_revisions = $dbr->selectField('revision',
 			'count(*)',
 			array('rev_page=' . $article->getId()),
-			__FUNCTION__);
+			__METHOD__);
 		// < 2 for race conditions
 		if ($num_revisions < 2) {
 			$dbw = wfGetDB(DB_MASTER);
@@ -129,20 +129,20 @@ function wfCheckSuggestionOnSave($article, $user, $text, $summary, $p5, $p6, $p7
 					array('st_used' => 1,
 						'st_created' => wfTimestampNow(TS_MW)), 
 					array('st_key' => $key),
-					__FUNCTION__);
+					__METHOD__);
 			wfClearSuggestionsCache($t);
 		}
 		if ($num_revisions == 1) {
 			$email = $dbw->selectField('suggested_titles',
 				array('st_notify'),
 				array('st_title' => $t->getDBKey()),
-				__FUNCTION__);
+				__METHOD__);
 			if ($email) {
 				$dbw->insert('suggested_notify',
 					array('sn_page' => $article->getId(),
 						'sn_notify' => $email,
 						'sn_timestamp' => wfTimestampNow(TS_MW)),
-					__FUNCTION__);
+					__METHOD__);
 			}
 		}
 	} catch (Exception $e) {
@@ -191,7 +191,7 @@ function wfGetSuggestedTitles($t) {
 		return $result;
 	}
 
-	wfProfileIn(__FUNCTION__);
+	wfProfileIn(__METHOD__);
 	$dbr = wfGetDB(DB_SLAVE);
 	$group = date("W") % 5;
 
@@ -199,7 +199,7 @@ function wfGetSuggestedTitles($t) {
 				array('sl_sugg'),
 				array('sl_page' => $t->getArticleID()),
 				array('ORDER BY' => 'sl_sort'),
-				__FUNCTION__);
+				__METHOD__);
 	$ids = array();
 	while ($row=$dbr->fetchObject($res)) {
 		$ids[] = $row->sl_sugg;
@@ -214,7 +214,7 @@ function wfGetSuggestedTitles($t) {
 					and st_group = $group
 					and st_category = " . $dbr->addQuotes($top->getText()) . " 
 					and st_random > $randStr limit 5";
-			$res = $dbr->query($sql, __FUNCTION__);
+			$res = $dbr->query($sql, __METHOD__);
 		}
 	} else {
 		$sql = "(" . implode(", ", $ids) . ")";
@@ -222,7 +222,7 @@ function wfGetSuggestedTitles($t) {
 			WHERE st_used = 0 and st_patrolled = 1 
 				and st_group = $group and st_id
 				in $sql limit 5";
-		$res = $dbr->query($sql, __FUNCTION__);
+		$res = $dbr->query($sql, __METHOD__);
 	}
 
 	if ($dbr->numRows($res) == 0) {
@@ -233,7 +233,7 @@ function wfGetSuggestedTitles($t) {
 					and st_group = $group
 					and st_category = " . $dbr->addQuotes($top->getText()) . "
 					and st_random > $randStr limit 5";
-			$res = $dbr->query($sql, __FUNCTION__);
+			$res = $dbr->query($sql, __METHOD__);
 		}
 	}
 
@@ -248,7 +248,7 @@ function wfGetSuggestedTitles($t) {
 		. "<br/><br/><ul id='gatSuggestedTitle'>{$html}</ul></div>";
 	}
 	$wgMemc->set($key, $html);
-	wfProfileOut(__FUNCTION__);
+	wfProfileOut(__METHOD__);
 	return $html;
 }
 
@@ -263,7 +263,7 @@ function wfGetTitlesToImprove($t) {
 	$res = $dbr->select('improve_links',
 			array('il_namespace', 'il_title'), 
 			array('il_from'=>$t->getArticleID()),
-			__FUNCTION__, 
+			__METHOD__, 
 			array('LIMIT' => 5));
 
 	while ($row = $dbr->fetchObject($res)) {
@@ -460,7 +460,7 @@ function wfTrackEditToken($user, $token, $title, $guided) {
 					'et_timestamp_start'=> wfTimestampNow(), 
 					'et_guided' 		=> ($guided?1:0)
 				),
-			__FUNCTION__); 
+			__METHOD__); 
 }
 
 function wfTrackEditCompletion($article, $user, $text, $summary, $p5, $p6, $p7) {
@@ -478,7 +478,7 @@ function wfTrackEditCompletion($article, $user, $text, $summary, $p5, $p6, $p7) 
 					'et_timestamp_completed' => wfTimestampNow(),
 			), 
 			array('et_token'	=> $token),
-			__FUNCTION__);
+			__METHOD__);
 	}
 	return true;
 }

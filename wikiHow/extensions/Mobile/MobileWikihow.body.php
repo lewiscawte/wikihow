@@ -38,6 +38,10 @@ class MobileWikihow extends UnlistedSpecialPage {
 		if (self::isMobileDomain()) {
 			$redir = $wgRequest->getVal('redirect-non-mobile');
 			if (!empty($redir) || $redir === '') {
+				// this code is called if someone is on the mobile site and
+				// asks to be directed to the full site. We set a cookie
+				// so that the automatic varnish redirect based on
+				// their mobile browser doesn't happen
 				self::setNonMobileCookie(true);
 				$newServer = self::getNonMobileSite();
 				$newUrl = 'http://' . $newServer . '/' . $redir;
@@ -45,6 +49,8 @@ class MobileWikihow extends UnlistedSpecialPage {
 				$wgOut->output();
 				return false;
 			} elseif (self::hasNonMobileCookie()) {
+				// if they've chosen to come back to the mobile site from
+				// the full site, we unset that mobile redirect cookie
 				self::setNonMobileCookie(false);
 			}
 
@@ -57,15 +63,23 @@ class MobileWikihow extends UnlistedSpecialPage {
 				}
 				return false;
 			}
-		} elseif (!self::hasNonMobileCookie() && self::isUserAgentMobile()) {
-			if (self::isMobileViewable()) {
-				$newServer = self::getMobileSite();
-				$newUrl = 'http://' . $newServer . '/' . $wgTitle->getPrefixedUrl();
-				$wgOut->redirect($newUrl);
-				$wgOut->output();
-				return false;
-			}
+		} elseif (!IS_PROD_EN_SITE
+			&& !IS_PROD_INTL_SITE
+			&& !self::hasNonMobileCookie()
+			&& self::isUserAgentMobile()
+			&& self::isMobileViewable())
+		{
+			// if we're not in production, and we want to test redirections
+			// in mobile browsers, we need this clause to duplicate the
+			// functionality of the varnish redirect
+			$newServer = self::getMobileSite();
+			$newUrl = 'http://' . $newServer . '/' . $wgTitle->getPrefixedUrl();
+			$wgOut->redirect($newUrl);
+			$wgOut->output();
+			return false;
 		} else {
+			// code is displayed for anyone making it into the mobile controller
+			// who shouldn't be here
 			$wgOut->setHTMLTitle('Mobile wikiHow');
 			$wgOut->addHTML('Please visit <a href="http://m.wikihow.com/">m.wikihow.com</a> on your phone!');
 		}

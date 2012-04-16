@@ -98,7 +98,6 @@ class EmailLink extends SpecialPage {
 			$articleObj = new Article($titleObj);
 			$subject = $titleObj->getText();
 			$titleText = $titleObj->getText();
-			require_once('WikiHow.php');
 			if (WikiHow::articleIsWikiHow($articleObj)) {
 				$subject = wfMsg('howto', $subject);
 				$titleText = wfMsg('howto',$titleText);
@@ -248,7 +247,6 @@ onmouseover=\"this.className='btn btnhov'\" onmouseout=\"this.className='btn'\"/
 			$articleObj = new Article($titleObj);
 			$subject = $titleObj->getText();
 			$how_to = $subject;
-			require_once('WikiHow.php');
 			if (WikiHow::articleIsWikiHow($articleObj)) {
 				$subject = wfMsg("howto", $subject);
 			}

@@ -20,7 +20,7 @@ var RCW_DEBUG_FLAG = false;
 var RCW_DIRECTION = 'down';
 var RCW_DEFAULT_URL = "/Special:RCWidget";
 var RCW_ENGLISH = typeof wgContentLanguage == 'string' &&  wgContentLanguage == 'en';
-var RCW_CDN_SERVER = typeof wgServer != 'string' || (wgServer.indexOf('wikidiy') < 0 && RCW_ENGLISH) ? 'http://pad1.whstatic.com' : wgServer;
+var RCW_CDN_SERVER = typeof wgServer != 'string' || (wgServer.indexOf('wikidiy') < 0 && RCW_ENGLISH) ? wgCDNbase : wgServer;
 var rcwTestStatusOn = false;
 
 function getNextSpot() {

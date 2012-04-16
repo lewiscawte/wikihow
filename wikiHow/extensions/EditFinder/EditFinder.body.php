@@ -76,6 +76,9 @@ class EditFinder extends UnlistedSpecialPage {
 		// mark skipped
 		if ( !empty( $skip_article ) ) {
 			$t = Title::newFromText( $skip_article );
+			if ( !$t ) {
+				exit;
+			}
 			$id = $t->getArticleID();
 
 			// mark the DB for this user
@@ -441,7 +444,7 @@ class EditFinder extends UnlistedSpecialPage {
 		} elseif ( $wgRequest->getVal( 'show-article' ) ) {
 			$wgOut->setArticleBodyOnly( true );
 
-			if ( $wgRequest->getVal( 'aid' ) == '' ) {
+			if ( $wgRequest->getInt( 'aid' ) == '' ) {
 				if ( $this->topicMode ) {
 					$messageKey = 'editfinder-more-interests';
 				} else {
@@ -451,7 +454,7 @@ class EditFinder extends UnlistedSpecialPage {
 				return;
 			}
 
-			$t = Title::newFromID( $wgRequest->getVal( 'aid' ) );
+			$t = Title::newFromID( $wgRequest->getInt( 'aid' ) );
 
 			$articleTitleLink = $t->getLocalURL();
 			$articleTitle = $t->getText();
@@ -473,7 +476,7 @@ class EditFinder extends UnlistedSpecialPage {
 		} elseif ( $wgRequest->getVal( 'edit-article' ) ) {
 			// Show the edit form
 			$wgOut->setArticleBodyOnly( true );
-			$t = Title::newFromID( $wgRequest->getVal( 'aid' ) );
+			$t = Title::newFromID( $wgRequest->getInt( 'aid' ) );
 			$a = new Article( $t );
 			$editor = new EditPage( $a );
 			$editor->edit();
@@ -483,7 +486,7 @@ class EditFinder extends UnlistedSpecialPage {
 
 			$efType = strtolower( $wgRequest->getVal( 'type' ) );
 
-			$t = Title::newFromID( $wgRequest->getVal( 'aid' ) );
+			$t = Title::newFromID( $wgRequest->getInt( 'aid' ) );
 			$a = new Article( $t );
 
 			// log it
@@ -506,12 +509,12 @@ class EditFinder extends UnlistedSpecialPage {
 			return;
 		} elseif ( $wgRequest->getVal( 'confirmation' ) ) {
 			$wgOut->setArticleBodyOnly( true );
-			echo $this->confirmationModal( $wgRequest->getVal( 'type' ), $wgRequest->getVal( 'aid' ) );
+			echo $this->confirmationModal( $wgRequest->getVal( 'type' ), $wgRequest->getInt( 'aid' ) );
 			wfProfileOut( __METHOD__ );
 			return;
 		} elseif ( $wgRequest->getVal( 'cancel-confirmation' ) ) {
 			$wgOut->setArticleBodyOnly( true );
-			echo $this->cancelConfirmationModal( $wgRequest->getVal( 'aid' ) );
+			echo $this->cancelConfirmationModal( $wgRequest->getInt( 'aid' ) );
 			wfProfileOut( __METHOD__ );
 			return;
 		} else { // default view (same as most of the views)

@@ -63,6 +63,20 @@ class ListAccuracyPatrol extends PageQueryPage {
 			$t->getFullText(), $result->rl_count, $avg )->parse();
 	}
 
+	/**
+	 * This function is used for de-indexing purposes.
+	 * All articles that show up on the page Special:AccuracyPatrol are de-indexed.
+	 */
+	static function isInaccurate( $articleId, &$dbr ) {
+		$row = $dbr->selectField(
+			'rating_low',
+			'rl_page',
+			array( 'rl_page' => $articleId ),
+			__METHOD__
+		);
+
+		return $row !== false;
+	}
 }
 
 /**

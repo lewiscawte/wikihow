@@ -11,6 +11,10 @@ class Slider extends UnlistedSpecialPage {
 	}
 	
 	public function getBox() {
+		return self::getBox_02();
+	}
+	
+	public function getBox_01() {
 		global $wgOut, $wgLanguageCode, $wgServer, $wgTitle;
 		wfLoadExtensionMessages('Slider');
 
@@ -27,6 +31,23 @@ class Slider extends UnlistedSpecialPage {
 							<a href='#' id='slider_close_button'>x</a>
 							<div class='tta_plus1'><g:plusone size='tall'></g:plusone></div>
 							<div class='tta_text'>
+								<p class='tta_first'>".wfMsg('slider-text')."</p>
+								<p class='slider_subtext_plus1'>".wfMsg('slider-sub-text-plusone')."</p>
+							</div>
+						</div>
+					</div>";
+
+		return $theBox;
+	}
+	
+	public function getBox_02() {
+		wfLoadExtensionMessages('Slider');
+		
+		$theBox = "<div id='sliderbox'>
+						<div id='slider_thanks_02'>
+							<a href='#' id='slider_close_button'>x</a>
+							<div class='tta_plus1_02'><g:plusone size='tall'></g:plusone></div>
+							<div class='tta_text_02'>
 								<p class='tta_first'>".wfMsg('slider-text')."</p>
 								<p class='slider_subtext_plus1'>".wfMsg('slider-sub-text-plusone')."</p>
 							</div>

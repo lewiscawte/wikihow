@@ -51,7 +51,7 @@ $wgLogHeaders['nap'] = 'newarticlepatrollogpagetext';
 function wfNewArticlePatrolClearOnDelete($article, $user, $reason) {
 	$dbw = wfGetDB(DB_MASTER);
 	$sql = "DELETE FROM newarticlepatrol WHERE nap_page={$article->getId()}";
-	$dbw->query($sql, __FUNCTION__);
+	$dbw->query($sql, __METHOD__);
 	return true;
 }
 
@@ -69,11 +69,11 @@ function wfNewArticlePatrolAddOnCreation($article, $user, $text, $summary, $p5, 
 		return true;
 	}
 
-	$num_revisions = $db->selectField('revision', 'count(*)', array('rev_page=' . $article->getId()), __FUNCTION__);
-	$min_rev = $db->selectField('revision', 'min(rev_id)', array('rev_page=' . $article->getId()), __FUNCTION__);
-	$ts = $db->selectField('revision', 'rev_timestamp', array('rev_id=' . $min_rev), __FUNCTION__);
-	$userid = $db->selectField('revision', 'rev_user', array('rev_id=' . $min_rev), __FUNCTION__);
-	$nap_count = $db->selectField('newarticlepatrol', 'count(*)', array('nap_page=' . $article->getId()), __FUNCTION__);
+	$num_revisions = $db->selectField('revision', 'count(*)', array('rev_page=' . $article->getId()), __METHOD__);
+	$min_rev = $db->selectField('revision', 'min(rev_id)', array('rev_page=' . $article->getId()), __METHOD__);
+	$ts = $db->selectField('revision', 'rev_timestamp', array('rev_id=' . $min_rev), __METHOD__);
+	$userid = $db->selectField('revision', 'rev_user', array('rev_id=' . $min_rev), __METHOD__);
+	$nap_count = $db->selectField('newarticlepatrol', 'count(*)', array('nap_page=' . $article->getId()), __METHOD__);
 
 	// filter articles created by bots
 	if ($userid > 0) {
@@ -115,7 +115,7 @@ function wfNewArticlePatrolAddOnCreation($article, $user, $text, $summary, $p5, 
 					array('rev_page=page_id',
 						'page_namespace' => NS_MAIN,
 						'rev_user_text'=>$user->getName()),
-					__FUNCTION__);
+					__METHOD__);
 				if ($count < $newbie['edits']) {
 					$nap_newbie = 1;
 				}
@@ -126,7 +126,7 @@ function wfNewArticlePatrolAddOnCreation($article, $user, $text, $summary, $p5, 
 					array('firstedit'),
 					'count(*)',
 					array('fe_user_text' => $user->getName()),
-					__FUNCTION__);
+					__METHOD__);
 				if ($count < $newbie['articles']) {
 					$nap_newbie = 1;
 				}
@@ -136,14 +136,14 @@ function wfNewArticlePatrolAddOnCreation($article, $user, $text, $summary, $p5, 
 		$min_ts = $db->selectField('revision',
 			'min(rev_timestamp)',
 			array('rev_page' => $article->getId()),
-			__FUNCTION__);
+			__METHOD__);
 
 		$db->insert('newarticlepatrol',
 			array(
 				'nap_page' => $article->getId(),
 				'nap_timestamp' => $min_ts,
 				'nap_newbie' => $nap_newbie),
-			__FUNCTION__);
+			__METHOD__);
 	}
 
 	return true;

@@ -433,11 +433,21 @@ class Wikitext {
 	 * Utility method to return the wikitext for an article
 	 */
 	public static function getWikitext( &$dbr, $title ) {
-		$rev = Revision::loadFromTitle( $dbr, $title );
-		if ( !$rev ) {
+		global $wgTitle;
+		if ( !$title ) {
 			return false;
 		}
-		$wikitext = $rev->getText();
+		// an optimization if $title is $wgTitle
+		if ( $wgTitle && $wgTitle->getText() == $title->getText() ) {
+			$whow = WikiHow::newFromCurrent();
+			$wikitext = $whow->mLoadText;
+		} else {
+			$rev = Revision::loadFromTitle( $dbr, $title );
+			if ( !$rev ) {
+				return false;
+			}
+			$wikitext = $rev->getText();
+		}
 		return $wikitext;
 	}
 
@@ -476,14 +486,14 @@ class Wikitext {
 //$r = Revision::loadFromTitle($dbr, $t, 7544205);
 //$wikitext = $r->getText();
 		if ( $wikitext ) {
-			list( $stepsText, $sectionID ) = 
+			list( $stepsText, $sectionID ) =
 				self::getStepsSection( $wikitext, true );
 		}
 
 		if ( !$stepsText ) {
 			$err = 'Unable to load wikitext';
 		} else {
-			list( $stepsText, $numImages, $err ) = 
+			list( $stepsText, $numImages, $err ) =
 				self::enlargeImagesInWikitext( $stepsText, $recenter, $px, false );
 			if ( !$err ) {
 				$wikitext = self::replaceStepsSection( $wikitext, $sectionID, $stepsText, true );
@@ -494,11 +504,11 @@ class Wikitext {
 
 				if ( $introPx ) {
 					$intro = self::getIntro( $wikitext );
-					list( $intro, $introImages, $err ) = 
+					list( $intro, $introImages, $err ) =
 						self::enlargeImagesInWikitext( $intro, '', $introPx, true );
 					$numImages += $introImages;
 					$wikitext = self::replaceIntro( $wikitext, $intro );
-					
+
 					$comment .= '; enlarging intro image';
 				}
 
