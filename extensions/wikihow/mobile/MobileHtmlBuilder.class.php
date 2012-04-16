@@ -499,7 +499,12 @@ class MobileArticleBuilder extends MobileHtmlBuilder {
 			}
 		} 
 		
-		if ($this->t->getDBkey() == "Develop-Self-Esteem") {
+		//articles that we don't want to have a top (above tabs)
+		//image displayed
+		$dbKey = "";
+		if($this->t != null)
+			$dbKey = $this->t->getDBkey();
+		if ($dbKey == "Develop-Self-Esteem" || $dbKey == "Be-Cool") {
 			$firstImage = false;
 		}
 

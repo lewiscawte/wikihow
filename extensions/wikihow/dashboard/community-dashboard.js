@@ -16,7 +16,7 @@ WH.dashboard = (function ($) {
 		REFRESH_USER_DATA_THROTTLE_AFTER_1 = 600,
 		REFRESH_USER_DATA_THROTTLE_SECS_2 = 900,
 		REFRESH_USER_DATA_THROTTLE_AFTER_2 = 1800;
-	//var CDN_BASE = 'http://pad1.whstatic.com',
+	//var CDN_BASE = wgCDNbase,
 	var CDN_BASE = 'http://www.wikihow.com',
 		MAX_INT = 2147483647; // 2^31 - 1
 

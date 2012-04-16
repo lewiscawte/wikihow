@@ -1308,8 +1308,10 @@ class EditPage {
 
 		$guidedHTML = "";
 		global $IP;
-		require_once("$IP/extensions/wikihow/WikiHow.php");
-		if (WikiHow::articleIsWikiHow($this->mArticle) || ($this->mTitle->getArticleID() == 0 && $this->mTitle->getNamespace() == NS_MAIN) ) {
+		if (WikiHow::articleIsWikiHow($this->mArticle)
+			|| ($this->mTitle->getArticleID() == 0
+				&& $this->mTitle->getNamespace() == NS_MAIN) )
+		{
 			if (class_exists('Html5editor') && isHtml5Editable(true)) {
 				$relURL = 'h5e=true';
 				// if article doesn't exist, enter into article creation mode

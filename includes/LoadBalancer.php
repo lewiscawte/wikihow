@@ -279,7 +279,7 @@ class LoadBalancer {
 			return true;
 		}
 
-		$key = 'masterpos:' . $index;
+/*		$key = 'masterpos:' . $index;
 		$memcPos = $wgMemc->get( $key );
 		if ( $memcPos ) {
 // test whether this block of code is even used! (I can't find the 
@@ -291,7 +291,7 @@ mail('reuben@wikihow.com', "GOT $key = $memcPos", "x");
 			if ( $file == $this->mWaitForFile && $this->mWaitForPos <= $pos ) {
 				$retVal = true;
 			}
-		}
+		} */
 
 		if ( !$retVal && $this->isOpen( $index ) ) {
 			$conn =& $this->mConnections[$index];

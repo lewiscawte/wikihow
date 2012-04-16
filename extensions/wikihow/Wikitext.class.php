@@ -422,11 +422,19 @@ class Wikitext {
 	 * Utility method to return the wikitext for an article
 	 */
 	public static function getWikitext(&$dbr, $title) {
-		$rev = Revision::loadFromTitle($dbr, $title);
-		if (!$rev) {
-			return false;
+		global $wgTitle;
+		if (!$title) return false;
+		// an optimization if $title is $wgTitle
+		if ($wgTitle && $wgTitle->getText() == $title->getText()) {
+			$whow = WikiHow::newFromCurrent();
+			$wikitext = $whow->mLoadText;
+		} else {
+			$rev = Revision::loadFromTitle($dbr, $title);
+			if (!$rev) {
+				return false;
+			}
+			$wikitext = $rev->getText();
 		}
-		$wikitext = $rev->getText();
 		return $wikitext;
 	}
 

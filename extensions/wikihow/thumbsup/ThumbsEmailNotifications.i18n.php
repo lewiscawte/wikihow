@@ -20,7 +20,7 @@ $messages['en'] = array (
                         <td class="header" align="left">
                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
                               <tr>
-                                 <td height="50" style="border-bottom:solid 1px gray"><img src="http://pad1.whstatic.com/skins/WikiHow/images/wikihow.png" ></td>
+                                 <td height="50" style="border-bottom:solid 1px gray"><img src="$1/skins/WikiHow/images/wikihow.png" ></td>
                               </tr>
                            </table>
                         </td>
@@ -31,11 +31,11 @@ $messages['en'] = array (
                               <tr>
                                  <td width="330" class="mainbar" align="left" valign="top">
                                     <p style="font-family: Arial; font-size: 16px; font-weight: normal; color: #4c4c4c;  margin: 10px 0 0 0;  padding: 0;">
-									Congratulations, $1! You just received some thumbs up <!--<a href="http://www.wikihow.com/wikiHow:Thumbs-Up">thumbs up</a>--> for doing quality editing on wikiHow:
+									Congratulations, $2! You just received some thumbs up <!--<a href="http://www.wikihow.com/wikiHow:Thumbs-Up">thumbs up</a>--> for doing quality editing on wikiHow:
 									</p>
                                     <p style="font-family: Arial; font-size: 16px; font-weight: normal; color: #4c4c4c;  margin: 10px 0 0 0;  padding: 0;">
 									<br>
-									$2
+									$3
 									</p>
                                     <p style="font-family: Arial; font-size: 16px; font-weight: normal; color: #4c4c4c;  margin: 10px 0 0 0;  padding: 0;">
 									Thanks for helping out. Your contributions are noticed and appreciated!<br><br>

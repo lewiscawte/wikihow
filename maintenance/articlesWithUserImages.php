@@ -108,7 +108,7 @@ foreach($titles as $id => $info) {
 	
 	fwrite($fo, $title->getFullUrl() . ", ");
 	foreach($info as $userId) {
-		$res = $dbr->select("revision", array("rev_user_text", "rev_timestamp"), array("rev_user" => $userId), __FUNCTION__, array("ORDER BY" => "rev_timestamp DESC", "LIMIT" => 1));
+		$res = $dbr->select("revision", array("rev_user_text", "rev_timestamp"), array("rev_user" => $userId), __METHOD__, array("ORDER BY" => "rev_timestamp DESC", "LIMIT" => 1));
 		while($row = $dbr->fetchObject($res)) {
 			fwrite($fo, "http://www.wikihow.com/User:" . $row->rev_user_text . ", ");
 			fwrite($fo, date("n/j/Y", wfTimestamp(TS_UNIX, $row->rev_timestamp)) . ", ");

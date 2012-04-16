@@ -45,7 +45,7 @@ class ThumbsEmailNotifications extends UnlistedSpecialPage {
 		$mime_boundary_header = chr(34) . $mime_boundary . chr(34);
 
 		$userPageLink = self::getUserPageLink($userText);
-		$html_text = wfMsg('tn_email_html', $userPageLink, $content);
+		$html_text = wfMsg('tn_email_html', wfGetPad(''), $userPageLink, $content);
 		$plain_text = wfMsg('tn_email_plain', $userText, $u->getTalkPage()->getFullURL());
 
 		$body = "This is a multi-part message in MIME format.

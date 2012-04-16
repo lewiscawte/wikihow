@@ -14,8 +14,8 @@ class wikihowAds {
 		
 		//$sk = $wgUser->getSkin();
 		
-		//return wfMsg('Ad_setup', WikiHowTemplate::isHhm());
-		return wfMsg('Wikihowads_setup', WikiHowTemplate::isHhm());
+		//return wfMsg('Ad_setup', wikihowAds::isHhm());
+		return wfMsg('Wikihowads_setup', wikihowAds::isHhm());
 	}
 
 	public static function getAdUnitPlaceholder($num, $isLinkUnit = false, $postLoad = true) {
@@ -659,7 +659,7 @@ EOHTML;
 				}
 			}
 			
-			if (WikiHowTemplate::isHhm()) {
+			if (wikihowAds::isHhm()) {
 				$sk->mGlobalChannels[] = "5905062452"; //is an HHM page
 			}
 			
@@ -918,5 +918,36 @@ EOHTML;
 		return $tree;
 
 	}
+	
+	function isHHM() {
+		global $wgTitle, $wgUser;
 
+        $sk = $wgUser->getSkin();
+
+		if ( $wgTitle->getNamespace() == NS_CATEGORY && $wgTitle->getPartialURL() == "Home-and-Garden") {
+			return true;
+		}
+		else {
+			if($sk->mCategories['Home-and-Garden'] != null) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	function getHhmAd(){
+		$s = "";
+
+		if(wikihowAds::isHHM()) {
+			$catString = "diy.misc";
+			$catNumber = "4777";
+			
+			$s = wfMsg('adunit-hhm', $catString, $catNumber);
+			$s = "<div class='wh_ad'>" . preg_replace('/\<[\/]?pre[^>]*>/', '', $s) . "</div>";
+		}
+		
+		return $s;
+	}
+ 
 }

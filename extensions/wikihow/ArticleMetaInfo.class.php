@@ -393,7 +393,7 @@ class ArticleMetaInfo {
 	   ami_namespace int unsigned not null default 0,
 	   ami_title varchar(255) not null default '',
 	   ami_updated varchar(14) not null default '',
-	   ami_desc_style tinyint(1) not null default 0,
+	   ami_desc_style tinyint(1) not null default 1,
 	   ami_desc varchar(255) not null default '',
 	   ami_facebook_desc varchar(255) not null default '',
 	   ami_img varchar(255) default null,

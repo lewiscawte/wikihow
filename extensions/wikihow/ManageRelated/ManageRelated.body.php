@@ -12,8 +12,6 @@ class ManageRelated extends UnlistedSpecialPage {
 
 		$this->setHeaders();
 
-		require_once("$IP/extensions/wikihow/WikiHow.php");
-
 		if( $wgUser->isBlocked() ) {
 			$wgOut->blockedPage();
 			return;
@@ -32,8 +30,7 @@ class ManageRelated extends UnlistedSpecialPage {
 		}
 
 		$article = new Article($titleObj);
-		$whow = new WikiHow();
-		$whow->loadFromArticle($article);
+		$whow = WikiHow::newFromArticle($article);
 		$rev = Revision::newFromTitle($titleObj);
 		$text = $rev->getText();
 
@@ -154,9 +151,10 @@ class ManageRelated extends UnlistedSpecialPage {
 		$relatedHTML = "";
 		$text = $article->getContent();
 
-		if ($whow->getSection("related wikihows") != "") {
+		$relwh = $whow->getSection("related wikihows");
+		if ($relwh != "") {
 			$related_vis = "show";
-			$relatedHTML = $whow->getSection("related wikihows");
+			$relatedHTML = $relwh;
 			$relatedHTML = str_replace("*", "", $relatedHTML);
 			$relatedHTML = str_replace("[[", "", $relatedHTML);
 			$relatedHTML = str_replace("]]", "", $relatedHTML);
@@ -243,7 +241,7 @@ class PreviewPage extends UnlistedSpecialPage {
 	}
 
 	function execute($par) {
-		global $wgRequest, $wgParser, $wgUser, $wgOut;
+		global $wgRequest, $wgUser, $wgOut;
 
 		$wgOut->setArticleBodyOnly(true);
 		$wgOut->clearHTML();

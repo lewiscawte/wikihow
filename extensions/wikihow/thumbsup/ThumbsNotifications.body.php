@@ -29,7 +29,7 @@ class ThumbsNotifications extends UnlistedSpecialPage {
 	function getNotificationsHTML() {
 		global $wgUser;
 		$notifications = self::getNotifications($wgUser->getName());
-		$js = HtmlSnips::makeUrlTags('js', array('thumbsnotifications.js'), 'extensions/wikihow/thumbsup', THUMBSUP_DEBUG);
+		$js = '<script>WH.ThumbsUp.assignHandlers();</script>';
 		return self::formatNotifications($notifications) . $js;
 	}
 

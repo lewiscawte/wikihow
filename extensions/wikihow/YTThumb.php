@@ -61,7 +61,7 @@ function wfYTThumbAddJS(&$out, &$text) {
 		&& in_array( 'imagecurator', $wgUser->getRights() ) 
 		&& YTThumb::hasThumbnails($wgTitle)) {
 		$out->addScript("<script type='text/javascript' src='/extensions/wikihow/ytthumbs.js'></script>");
-		$out->addScript('<script src="http://pad1.whstatic.com/extensions/wikihow/common/ui/js/jquery-ui-1.8.custom.min.js" type="text/javascript"></script> ');
+		$out->addScript('<script src="' . wfGetPad('/extensions/wikihow/common/ui/js/jquery-ui-1.8.custom.min.js') . '" type="text/javascript"></script> ');
 	}
 	return true;
 	

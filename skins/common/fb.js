@@ -52,7 +52,7 @@ WH.FB.doAction = function(action) {
 }
 
 WH.FB.doLogin = function() {
-	jQuery('#fb_connect_header').html('[Logging in <img src="http://pad1.whstatic.com/skins/WikiHow/images/fb_loading.gif"/>]');
+	jQuery('#fb_connect_header').html('[Logging in <img src="' + wgCDNbase + '/skins/WikiHow/images/fb_loading.gif"/>]');
 
 	WH.FB.doFBLogin(function(response) {
 		WH.FB.doWikiHowLogin(response.authResponse);

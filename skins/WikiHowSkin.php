@@ -16,7 +16,6 @@ if( !defined( 'MEDIAWIKI' ) )
 /** */
 global $IP;
 require_once("$IP/includes/SkinTemplate.php");
-require_once("$IP/extensions/wikihow/ArticleMetaInfo.class.php");
 
 /**
  * Inherit main code from SkinTemplate, set the CSS and template filter.
@@ -44,7 +43,7 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 
 	function addWidget($html) {
-		$display="
+		$display = "
 	<div class='sidebox_shell'>
 		<div class='sidebar_top'></div>
 		<div class='sidebox'> ". $html ." </div>
@@ -338,15 +337,10 @@ class SkinWikihowskin extends SkinTemplate {
 	}
 
 	function getRelatedWikihowsFromSource($num) {
-		global $wgTitle, $wgParser;
-		$r = Revision::newFromTitle($wgTitle);
-		$text = $r->getText();
-		$whow = new WikiHow();
-		$whow->loadFromText($text);
+		$whow = WikiHow::newFromCurrent();
 		$related = preg_replace("@^==.*@m", "", $whow->getSection('related wikihows'));
 
-		$preg = "/\\|[^\\]]*/";
-		$related = preg_replace($preg, "", $related);
+		$related = preg_replace("/\\|[^\\]]*/", "", $related);
 		$rarray = split("\n", $related);
 		$result = "<table>";
 		$count = 0;
@@ -356,9 +350,10 @@ class SkinWikihowskin extends SkinTemplate {
 			if($t && $t->exists()) {
 				$result .= $this->featuredArticlesLine($t, $t->getFullText());
 				if (++$count == $num) break;
-	}
+			}
 		}
-		return $result . "</table>";
+		$result .= "</table>";
+		return $result;
 	}
 
 	/*function hasMajorityPhotos() {
@@ -373,10 +368,8 @@ class SkinWikihowskin extends SkinTemplate {
 	}*/
 
 	function hasIntroImage() {
-		global $wgTitle;
-		$r = Revision::newFromTitle($wgTitle);
-		if ($r == null) return false;
-		$intro = Article::getSection($r->getText(), 0);
+		$whow = WikiHow::newFromCurrent();
+		$intro = Article::getSection($whow->mLoadText, 0);
 		$num_photos = preg_match_all('/\[\[Image:/', $intro, $matches);
 		if ($num_photos > 0) return true;
 		return false;
@@ -1006,13 +999,6 @@ class SkinWikihowskin extends SkinTemplate {
 		return $links;
 	}
 
-	// NOT IN USE
-	function getBottomGoogleAds() {
-		$links = wfMsg('rad_links_link_units_468x15');
-		$links = preg_replace('/\<[\/]?pre\>/', '', $links);
-		return $links;
-	}
-
 	function getTopCategory($title = null) {
 		global $wgContLang;
 		if (!$title) {
@@ -1039,128 +1025,6 @@ class SkinWikihowskin extends SkinTemplate {
 			$keys = array_keys($last);
 			$result = str_replace($catNamespace, "", $keys[0]);
 		}
-		return $result;
-	}
-
-	function getCustomGoogleChannels($type, $use_chikita_sky) {
-		global $wgTitle, $wgLang, $IP;
-
-		$channels = array();
-		$comments = array();
-
-		$ad = array();
-		$ad['adunitintro'] 			= '0206790666';
-		$ad['horizontal_search'] 	= '9965311755';
-		$ad['rad_bottom'] 			= '0403699914';
-		$ad['ad_section'] 			= '7604775144';
-		$ad['rad_left'] 			= '3496690692';
-		$ad['rad_left_custom']		= '3371204857';
-		$ad['rad_video'] 			= '8650928363';
-		$ad['skyscraper']			= '5907135026';
-		$ad['vertical_search']		= '8241181057';
-		$ad['embedded_ads']			= '5613791162';
-		$ad['embedded_ads_top']		= '9198246414';
-		$ad['embedded_ads_mid']		= '1183596086';
-		$ad['embedded_ads_vid']		= '7812294912';
-		$ad['side_ads_vid']			= '5407720054';
-		$ad['adunit0']				= '2748203808';
-		$ad['adunit1']				= '4065666674';
-		$ad['adunit2']				= '7690275023';
-		$ad['adunit2a']				= '9206048113';
-		$ad['adunit3']				= '9884951390';
-		$ad['adunit4']				= '7732285575';
-		$ad['adunit5']				= '7950773090';
-		$ad['adunit6']				= '';
-		$ad['adunit7']				= '8714426702';
-		$ad['linkunit1']			= '2612765588';
-		$ad['linkunit2']          	= '5047600031';
-		$ad['linkunit3']            = '5464626340';
-
-
-		$namespace = array();
-		$namespace[NS_MAIN]             = '7122150828';
-		$namespace[NS_TALK]             = '1042310409';
-		$namespace[NS_USER]             = '2363423385';
-		$namespace[NS_USER_TALK]        = '3096603178';
-		$namespace[NS_PROJECT]          = '6343282066';
-		$namespace[NS_PROJECT_TALK]     = '6343282066';
-		$namespace[NS_IMAGE]            = '9759364975';
-		$namespace[NS_IMAGE_TALK]       = '9759364975';
-		$namespace[NS_MEDIAWIKI]        = '9174599168';
-		$namespace[NS_MEDIAWIKI_TALK]   = '9174599168';
-		$namespace[NS_TEMPLATE]         = '3822500466';
-		$namespace[NS_TEMPLATE_TALK]    = '3822500466';
-		$namespace[NS_HELP]             = '3948790425';
-		$namespace[NS_HELP_TALK]        = '3948790425';
-		$namespace[NS_CATEGORY]         = '2831745908';
-		$namespace[NS_CATEGORY_TALK]    = '2831745908';
-		$namespace[NS_USER_KUDOS]       = '3105174400';
-		$namespace[NS_USER_KUDOS_TALK]  = '3105174400';
-
-		$channels[] = $ad[$type];
-		$comments[] = $type;
-
-		if ($use_chikita_sky) {
-			$channels[] = "7697985842";
-			$comments[] = "chikita sky";
-		} else {
-			$channels[] = "7733764704";
-			$comments[] = "google sky";
-		}
-
-		foreach ($this->mGlobalChannels as $c) {
-			$channels[] = $c;
-		}
-		foreach ($this->mGlobalComments as $c) {
-			$comments[] = $c;
-		}
-
-		// Video
-		if ($wgTitle->getNamespace() ==  NS_SPECIAL && $wgTitle->getText() == "Video") {
-			$channels[] = "9155858053";
-			$comments[] = "video";
-		}
-
-		require_once("$IP/extensions/wikihow/FeaturedArticles.php");
-		$fas = FeaturedArticles::getFeaturedArticles(3);
-		foreach ($fas as $fa) {
-			if ($fa[0] == $wgTitle->getFullURL()) {
-				$comments[] = 'FA';
-				$channels[] = '6235263906';
-			}
-		}
-
-		// do the categories
-		$tree = WikiHow::getCurrentParentCategoryTree();
-		$tree = wikihowAds::flattenCategoryTree($tree);
-		$tree = wikihowAds::cleanUpCategoryTree($tree);
-
-		$map = wikihowAds::getCategoryChannelMap();
-		foreach ($tree as $cat) {
-			if (isset($map[$cat])) {
-				$channels[] = $map[$cat];
-				$comments[] = $cat;
-			}
-		}
-
-		if ($wgTitle->getNamespace() == NS_SPECIAL)
-			$channels[] = "9363314463";
-		else
-			$channels[] = $namespace[$wgTitle->getNamespace()];
-		if ($wgTitle->getNamespace() == NS_MAIN) {
-			$comments[] = "Main namespace";
-		} else {
-			$comments[] = $wgLang->getNsText($wgTitle->getNamespace());
-		}
-
-		// TEST CHANNELS
-		//if ($wgTitle->getNamespace() == NS_MAIN && $id % 2 == 0) {
-		if ($wgTitle->getNamespace() == NS_SPECIAL && $wgTitle->getText() == "Search") {
-			$channels[]  = '8241181057';
-			$comments[]  = 'Search page';
-		}
-
-		$result = array(implode("+", $channels), implode(", ", $comments));
 		return $result;
 	}
 
@@ -1271,13 +1135,17 @@ class SkinWikihowskin extends SkinTemplate {
 		return $s;
 	}
 	
+	public static function getLoadAuthorsCachekey($articleID) {
+		return wfMemcKey('loadauthors', $articleID);
+	}
+
 	function loadAuthors() {
 		global $wgTitle, $wgMemc;
 
 		if (is_array($this->mAuthors)) return;
 
 		$articleID = $wgTitle->getArticleID();
-		$cachekey = wfMemcKey('loadauth', $articleID);
+		$cachekey = self::getLoadAuthorsCachekey($articleID);
 		$this->mAuthors = $wgMemc->get($cachekey);
 		if (is_array($this->mAuthors)) return;
 
@@ -1825,64 +1693,6 @@ class WikiHowTemplate extends QuickTemplate {
 		return $html;
 	}
 
-	function getHhmAd(){
-		$s = "";
-
-		if(self::isHHM()) {
-			$catString = "diy.misc";
-			$catNumber = "4777";
-			
-			$s = wfMsg('adunit-hhm', $catString, $catNumber);
-			$s = "<div class='wh_ad'>" . preg_replace('/\<[\/]?pre[^>]*>/', '', $s) . "</div>";
-		}
-		
-		return $s;
-	}
-	
-	function isHHM() {
-		global $wgTitle, $wgUser;
-
-        $sk = $wgUser->getSkin();
-
-		if ( $wgTitle->getNamespace() == NS_CATEGORY && $wgTitle->getPartialURL() == "Home-and-Garden") {
-			return true;
-		}
-		else {
-			if($sk->mCategories['Home-and-Garden'] != null) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	function isCrackTheCase() {
-		global $wgTitle;
-		
-		$titleUrl = $wgTitle->getFullURL();
-		
-		$msg = wfMsg('Crackthecase');
-		$articles = split("\n", $msg);
-		foreach ($articles as $article) {
-			if($article == $titleUrl){
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	function getCrackTheCase(){
-		$s = "";
-			
-		$s = "<div class='wh_ad'><div class='side_ad'>"; 
-		$s .= "<a href='http://www.hyperink.com/the-best-course-on-how-to-crack-the-case-interview-b50'>";
-		$s .= "<img src='" . wfGetPad('/skins/WikiHow/images/crackthecasebanner.jpg') . "' alt='Crack The Case' /></a>";
-		$s .= "</div></div>";
-		
-		return $s;
-	}
-
 	/**
 	 * Calls the MobileWikihow class to determine whether or
 	 * not a browser's User-Agent string is that of a mobile browser.
@@ -1941,8 +1751,7 @@ class WikiHowTemplate extends QuickTemplate {
 			
 			$sk = $wgUser->getSkin();
 			if ($sk->mCategories['Recipes'] != null) {
-				$wikihow = new WikiHow();
-				$wikihow->loadFromArticle($wgArticle);
+				$wikihow = WikiHow::newFromCurrent();
 				$index = $wikihow->getSectionNumber('ingredients');
 				if ($index != -1) {
 					self::$showRecipeTags = true;
@@ -1963,6 +1772,19 @@ class WikiHowTemplate extends QuickTemplate {
 		'Make-Gluten-Free-Pancakes',
 		'Make-Gluten-Free-Peanut-Butter-Cookies'
 	);
+	
+	//grabs the html for adding CSS watermarks for certain articles
+	//TODO: switch to exclude list if this list is over 50% of our articles
+	public function getWatermark() {
+		global $wgTitle;
+		$html = '';
+		$list = ConfigStorage::dbGetConfig('wikihow-watermark-article-list');
+		$lines = preg_split('@[\r\n]+@', $list);
+		if (in_array($wgTitle->getArticleID(),$lines)) {
+			$html = '<div class="wikihow_watermark"></div>';;
+		}
+		return $html;
+	}
 	
 	/**
 		
@@ -2290,6 +2112,12 @@ class WikiHowTemplate extends QuickTemplate {
 				}		
 			}
 		}
+		
+		//add watermarks
+		$watermark_div = self::getWatermark();
+		if ($watermark_div) {
+			$body = preg_replace("@(<div class=[\"|']corner bottom_right[\"|']></div>)@im",'$1'.$watermark_div,$body);
+		}
 
 		/// ads below tips, walk the sections and put them after the tips
 		if ($ads) {
@@ -2339,30 +2167,6 @@ class WikiHowTemplate extends QuickTemplate {
 				$body .= "<p class='video_spacing'></p>" . wikihowAds::getAdUnitPlaceholder(2);
 			}
 
-			// ads below whatever is the last section (Warnings, Things You'll Need, or Tips)
-/*
-			$foundlast = false;
-			$sections = array_reverse($wgWikiHowSections);
-			foreach ($sections as $section) {
-				if ($section == "relatedwikihows" || $section ==  "sources")
-					continue; // we skip these two bottom sections
-				$i = strpos($body, '<div id="' . $section . '"');
-				if ($i !== false)
-					$j = strpos($body, '<h2>', $i + strlen($section));
-				else
-					continue; // we didnt' find this section
-				if ($j === false) $j = strlen($body); // go to the end
-				if ($j !== false && $i !== false) {
-					$section  = substr($body, $i, $j - $i);
-					$foundlast = true;
-					$body = str_replace($section, $section . WikiHowTemplate::getAdUnitPlaceholder(3), $body);
-					break;
-				}
-			}
-			if (!$foundlast) {
-				$body .= WikiHowTemplate::getAdUnitPlaceholder(3);
-			}
-	*/
 		}	
 
 		return $body;
@@ -2556,8 +2360,8 @@ class WikiHowTemplate extends QuickTemplate {
 		
 		$isWikiHow = false;
 		if ($wgArticle != null && $wgTitle->getNamespace() == NS_MAIN)  {
-			require_once("$IP/extensions/wikihow/WikiHow.php");
-			$isWikiHow = WikiHow::articleIsWikiHow($wgArticle);
+			$whow = WikiHow::newFromCurrent();
+			$isWikiHow = $whow->isWikihow();
 		}
 
 		$isPrintable = $wgRequest->getVal("printable", "") == "yes";
@@ -2956,7 +2760,9 @@ class WikiHowTemplate extends QuickTemplate {
 			$announcement = "<span id='gatNewMessage'><div class='message_box'>$announcement</div></span>";
 		}
 
-		if ($wgUser->getNewThumbsUp()) {
+		$showThumbsUp = class_exists('ThumbsNotifications');
+
+		if ($showThumbsUp && $wgUser->getNewThumbsUp()) {
 			$thumbsNotifications = ThumbsNotifications::getNotificationsHTML();
 			if (strlen($thumbsNotifications)) {
 				$announcement .= $thumbsNotifications;
@@ -2991,20 +2797,7 @@ class WikiHowTemplate extends QuickTemplate {
 		}
 
 		$show_ad_section = false;
-/*
-		if ($wgLanguageCode == 'en'
-      			&& $wgTitle->getNamespace() == NS_MAIN
-			&& $wgTitle->getText() != wfMsg('mainpage')
-			&& $action == 'view'
-			&& $wgUser->getID() == 0
-		) {
-			$channels = $sk->getCustomGoogleChannels('ad_section', $use_chikita_sky);
-			$ad_section = wfMsg('ads_by_google_section', $channels[0], $channels[1]);
-        		$ad_section = preg_replace('/\<[\/]?pre\>/', '', $ad_section);
-			$show_ad_section = true;
-		} else {
-		}
-*/
+		
 		$cpimageslink = "";
 		global $wgSpecialPages;
 		if ($wgSpecialPages['Copyimages'] == 'Copyimages' && $wgLanguageCode != 'en' && $wgTitle->getNamespace() == NS_MAIN) {
@@ -3016,15 +2809,17 @@ class WikiHowTemplate extends QuickTemplate {
 		//INTL: Search options for the english site are a bit more complex
 		if ($wgLanguageCode == 'en') {
 			if ($wgUser->getID() == 0) {
-            	//$top_search = GoogSearch::getSearchBox("cse-search-box");
-            	//$footer_search = GoogSearch::getSearchBox("cse-search-box-footer");
-            	//$footer_search = $footer_search . "<br />";
+            	$top_search = GoogSearch::getSearchBox("cse-search-box");
+            	$footer_search = GoogSearch::getSearchBox("cse-search-box-footer");
+            	$footer_search = $footer_search . "<br />";
+				/*
 				$top_search  = '
 				<form id="bubble_search" name="search_site" action="/wikiHowTo" method="get">
 				<input type="text" class="search_box" name="search"/>
 				<input type="hidden" name="lo" value="1"/>
 				<input type="submit" value="Search" id="search_site_bubble" class="search_button" onmouseover="button_swap(this);" onmouseout="button_unswap(this);" />
 				</form>';
+				*/
 				$footer_search = str_replace("bubble_search", "footer_search", $top_search);
 				$footer_search = str_replace("search_site_bubble", "search_site_footer", $top_search);
 			} else {
@@ -3428,13 +3223,11 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 <?php print Skin::makeGlobalVariablesScript( $this->data ); ?>
 	<? // add CSS files to extensions/min/groupsConfig.php ?>
 	<style type="text/css" media="all">/*<![CDATA[*/ @import "<?= wfGetPad('/extensions/min/?g=whcss' . ($isLoggedIn ? ',li' : '') . ($showSliderWidget ? ',slc' : '') . ($showSlideShow ? ',ppc' : '') . '&') . WH_SITEREV ?>"; /*]]>*/</style>
-	<? //<style type="text/css" media="all">/*<![CDATA[*/ @import "<?= wfGetPad('/extensions/min/f/skins/WikiHow/new.css,/extensions/wikihow/common/jquery-ui-themes/jquery-ui.css' . ($isLoggedIn ? ',/skins/WikiHow/loggedin.css' : '') . ($showSliderWidget ? ',/extensions/wikihow/slider/slider.css' : '') . ($showSlideShow ? ',/extensions/wikihow/gallery/prettyPhoto-3.12/src/prettyPhoto.css' : '') . '&') . WH_SITEREV ? >"; /*]]>*/</style> ?>
 	<? if ($isPrintable): ?>
 		<style type="text/css" media="all">/*<![CDATA[*/ @import "<?= wfGetPad('/extensions/min/f/skins/WikiHow/printable.css') . '?2' ?>";  /*]]>*/</style>
 	<? endif; ?>
 	<? // add present JS files to extensions/min/groupsConfig.php ?>
-	<script type="text/javascript" src="<?= wfGetPad('/extensions/min/?g=whjs' . ($showRCWidget ? ',rcw' : '') . ($showSpotlightRotate ? ',sp' : '') . ($showFollowWidget ? ',fl' : '') . ($showSliderWidget ? ',slj' : '') . ($showSlideShow ? ',ppj' : '') . (!$isLoggedIn ? ',ads' : '') . '&') . WH_SITEREV ?>"></script>
-	<? // <script type="text/javascript" src="<?= wfGetPad('/extensions/min/f/extensions/wikihow/common/jquery-1.4.1.min.js,/skins/common/highlighter-0.6.js,/skins/common/wikibits.js,/extensions/wikihow/common/jquery-ui-slider-dialog-custom/jquery-ui-1.8.13.custom.min.js,/skins/common/swfobject.js,/extensions/wikihow/common/jquery.scrollTo/jquery.scrollTo.js,/skins/common/fb.js' . ($showRCWidget ? ',/extensions/wikihow/rcwidget.js' : '') . ($showSpotlightRotate ? ',/skins/WikiHow/spotlightrotate.js' : '') . ',/skins/WikiHow/google_cse_search_box.js,/skins/common/mixpanel.js,/skins/WikiHow/gaWHTracker.js' . ($showFollowWidget ? ',/extensions/wikihow/FollowWidget.js' : '') . ($showSliderWidget ? ',/extensions/wikihow/slider/slider.js' : '') . ($showSlideShow ? ',/extensions/wikihow/gallery/prettyPhoto-3.12/src/jquery.prettyPhoto.js' : '') . '&') . WH_SITEREV ? >"></script> ?>
+	<script type="text/javascript" src="<?= wfGetPad('/extensions/min/?g=whjs' . ($showRCWidget ? ',rcw' : '') . ($showSpotlightRotate ? ',sp' : '') . ($showFollowWidget ? ',fl' : '') . ($showSliderWidget ? ',slj' : '') . ($showSlideShow ? ',ppj' : '') . (!$isLoggedIn ? ',ads' : '') . ($showThumbsUp ? ',thm' : '') . '&') . WH_SITEREV ?>"></script>
 	<script>
 		if (WH.ExitTimer) {
 			WH.ExitTimer.start(false);
@@ -3774,8 +3567,8 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 				//comment out next line to turn off HHM ad
 				if(wikihowAds::isMtv() && ($wgLanguageCode =='en'))
 					echo wikihowAds::getMtv();
-				else if( WikiHowTemplate::isHHM() && ($wgLanguageCode =='en'))
-					echo WikiHowTemplate::getHhmAd();
+				else if( wikihowAds::isHHM() && ($wgLanguageCode =='en'))
+					echo wikihowAds::getHhmAd();
 				else
 					echo wikihowAds::getAdUnitPlaceholder(4);
 			}
@@ -3789,15 +3582,16 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 <iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fwww.facebook.com%2Fwikihow&amp;layout=standard&amp;show_faces=false&amp;width=215&amp;action=like&amp;colorscheme=light&amp;height=35" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:215px; height:40px;" allowTransparency="true"></iframe>
 EOHTML;
 			$likeDivBottom = $wgUser->getID() > 0 ? "_bottom" : "";
+			$cdnBase = wfGetPad('');
 			$likeDiv = <<<EOHTML
 				<div id="fb_sidebar_shell$likeDivBottom">
-					<div><img class="module_cap" alt="" src="http://pad1.whstatic.com/skins/WikiHow/images/fblike/LikeOffWhite_Top.png"></div>
+					<div><img class="module_cap" alt="" src="{$cdnBase}/skins/WikiHow/images/fblike/LikeOffWhite_Top.png"></div>
 					<div id="fb_sidebar">
-						<span id ="fb_icon"><img src="http://pad1.whstatic.com/skins/WikiHow/images/fblike/facebook_icon.png"></span>
+						<span id ="fb_icon"><img src="{$cdnBase}/skins/WikiHow/images/fblike/facebook_icon.png"></span>
 						<div id="follow_facebook"><span><a href="http://www.facebook.com/wikiHow">Follow wikiHow</a></span> on facebook</div>
 						<div id="fb_sidebar_content"></div>
 					</div>
-					<div><img class="module_cap" alt="" src="http://pad1.whstatic.com/skins/WikiHow/images/fblike/LikeOffWhite_Bottom.png"></div>
+					<div><img class="module_cap" alt="" src="$cdnBase/skins/WikiHow/images/fblike/LikeOffWhite_Bottom.png"></div>
 				</div>
 EOHTML;
 
@@ -4055,7 +3849,7 @@ $trackUrl .= "," . implode(",", $trackData) . ",";
 
   (function() {
     var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = "http://pad1.whstatic.com/skins/common/ga.js?<?=WH_SITEREV?>";
+    ga.src = "<?= wfGetPad('/skins/common/ga.js') ?>?<?=WH_SITEREV?>";
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 

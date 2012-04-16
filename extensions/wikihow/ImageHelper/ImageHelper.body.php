@@ -74,10 +74,9 @@ class ImageHelper extends UnlistedSpecialPage {
 
 		$r = Revision::newFromTitle($title);
 		$relatedTitles = array();
-		if($r){
+		if ($r) {
 			$text = $r->getText();
-			$whow = new WikiHow();
-			$whow->loadFromText($text);
+			$whow = WikiHow::newFromText($text);
 			$related = preg_replace("@^==.*@m", "", $whow->getSection('related wikihows'));
 
 			if($related != ""){
@@ -247,14 +246,6 @@ class ImageHelper extends UnlistedSpecialPage {
 		
 		$wgOut->addHTML($tmpl->execute('fileInfo.tmpl.php'));
 
-		//for now, don't show these ads
-		/*if($articleCount == 0 && $wgUser->getID() == 0){
-			$sk = $wgUser->getSkin();
-			$channels = $sk->getCustomGoogleChannels('imagead1', false);
-			$embed_ads = wfMsg('imagead1', $channels[0], $channels[1] );
-			$embed_ads = preg_replace('/\<[\/]?pre\>/', '', $embed_ads);
-			$wgOut->addHTML($embed_ads);
-		}*/
 	}
 
 	function getImages($articleId){
@@ -383,7 +374,7 @@ class ImageHelper extends UnlistedSpecialPage {
 		
 		if($wgUser->getID() == 0){
 			$sk = $wgUser->getSkin();
-			$channels = $sk->getCustomGoogleChannels('imagead2', false);
+			$channels = wikihowAds::getCustomGoogleChannels('imagead2', false);
 			$embed_ads = wfMsg('imagead2', $channels[0], $channels[1] );
 			$embed_ads = preg_replace('/\<[\/]?pre\>/', '', $embed_ads);
 			$wgOut->addHTML($embed_ads);

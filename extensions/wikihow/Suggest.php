@@ -74,6 +74,7 @@ function wfSendRequestNotificationEmail($emails) {
 	$mime_boundary_header = chr(34) . $mime_boundary . chr(34);
 	foreach ($emails as $email=>$title) {
 		$html_text = wfMsg('suggested_notify_email_html',
+					wfGetPad(''),
 					$title->getText(),
 					$title->getFullURL(),
 					$title->getDBKey(),

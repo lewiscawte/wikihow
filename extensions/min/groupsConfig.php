@@ -34,6 +34,7 @@ return array(
 	'slj' => array('//extensions/wikihow/slider/slider.js'),
 	'ppj' => array('//extensions/wikihow/gallery/prettyPhoto-3.12/src/jquery.prettyPhoto.js'),
 	'ads' => array('//extensions/wikihow/wikihowAds/wikihowAds.js'),
+	'thm' => array('//extensions/wikihow/thumbsup/thumbsnotifications.js'),
 	'stu' => array(
 		'//extensions/wikihow/common/jquery-1.7.1.min.js',
 		'//skins/common/stu.js'

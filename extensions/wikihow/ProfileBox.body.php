@@ -1,5 +1,4 @@
 <?php
-require_once('WikiHow.php');
 
 class ProfileBox extends UnlistedSpecialPage {
 

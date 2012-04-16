@@ -1,11 +1,17 @@
 <?
 
+/**
+ * A class that represents a wikiHow article. Used to add special processing
+ * on top of the Article class (but without adding any explicit database
+ * access methods).
+ */
 class WikiHow {
 
 	/*private*/
-	 var $mSteps, $mTitle, $mSummary, $mCategories, $mLangLinks;
+	 var $mSteps, $mTitle, $mLoadText;
 	 var $section_array;
 	 var $section_ids;
+	 var $mSummary, $mCategories, $mLangLinks;
 
 	/*private */
 	 var $mTitleObj, $mArticle;
@@ -13,7 +19,7 @@ class WikiHow {
 	/*private*/
 	 var $mIsWikiHow, $mIsNew;
 
-	function WikiHow() {
+	private function __construct() {
 		$this->mSteps = "";
 		$this->mTitle = "";
 		$this->mSummary = "";
@@ -23,45 +29,51 @@ class WikiHow {
 		$this->section_array = array();
 		$this->section_ids = array();
 		$this->mLangLinks = "";
+		$this->mLoadText = "";
 	}
 
-	/**
-	 * Private
-		*/
-	function formatBulletList($text) {
-		$result = "";
-		if ($text == null || $text == "") return $result;
-		$lines = split("\n", $text);
-		if (!is_array($lines)) return $result;
-		foreach($lines as $line) {
-			if (strpos($line, "*") === 0) {
-				$line = substr($line, 1);
-			}
-			$line = trim($line);
-			if ($line != "") {
-				$result .= "*$line\n";
-			}
+	public static function newFromCurrent() {
+		global $wgArticle;
+		static $current = null;
+
+		if (!$current) {
+			$current = self::newFromArticle($wgArticle);
 		}
-		return $result;
+		return $current;
 	}
 
-	function loadFromArticle($article) {
-		$this->mArticle = $article;
-		$this->mTitleObj = $article->getTitle();
+	public static function newFromTitle($title) {
+		$article = new Article($title);
+		return self::newFromArticle($article);
+	}
 
-		// parse the article;
-		$text = $this->mArticle->getContent(true);
-		$this->loadFromText($text);
+	public static function newFromArticle($article) {
+		if (!$article) return null;
+
+		$whow = new WikiHow();
+		$whow->mArticle = $article;
+		$whow->mTitleObj = $article->getTitle();
+
+		// parse the article
+		$text = $whow->mArticle->getContent(true);
+		$whow->loadFromText($text);
 
 		// set the title
-		$this->mTitle = $this->mTitleObj->getText();
+		$whow->mTitle = $whow->mTitleObj->getText();
+
+		return $whow;
 	}
 
-	function loadFromText ($text) {
+	public function newFromText($text) {
+		$whow = new WikiHow();
+		$whow->loadFromText($text);
+		return $whow;
+	}
+
+	private function loadFromText($text) {
 		global $wgContLang;
 		
-		//echo "<BR>$text<BR>";
-
+		$this->mLoadText = $text;
 		// extract the category if there is one
 		// TODO: make this an array
 
@@ -69,13 +81,14 @@ class WikiHow {
 
 		// just extract 1 category for now
 		//while ($index !== false && $index >= 0) { // fix for multiple categories
-		preg_match_all("/\[\[" .  $wgContLang->getNSText ( NS_CATEGORY ) . ":[^\]]*\]\]/im", $text, $matches);
+		preg_match_all("/\[\[" .  $wgContLang->getNSText(NS_CATEGORY) . ":[^\]]*\]\]/im", $text, $matches);
 		foreach($matches[0] as $cat) {
-			$cat = str_replace("[[" . $wgContLang->getNSText ( NS_CATEGORY ) . ":", "", $cat);
+			$cat = str_replace("[[" . $wgContLang->getNSText(NS_CATEGORY) . ":", "", $cat);
 			$cat = trim(str_replace("]]", "", $cat));
 			$this->mCategories[] = $cat;
 			$text = str_replace("[[Category:" . $cat . "]]", "", $text);
 		}
+
 		// extract interlanguage links
 		$matches = array();
 		if ( preg_match_all('/\[\[[a-z][a-z]:.*\]\]/', $text, $matches) ) {
@@ -88,12 +101,12 @@ class WikiHow {
 
 		// get the number of sections
 
-		$sectionCount = WikiHow::getSectionCount($text);
+		$sectionCount = self::getSectionCount($text);
 
 		$found_summary = false;
 		for ($i = 0; $i < $sectionCount; $i++) {
 			$section = Article::getSection($text, $i);
-			$title = WikiHow::getSectionTitle($section);
+			$title = self::getSectionTitle($section);
 			$section = trim(preg_replace("@^==.*==@", "", $section));
 			$title = strtolower($title);
 			$title = trim($title);
@@ -129,13 +142,29 @@ class WikiHow {
 
 	}
 
+	// used by formatWikiText below
+	private static function formatBulletList($text) {
+		$result = "";
+		if ($text == null || $text == "") return $result;
+		$lines = split("\n", $text);
+		if (!is_array($lines)) return $result;
+		foreach($lines as $line) {
+			if (strpos($line, "*") === 0) {
+				$line = substr($line, 1);
+			}
+			$line = trim($line);
+			if ($line != "") {
+				$result .= "*$line\n";
+			}
+		}
+		return $result;
+	}
+
 	/**
-	 *
 	 * Returns the index of the given section
 	 * returns -1 if not known
-	 *
 	 */
-	function getSectionNumber($section){
+	public function getSectionNumber($section) {
 		$section = strtolower($section);
 		if ( !empty($this->section_ids[$section]) )
 			return $this->section_ids[$section];
@@ -143,60 +172,52 @@ class WikiHow {
 			return -1;
 	}
 
-	function load($title) {
-		$this->mTitleObj = Title::newFromText( $title );
-		$article = new Article($this->mTitleObj);
-		$this->loadFromArticle($article);
-	}
-
-	/* SET */
-	function setArticle($article) {
+	private function setArticle($article) {
 		$this->mArticle = $article;
 	}
 
-	function setSteps($steps) {
+	private function setSteps($steps) {
 		$this->mSteps = $steps;
 	}
 
-	function setTitle($title) {
+	private function setTitle($title) {
 		$this->mTitle = $title;
 	}
 
-	function setSummary($summary) {
+	private function setSummary($summary) {
 		$this->mSummary = $summary;
 	}
 
-	function setCategoryString($categories) {
+	private function setCategoryString($categories) {
 		$this->mCategories = split(",", $categories);
 	}
 
-	function getLangLinks () {
+	public function getLangLinks() {
 		return $this->mLangLinks;
 	}
 
-	function setLangLinks ($links) {
+	private function setLangLinks($links) {
 		$this->mLangLinks = $links;
 	}
 
-	/* GET */
-	function getSteps($forEditing = false) {
+	public function getSteps($forEditing = false) {
 		return str_replace("\n\n", "\n", $this->mSteps);
 	}
 
-	function getTitle() {
+	public function getTitle() {
 		return $this->mTitle;
 	}
 
-	function getSummary() {
+	public function getSummary() {
 		return $this->mSummary;
 	}
 
-	/*******************
+	/**
 	 * This function is used in places where the intro is shown to help
 	 * in various backend tools (Intro Image Adder, Video Adder, etc)
 	 * This removes all images for these tools.
 	 */
-	function removeWikitext($text){
+	public static function removeWikitext($text) {
 		global $wgParser, $wgTitle;
 
 		//remove all images
@@ -213,7 +234,8 @@ class WikiHow {
 		return $text;
 	}
 
-	function getCategoryString() {
+	// DEPRECATED -- used only in EditPageWrapper.php
+	public function getCategoryString() {
 		$s = "";
 		foreach ($this->mCategories as $cat) {
 			$s .= $cat . "|";
@@ -221,7 +243,11 @@ class WikiHow {
 		return $s;
 	}
 
-	function formatWikiText() {
+	// USE OF THIS METHOD IS DEPRECATED
+	// it munges the wikitext too much and can't handle alt methods
+	// BuildWikiHow.body.php and EditPageWrapper.php are the only files
+	// that should use it
+	public function formatWikiText() {
 		$text = $this->mSummary . "\n";
 
 		// move all categories to the end of the intro
@@ -232,7 +258,6 @@ class WikiHow {
 				$text .= "\n[[Category:$cat]]";
 			}
 		}
-
 
 		$ingredients = $this->getSection("ingredients");
 		if ($ingredients != null && $ingredients != "") {
@@ -266,7 +291,7 @@ class WikiHow {
 		// do the bullet sections
 		$bullet_lists = array("tips", "warnings", "thingsyoullneed", "related", "sources");
 		foreach ($bullet_lists as $b) {
-			$tmp = $this->formatBulletList($this->getSection($b));
+			$tmp = self::formatBulletList($this->getSection($b));
 			if ($tmp != "") {
 				$text .= "\n== "  . wfMsg($b) .  " ==\n" . $tmp;
 			}
@@ -289,68 +314,69 @@ class WikiHow {
 		return $text;
 	}
 
-	 function getFullURL() {
+	public function getFullURL() {
 	 	return $this->mTitleObj->getFullURL();
-	 }
+	}
 
-	 function getDBKey() {
+	public function getDBKey() {
 	 	return $this->mTitleObj->getDBKey();
-	 }
+	}
 
-	 function isWikiHow() {
+	public function isWikiHow() {
 	 	return $this->mIsWikiHow;
-	 }
+	}
 
-	 /* might want to update this function later to be more comprehensive
-	 	for now, if it has == Steps == in it, it's a WikiHow article */
-	 /* static */
-	 function articleIsWikiHow( $article ) {
+	/*
+	 * We might want to update this function later to be more comprehensive.
+	 * For now, if it has == Steps == in it, it's a WikiHow article.
+	 */
+	public static function articleIsWikiHow($article) {
 		if (!$article instanceof Article) return false;
 		if (!$article->mTitle instanceof Title) return false;
 		if ($article->getTitle()->getNamespace() != NS_MAIN) return false;
 		$text = $article->getContent(true);
-		$index = preg_match('/^==[ ]*' . wfMsg('steps') . '[ ]*==/mi', $text);
-		//$index = strpos($article->getContent(true), "== " . wfMsg('steps') ." ==");
-		if ($index == 0) {
-			return false;
-		}
-	 	return true;
-	 }
+		$count = preg_match('/^==[ ]*' . wfMsg('steps') . '[ ]*==/mi', $text);
+		return $count > 0;
+	}
 
 
-	/***
+	/**
+	 * Returns true if the guided editor can be used on this article.
+	 * Iterates over the article's sections and makes sure it contains
+	 * all the normal sections.
 	 *
-	 * Returns true if the guided editor can be used on this article
-	 * Iterates over the article's sections and
+	 * DEPRECATED -- used only in includes/Wiki.php to determine if we
+	 * can load the article in the guided editor.
 	 */
-	 function useWrapperForEdit ($article) {
+	public static function useWrapperForEdit($article) {
 		global $wgWikiHowSections;
 
 	 	$index = 0;
 	 	$foundSteps = 0;
 	 	$text = $article->getContent(true);
 
-		$mw =& MagicWord::get( 'forceadv' );
+		$mw = MagicWord::get( 'forceadv' );
 		if ($mw->match( $text ) ) {
 			return false;
 		}
-		$count = WikiHow::getSectionCount($text);
+		$count = self::getSectionCount($text);
 
 		// these are the good titles, if we have a section title
 		// with a title in this list, the guided editor can't handle it
-		$good_titles = array();
+		$sections = array();
 		foreach($wgWikiHowSections as $s) {
-			$good_titles[] = wfMsg($s);
+			$sections[] = wfMsg($s);
 		}
 
-	 	while (true && $index < $count) {	
+	 	while ($index < $count) {	
 	 		$section = $article->getSection($text, $index); 
-	 		$title = WikiHow::getSectionTitle($section);
+	 		$title = self::getSectionTitle($section);
 
 	 		if ($title == wfMsg('steps')) {
 	 			$foundSteps = true;
-	 		} else if ($title == "" && $index == 0) { // summary
-	 		} else if (!in_array($title, $good_titles)) {
+	 		} elseif ($title == "" && $index == 0) {
+				// summary
+	 		} elseif (!in_array($title, $sections)) {
 	 			return false;
 	 		}
 	 		if (!$section) {
@@ -364,16 +390,18 @@ class WikiHow {
 	 	} else {
 	 		return false;
 	 	}
-	 }
+	}
 
-	 function getSectionCount($text) {
+	/**
+	 */
+	private static function getSectionCount($text) {
 		// would this be better? :)
 		$matches = array();
 		preg_match_all( '/^(=+).+?=+|^<h([1-6]).*?>.*?<\/h[1-6].*?>(?!\S)/mi',$text, $matches);
-		return sizeof($matches[0])+1;
-	 }
+		return count($matches[0]) + 1;
+	}
 
-	 /***
+	 /**
 	  *   Given a MediaWiki section, such as
 	  *   == Steps ===
 	  *   1. This is the first step.
@@ -381,7 +409,7 @@ class WikiHow {
 	  *
 	  *   This function returns 'Steps'.
 	  */
-	 function getSectionTitle($section) {
+	private static function getSectionTitle($section) {
 	 	$title = "";
 	 	$index = strpos(trim($section), "==");
 	 	if ($index !== false && $index == 0) {
@@ -391,19 +419,18 @@ class WikiHow {
 	 			$title = substr($section, $index, $index2-$index);
 	 			$title = trim($title);
 	 		}
-	 	} else {
 	 	}
 	 	return $title;
-	 }
+	}
 
-	function hasSection($title) {
+	public function hasSection($title) {
 	 	$ret = isset($this->section_array[strtolower(wfMsg($title))]);
 	 	if (!$ret) $ret = isset($this->section_array[$title]);
 	 	return $ret;
-	 }
+	}
 
-	function getSection($title) {
-		 $title = strtolower($title);
+	public function getSection($title) {
+		$title = strtolower($title);
 	 	if ($this->hasSection($title)) {
 	 		$ret = $this->section_array[strtolower(wfMsg($title))];
 			$ret = empty($ret) ?  $this->section_array[$title] : $ret;
@@ -411,13 +438,13 @@ class WikiHow {
 	 	} else {
 	 		return "";
 	 	}
-	 }
+	}
 
-	function setSection($title, $section) {
+	private function setSection($title, $section) {
 		$this->section_array[$title] = $section;
-	 }
+	}
 
-	 function setRelatedString($related) {
+	private function setRelatedString($related) {
 		 $r_array = split("\|", $related);
 		 $result = "";
 		 foreach ($r_array as $r) {
@@ -426,9 +453,10 @@ class WikiHow {
 			 $result .= "*  [[" . $r . "|" . wfMsg('howto', $r) . "]]\n";
 		 }
 		 $this->setSection("related", $result);
-	 }
+	}
 
-	function loadFromRequest ($request) {
+	// DEPRECATED -- used only in EditPageWrapper.php and BuildWikiHow.body.php
+	public static function newFromRequest($request) {
 		$whow = new WikiHow();
 		$steps = $request->getText("steps");
 		$tips  = $request->getText("tips");
@@ -493,7 +521,7 @@ class WikiHow {
 	 * @return     text
 	 *
 	 */
-	function textify($text, $options = array()) {
+	public function textify($text, $options = array()) {
 		// take out category and image links
 		$tags = array();
 		if (!isset($options["category"])) {

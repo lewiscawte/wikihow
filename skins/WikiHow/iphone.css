@@ -6,3 +6,6 @@ INPUT.SearchMe { font-size: 1.3em; }
 
 /*fix some overlapping on the home page*/
 DIV#multilanguages { padding-bottom: 70px; }
+
+/*slider peaking out from the side for iPhone iOS4*/
+#sliderbox { display: none; }

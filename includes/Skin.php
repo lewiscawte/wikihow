@@ -309,13 +309,13 @@ class Skin extends Linker {
 		// XXCHANGED added wgForceAdvancedEditor variable for HTML5 editor
 		$forceAdvanced = false;
 		if ($wgTitle->getNamespace() == NS_MAIN) {
-			$r = Revision::newFromTitle($wgTitle);
-			if ($r) {
-				$text = $r->getText();
-			   	$mw =& MagicWord::get( 'forceadv' );
-				if ($mw->match( $text ) ) 
+			$whow = WikiHow::newFromCurrent();
+			if ($whow) {
+				$text = $whow->mLoadText;
+			   	$mw = MagicWord::get( 'forceadv' );
+				if ( $mw->match($text) ) 
 					$forceAdvanced = true;
-				}
+			}
 		}
 		$vars = array( 
 			'skin' => $data['skinname'],

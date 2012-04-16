@@ -51,7 +51,6 @@ var isiPhone = clientPC.indexOf('iphone');
 // set defaults for these so that JS errors don't occur
 if (typeof stylepath == 'undefined') stylepath = ''; // '/skins';
 if (typeof wgContentLanguage == 'undefined') wgContentLanguage = ''; // 'en';
-if (typeof WH_CDN_BASE == 'undefined') WH_CDN_BASE = 'http://pad1.whstatic.com';
 
 // add any onload functions in this hook (please don't hard-code any events in the xhtml source)
 var doneOnloadHook;
@@ -176,7 +175,7 @@ function redirectToFragment(fragment) {
 function injectSpinner( element, id ) {
 	var spinner = document.createElement( "img" );
 	spinner.id = "mw-spinner-" + id;
-	spinner.src = WH_CDN_BASE + "/skins/common/images/spinner.gif";
+	spinner.src = wgCDNbase + "/skins/common/images/spinner.gif";
 	spinner.alt = spinner.title = "...";
 	if( element.nextSibling ) {
 		element.parentNode.insertBefore( spinner, element.nextSibling );
@@ -468,7 +467,7 @@ function AdminTab(obj,bTab) {
 
 function AdminCheck(obj,bOn) {
 	if (bOn) {
-		obj.style.background = "url(" + WH_CDN_BASE + "/skins/WikiHow/images/admin_check.gif) #F2ECDE no-repeat 65px 9px";
+		obj.style.background = "url(" + wgCDNbase + "/skins/WikiHow/images/admin_check.gif) #F2ECDE no-repeat 65px 9px";
 	}
 	else {
 		obj.style.background = "#F2ECDE";
@@ -731,7 +730,7 @@ function mainPageFAToggle() {
 	if (mainPageFAToggleFlag == false) {
 		jQuery('#hiddenFA').slideDown('slow').show(function(){
 			firstChild.html(wfMsg('mainpage_fewer_featured_articles'));
-			jQuery('#moreOrLess').attr('src', WH_CDN_BASE + '/skins/WikiHow/images/arrowLess.png');
+			jQuery('#moreOrLess').attr('src', wgCDNbase + '/skins/WikiHow/images/arrowLess.png');
 			jQuery("#featuredNav").hide(); //need to do this for IE7
 			jQuery("#featuredNav").show();
 		});
@@ -740,7 +739,7 @@ function mainPageFAToggle() {
 	} else {
 		jQuery('#hiddenFA').slideUp('slow').hide(function(){
 			firstChild.html(wfMsg('mainpage_more_featured_articles'));
-			jQuery('#moreOrLess').attr('src', WH_CDN_BASE + '/skins/WikiHow/images/arrowMore.png');
+			jQuery('#moreOrLess').attr('src', wgCDNbase + '/skins/WikiHow/images/arrowMore.png');
 			jQuery("#featuredNav").hide(); //need to do this for IE7
 			jQuery("#featuredNav").show();
 		});
@@ -808,7 +807,7 @@ function wfGetPad(url) {
 	if (url.search(/^http:\/\//) >= 0) {
 		return url;
 	} else {
-		return 'http:\/\/pad1.whstatic.com' + url;
+		return wgCDNbase + url;
 	}
 }
 

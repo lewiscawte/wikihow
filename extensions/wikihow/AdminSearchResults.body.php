@@ -2,9 +2,6 @@
 
 if (!defined('MEDIAWIKI')) die();
 
-global $IP;
-require_once("$IP/maintenance/WikiPhoto.class.php");
-
 class AdminSearchResults extends UnlistedSpecialPage {
 
 	public function __construct() {

@@ -5,7 +5,6 @@
 # but it should get easier to call those from alternate
 # interfaces.
 global $IP;
-require_once("$IP/extensions/wikihow/WikiHow.php");
 require_once("$IP/extensions/wikihow/Request.php");
 require_once("$IP/includes/EditPage.php");
 
@@ -53,8 +52,7 @@ class EditPageWrapper extends EditPage {
 	}
 
 	# Old version
-	function edit()
-	{
+	function edit() {
 		global $wgRequest;
 		$this->importFormData($wgRequest);
 		EditPage::edit();
@@ -68,13 +66,11 @@ class EditPageWrapper extends EditPage {
 
 		// create the wikiHow wrapper object
 		if( $request->wasPosted() ) {
-			$whow = WikiHow::loadFromRequest($request);
+			$whow = WikiHow::newFromRequest($request);
 			$whow->mIsNew = false;
 			$this->whow = $whow;
 			$this->textbox1 = $this->whow->formatWikiText();
 		}
-
-
 	}
 
 	# Since there is only one text field on the edit form,
@@ -82,9 +78,7 @@ class EditPageWrapper extends EditPage {
 	# the submit button value won't appear in the query, so we
 	# Fake it here before going back to edit().  This is kind of
 	# ugly, but it helps some old URLs to still work.
-
-	function submit2()
-	{
+	function submit2() {
 		if( !$this->preview ) $this->save = true;
 		$this->easy();
 	}
@@ -130,21 +124,6 @@ class EditPageWrapper extends EditPage {
 			$this->mArticle = new Article($titleObj);
 		}
 
-/***this might not be needed anymore
-
-		if ( "initial" == $formtype && $this->mArticle != null ) {
-			// load last edit WikiHow::loadFromArticle actually sets the wrong time stamp
-			// hack work around for now. holy shit.
-			$this->mArticle->mUser = -1;
-			$this->mArticle->loadLastEdit();
-
-			$this->edittime = $this->mArticle->getTimestamp();
-			$this->textbox1 = $this->mArticle->getContent( true, true );
-			$this->summary = "";
-			$this->proxyCheck();
-		}
-		**/
-
 		$conflictWikiHow = null;
 		$conflictTitle = false;
 		if ( $this->isConflict ) {
@@ -164,8 +143,7 @@ class EditPageWrapper extends EditPage {
 			}
 
 			$this->textbox2 = $this->textbox1;
-			$conflictWikiHow = new WikiHow();
-			$conflictWikiHow->loadFromText($this->textbox1);
+			$conflictWikiHow = WikiHow::newFromText($this->textbox1);
 			$this->textbox1 = $this->mArticle->getContent( true, true );
 			$this->edittime = $this->mArticle->getTimestamp();
 		} else {
@@ -200,7 +178,7 @@ class EditPageWrapper extends EditPage {
 			$wgOut->addHTML( "<strong>" .
 			wfMsg( "readonlywarning" ) .
 			"</strong>" );
-		} else if ( $isCssJsSubpage and "preview" != $formtype) {
+		} elseif ( $isCssJsSubpage and "preview" != $formtype) {
 			$wgOut->addHTML( wfMsg( "usercssjsyoucanpreview" ));
 		}
 
@@ -299,19 +277,15 @@ class EditPageWrapper extends EditPage {
 		}
 
 		// create the wikiHow
-		//echo "textbox 1 " . $this->textbox1;
-		$whow = new WikiHow();
 		if ($conflictWikiHow == null) {
 			if ($this->textbox1 != "") {
-				$whow->loadFromText($this->textbox1);
+				$whow = WikiHow::newFromText($this->textbox1);
 			} else {
-				$whow->loadFromArticle($this->mArticle);
+				$whow = WikiHow::newFromArticle($this->mArticle);
 			}
 		} else {
 			$whow = $conflictWikiHow;
 		}
-
-	//print __FILE__ . " " . __LINE__;
 
 //********** SETTING UP THE FORM
 //
@@ -447,8 +421,8 @@ class EditPageWrapper extends EditPage {
 				$oldparameters = "&oldid=" . $wgRequest->getVal("oldid");
 			}
 			if (!$this->preview)
-			 $advanced = "<a class='button white_button_150' style='float:left;' onmouseover='button_swap(this);' onmouseout='button_unswap(this);'  href='{$wgScript}?title=" . $wgTitle->getPrefixedURL() . "&action=edit&advanced=true$oldparameters'>".wfMsg('advanced-editing')."</a>";
-		} else if ($newArticle && $wgRequest->getVal('title', null) != null) {
+				$advanced = "<a class='button white_button_150' style='float:left;' onmouseover='button_swap(this);' onmouseout='button_unswap(this);'  href='{$wgScript}?title=" . $wgTitle->getPrefixedURL() . "&action=edit&advanced=true$oldparameters'>".wfMsg('advanced-editing')."</a>";
+		} elseif ($newArticle && $wgRequest->getVal('title', null) != null) {
 			$t = Title::newFromText("CreatePage", NS_SPECIAL);
 			 //$advanced = str_replace("href=", "class='guided-button' href=", $sk->makeLinkObj($t, wfMsg('advanced-editing'))) . " |";
 			//$advanced = "<a href='{$wgScript}?title=" . $wgTitle->getPrefixedURL() . "&action=edit&advanced=true$oldparameters';\">".wfMsg('advanced-editing')."</a>";

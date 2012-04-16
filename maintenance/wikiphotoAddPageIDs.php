@@ -4,9 +4,7 @@
  * project.
  */
 
-global $IP;
 require_once('commandLine.inc');
-require_once("$IP/maintenance/WikiPhoto.class.php");
 
 if (count($argv) < 2) {
 	print "usage: php wikiphotoAddPageIDs.php infile.csv outfile.csv\n";

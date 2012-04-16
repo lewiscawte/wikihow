@@ -2,8 +2,6 @@
 
 if (!defined('MEDIAWIKI')) die();
 
-require_once('WikiHow.php');
-
 class Easyimageupload extends UnlistedSpecialPage {
 
 	public function __construct() {
@@ -731,10 +729,9 @@ class Easyimageupload extends UnlistedSpecialPage {
 			$searchterms = $wgRequest->getVal('searchterms');
 
 			$t = Title::newFromText($articleTitle);
-			$who = new WikiHow();
-			$who->loadFromArticle(new Article($t));
-			$intro = $who->getSection("summary");
-			$intro = $who->removeWikitext($intro);
+			$whow = WikiHow::newFromTitle($t);
+			$intro = $whow->getSection("summary");
+			$intro = WikiHow::removeWikitext($intro);
 
 			$articleTitleLink = $t->getLocalURL();
 			$vars = array('title' => $articleTitle, 'titlelink' => $articleTitleLink, 'searchterms' => $searchterms, 'intro' => $intro);

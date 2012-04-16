@@ -63,6 +63,8 @@ function &wfGetCache( $inputType ) {
 			$cache =& $wgCaches[CACHE_DB];
 			$cache->set_servers( $wgMemCachedServers );
 			$cache->set_debug( $wgMemCachedDebug );
+
+			wfRunHooks('PostMemcacheInit', array(&$cache));
 		}
 	} elseif ( $type == CACHE_ACCEL ) {
 		if ( !array_key_exists( CACHE_ACCEL, $wgCaches ) ) {

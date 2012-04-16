@@ -20,7 +20,7 @@ jQuery.extend(WH.h5e, (function ($) {
 		 * The base of address of our CDN.  This is non-random right
 		 * now because it's not used much.
 		 */
-		this.CDN_BASE = 'http://pad1.whstatic.com';
+		this.CDN_BASE = wgCDNbase;
 
 		/**
 		 * Defines the height of our toolbar because we need to know

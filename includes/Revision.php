@@ -734,7 +734,9 @@ class Revision {
 		
 		// Caching may be beneficial for massive use of external storage
 		global $wgRevisionCacheExpiry, $wgMemc;
-		$key = wfMemcKey( 'revisiontext', 'textid', $this->getTextId() );
+		// XXCHANGED -- added page ID to cachekey so that extra page-oriented
+		// optimizations (see memcache-client.php) can happen.
+		$key = wfMemcKey( 'revisiontext', $this->getPage(), 'textid', $this->getTextId() );
 		if( $wgRevisionCacheExpiry ) {
 			$text = $wgMemc->get( $key );
 			if( is_string( $text ) ) {

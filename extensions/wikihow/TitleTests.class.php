@@ -59,7 +59,8 @@ class TitleTests {
 			$row = (array)$dbr->selectRow(
 				'title_tests',
 				array('tt_test', 'tt_custom'),
-				array('tt_pageid' => $pageid));
+				array('tt_pageid' => $pageid),
+				__METHOD__);
 			$wgMemc->set($cachekey, $row);
 		}
 

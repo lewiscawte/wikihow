@@ -6,9 +6,7 @@
  * Usage: php getAllArticlesNoStepPhotos.php Category-Name
  */
 
-global $IP;
 require_once('commandLine.inc');
-require_once("$IP/maintenance/WikiPhoto.class.php");
 
 $file = 'all-articles-with-video.csv';
 

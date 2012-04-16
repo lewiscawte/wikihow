@@ -12,9 +12,6 @@
  *
  */
  
-require_once("$IP/extensions/wikihow/PatrolHelper.php");
-require_once("$IP/extensions/wikihow/WikiHow.php");
- 
 class Article {
 	/**@{{
 	 * @private
@@ -2255,9 +2252,8 @@ class Article {
 		//Try to choose the right dropdown if
 		//possible
 		$defaltReason = "";
-		$wikiArticle = New WikiHow();
-		$wikiArticle->loadFromArticle($this);
-		$intro = $wikiArticle->getSummary();
+		$whArticle = WikiHow::newFromArticle($this);
+		$intro = $whArticle->getSummary();
 		$matches = array();
 		preg_match('/{{nfd.*}}/i', $intro, $matches);
 		

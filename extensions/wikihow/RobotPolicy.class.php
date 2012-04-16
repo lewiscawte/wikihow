@@ -11,7 +11,10 @@ class RobotPolicy {
 		global $wgOut;
 		if (self::hasUserPageRestrictions()
 			|| self::hasBadTemplate() 
-			|| self::isShortUnNABbedArticle())
+			|| self::isShortUnNABbedArticle()
+			|| self::isAccuracyPatrolArticle()
+			|| self::isInaccurate()
+			|| self::isInDeindexList())
 		{
 			$wgOut->setRobotPolicy(self::POLICY_NOINDEX_FOLLOW);
 		} elseif (self::isProdButNotWWWHost()
@@ -114,7 +117,7 @@ class RobotPolicy {
 				$result = $wgMemc->get($cachekey);
 				if ($result === null) {
 					$dbr = self::getDB();
-					$sql = "SELECT COUNT(*) AS count FROM templatelinks WHERE tl_from = '" . $articleID . "' AND tl_title IN ('Speedy', 'Stub', 'Copyvio','Copyviobot','Copyedit','Cleanup','Accuracy-bot')";
+					$sql = "SELECT COUNT(*) AS count FROM templatelinks WHERE tl_from = '" . $articleID . "' AND tl_title IN ('Speedy', 'Stub', 'Copyvio','Copyviobot','Copyedit','Cleanup')";
 					$res = $dbr->query($sql, __METHOD__);
 					if ($res && ($row = $res->fetchObject())) {
 						$result = intval($row->count > 0);
@@ -163,5 +166,107 @@ class RobotPolicy {
 			}
 		}
 		return $ret;
+	}
+	
+	/**
+	 *
+	 * Checks to see if article exists in Special:AccuracyPatrol.
+	 * If so, it should be de-indexed.
+	 * 
+	 */
+	private static function isAccuracyPatrolArticle() {
+		global $wgTitle, $wgMemc;
+		
+		$result = false;
+		
+		if ($wgTitle) {
+			$articleID = $wgTitle->getArticleID();
+			if ($articleID) {
+				
+				$cachekey = wfMemcKey('accpatrol', $articleID);
+				$result = $wgMemc->get($cachekey);
+				if ($result === null) {
+					$result = AccuracyPatrol::isInaccurate($articleID, self::getDB());
+					$wgMemc->set($cachekey, $result);
+				}
+			}
+		}
+		
+		return $result;
+	}
+	
+	/**
+	 *
+	 * Checks to see if an article has the accuracy template
+	 * on it AND has less than 10,000 page views. If so,
+	 * it is de-indexed.
+	 * 
+	 */
+	private static function isInaccurate() {
+		global $wgTitle, $wgMemc;
+		
+		$result = false;
+		
+		if ($wgTitle) {
+			$articleID = $wgTitle->getArticleID();
+			if ($articleID) {
+				
+				$cachekey = wfMemcKey('inaccurate', $articleID);
+				$result = $wgMemc->get($cachekey);
+				if ($result === null) {
+					$dbr = self::getDB();
+					$page_counter = $dbr->selectField(array('templatelinks', 'page'), 'page_counter', array('page_id'=>$articleID, 'tl_title' => 'Accuracy', 'page_id=tl_from'), __METHOD__);
+					$result = ($page_counter !== false && $page_counter < 10000);
+					
+					$wgMemc->set($cachekey, $result);
+				}
+			}
+		}
+		
+		return $result;
+	}
+	
+	private static function isInDeindexList() {
+		global $wgTitle, $wgMemc;
+		
+		$exceptionList = array("Check-an-Alternator",
+							"Check-a-Start-Capacitor",
+							"Cast-a-Love-Spell",
+							"Use-Sound-for-Therapy",
+							"Dress-Like-a-California-Girl",
+							"Create-a-Non-Member-Strength-Pure-on-RuneScape",
+							"Overcome-Anxiety-Naturally-With-Foods",
+							"Make-a-'Virtual-PC'-on-Your-USB-Device",
+							"Fix-Stuck-Bicycle-Brakes",
+							"Make-a-Cigarette-Alternative-from-Less-Harmful-Substances",
+							"Apply-Different-Types-of-Bandages",
+							"Make-a-Vaporizer-from-Household-Supplies",
+							"Get-Rid-of--Foot-Fungus",
+							"Whiten-Your-Teeth-Without-Spending-a-Lot-of-Money",
+							"Treat-Dry,-Rough-&-Wavy-Hair",
+							"Punch-With-Speed",
+							"Train-Your-Hamster-to-Come-when-You-Call",
+							"Check-a-Car-Battery",
+							"Cure-an-Ailment-with-Homemade-Master-Tonic",
+							"Use-a-Toyota-Prius-As-a-Backup-Generator");
+		
+		$result = false;
+		
+		if ($wgTitle) {
+			$articleID = $wgTitle->getArticleID();
+			if ($articleID) {
+				
+				$cachekey = wfMemcKey('deindex-exception', $articleID);
+				$result = $wgMemc->get($cachekey);
+				if ($result === null) {
+					$key = $wgTitle->getDBkey();
+					$result = in_array($key, $exceptionList);
+					
+					$wgMemc->set($cachekey, $result);
+				}
+			}
+		}
+		
+		return $result;
 	}
 }

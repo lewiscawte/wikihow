@@ -37,7 +37,7 @@ if( $backgroundMode ) {
 	
 	$dbr = wfGetDB( DB_SLAVE );
 	$chunkSize = 100;
-	$lastUser = $dbr->selectField( 'user', 'MAX(user_id)', '', __FUNCTION__ );
+	$lastUser = $dbr->selectField( 'user', 'MAX(user_id)', '', __METHOD__ );
 	
 	$start = microtime( true );
 	$migrated = 0;
@@ -53,13 +53,13 @@ if( $backgroundMode ) {
 			WHERE user_id > $min AND user_id <= $max
 				AND page_namespace NOT IN (2, 3, 18)
 			GROUP BY user_id",
-			__FUNCTION__ );
+			__METHOD__ );
 		
 		while( $row = $dbr->fetchObject( $result ) ) {
 			$dbw->update( 'user',
 				array( 'user_editcount' => $row->user_editcount ),
 				array( 'user_id' => $row->user_id ),
-				__FUNCTION__ );
+				__METHOD__ );
 			++$migrated;
 		}
 		$dbr->freeResult( $result );

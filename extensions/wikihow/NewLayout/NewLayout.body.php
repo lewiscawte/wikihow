@@ -264,7 +264,7 @@ class NewLayout extends UnlistedSpecialPage {
 				$body .= '<div id="article_intro">'.$intro_text.'</div>';
 				
 				if ($ads) {
-					$body .= '<div class="ad_noimage intro_ad">' . WikiHowTemplate::getAdUnitPlaceholder('intro') . '</div>';
+					$body .= '<div class="ad_noimage intro_ad">' . wikihowAds::getAdUnitPlaceholder('intro') . '</div>';
 				}
 				
 				
@@ -400,7 +400,7 @@ class NewLayout extends UnlistedSpecialPage {
 								
 								if ($closecount == 0) $p .= "</b>"; // close the bold tag if we didn't already
 								if ($level == 1 && $current_li == 2 && $ads && !$donefirst) {
-									$p .= '<br class="clearall" />'.WikiHowTemplate::getAdUnitPlaceholder(0);
+									$p .= '<br class="clearall" />'.wikihowAds::getAdUnitPlaceholder(0);
 									$donefirst = true;
 								}								
 
@@ -445,11 +445,11 @@ class NewLayout extends UnlistedSpecialPage {
 					// ads after the last step
 					if ($ads){
 						if(substr($body, $j) == ""){
-							$p = "<script>missing_last_ads = true;</script>" . WikiHowTemplate::getAdUnitPlaceholder(1) . $p;
+							$p = "<script>missing_last_ads = true;</script>" . wikihowAds::getAdUnitPlaceholder(1) . $p;
 							$no_third_ad = true;
 						}
 						else {
-							$p = '<br />'.WikiHowTemplate::getAdUnitPlaceholder(2) . $p;
+							$p = '<br />'.wikihowAds::getAdUnitPlaceholder(2) . $p;
 						}
 					}
 					$donelast = true;
@@ -492,21 +492,21 @@ class NewLayout extends UnlistedSpecialPage {
 						//no anchor tag
 						if($isAtEnd)
 							$anchorTag = "<p></p>";
-						$body = str_replace($section, $section . $anchorTag . WikiHowTemplate::getAdUnitPlaceholder('2a') .'<p><br /></p>' , $body);
+						$body = str_replace($section, $section . $anchorTag . wikihowAds::getAdUnitPlaceholder('2a') .'<p><br /></p>' , $body);
 						$foundtips = true;
 						break;
 					} else {
 						$foundtips = true;
 						if($isAtEnd)
 							$anchorTag = "<p></p>";
-						$body = str_replace($section, $section . $anchorTag . WikiHowTemplate::getAdUnitPlaceholder(2) , $body);
+						$body = str_replace($section, $section . $anchorTag . wikihowAds::getAdUnitPlaceholder(2) , $body);
 						break;
 					}
 				}
 			}
 			if (!$foundtips && !$no_third_ad) { //must be the video section
 				//need to put in the empty <p> tag since all the other sections have them for the anchor tags.
-				$body .= "<p class='video_spacing'></p>" . WikiHowTemplate::getAdUnitPlaceholder(2);
+				$body .= "<p class='video_spacing'></p>" . wikihowAds::getAdUnitPlaceholder(2);
 			}
 		}
 
@@ -525,7 +525,7 @@ class NewLayout extends UnlistedSpecialPage {
 		}
 
 		if( $wgUser->getID() == 0 && !$isMainPage && $action != 'edit' && $wgTitle->getNamespace() == NS_MAIN) {
-			$article_bottom .= '<div class="final_ad">'. WikiHowTemplate::getAdUnitPlaceholder(7). '</div>';
+			$article_bottom .= '<div class="final_ad">'. wikihowAds::getAdUnitPlaceholder(7). '</div>';
 		}
 		$article_bottom .= '
 						<div id="final_question">
@@ -623,7 +623,7 @@ class NewLayout extends UnlistedSpecialPage {
 				$body .= '<div id="article_intro">'.$intro_text.'</div>';
 				
 				if ($ads) {
-					$body .= '<div class="ad_noimage intro_ad">' . WikiHowTemplate::getAdUnitPlaceholder('intro') . '</div>';
+					$body .= '<div class="ad_noimage intro_ad">' . wikihowAds::getAdUnitPlaceholder('intro') . '</div>';
 				}
 			}			
 			else if (stripos($parts[$i], "<h2") === 0 && $i < sizeof($parts) - 1) {
@@ -754,7 +754,7 @@ class NewLayout extends UnlistedSpecialPage {
 								
 								if ($closecount == 0) $p .= "</b>"; // close the bold tag if we didn't already
 								if ($level == 1 && $current_li == 2 && $ads && !$donefirst) {
-									$p .= '<br class="clearall" />'.WikiHowTemplate::getAdUnitPlaceholder(0);
+									$p .= '<br class="clearall" />'.wikihowAds::getAdUnitPlaceholder(0);
 									$donefirst = true;
 								}
 
@@ -799,11 +799,11 @@ class NewLayout extends UnlistedSpecialPage {
 					// ads after the last step
 					if ($ads){
 						if(substr($body, $j) == ""){
-							$p = "<script>missing_last_ads = true;</script>" . WikiHowTemplate::getAdUnitPlaceholder(1) . $p;
+							$p = "<script>missing_last_ads = true;</script>" . wikihowAds::getAdUnitPlaceholder(1) . $p;
 							$no_third_ad = true;
 						}
 						else {
-							$p = '<br />'.WikiHowTemplate::getAdUnitPlaceholder(2) . $p;
+							$p = '<br />'.wikihowAds::getAdUnitPlaceholder(2) . $p;
 						}
 					}
 					$donelast = true;
@@ -846,21 +846,21 @@ class NewLayout extends UnlistedSpecialPage {
 						//no anchor tag
 						if($isAtEnd)
 							$anchorTag = "<p></p>";
-						$body = str_replace($section, $section . $anchorTag . WikiHowTemplate::getAdUnitPlaceholder('2a') .'<p><br /></p>' , $body);
+						$body = str_replace($section, $section . $anchorTag . wikihowAds::getAdUnitPlaceholder('2a') .'<p><br /></p>' , $body);
 						$foundtips = true;
 						break;
 					} else {
 						$foundtips = true;
 						if($isAtEnd)
 							$anchorTag = "<p></p>";
-						$body = str_replace($section, $section . $anchorTag . WikiHowTemplate::getAdUnitPlaceholder(2) , $body);
+						$body = str_replace($section, $section . $anchorTag . wikihowAds::getAdUnitPlaceholder(2) , $body);
 						break;
 					}
 				}
 			}
 			if (!$foundtips && !$no_third_ad) { //must be the video section
 				//need to put in the empty <p> tag since all the other sections have them for the anchor tags.
-				$body .= "<p class='video_spacing'></p>" . WikiHowTemplate::getAdUnitPlaceholder(2);
+				$body .= "<p class='video_spacing'></p>" . wikihowAds::getAdUnitPlaceholder(2);
 			}
 		}
 
@@ -879,7 +879,7 @@ class NewLayout extends UnlistedSpecialPage {
 		}
 
 		if( $wgUser->getID() == 0 && !$isMainPage && $action != 'edit' && $wgTitle->getNamespace() == NS_MAIN) {
-			$article_bottom .= '<div class="final_ad">'. WikiHowTemplate::getAdUnitPlaceholder(7). '</div>';
+			$article_bottom .= '<div class="final_ad">'. wikihowAds::getAdUnitPlaceholder(7). '</div>';
 		}
 		$article_bottom .= '
 						<div id="final_question">
@@ -985,13 +985,13 @@ class NewLayout extends UnlistedSpecialPage {
 
   (function() {
     var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = \"http://pad1.whstatic.com/skins/common/ga.js?<?=WH_SITEREV?>\";
+    ga.src = \"" . wfGetPad('/extensions/min/f/skins/common/ga.js') . '?rev=' . WH_SITEREV . "\";
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 
 </script>
 <!-- Google Analytics Event Track -->
-<? //merged with other JS above: <script type=\"text/javascript\" src=\"".wfGetPad('/skins/WikiHow/gaWHTracker.js')."\"></script>?>
+<? //merged with other JS above: <script type=\"text/javascript\" src=\"".wfGetPad('/extensions/min/f/skins/WikiHow/gaWHTracker.js')."\"></script>?>
 <script type=\"text/javascript\">
 if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 	jQuery(window).load(gatStartObservers);

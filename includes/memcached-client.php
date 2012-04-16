@@ -231,6 +231,14 @@ class memcached
     */
    var $_connect_attempts;
 
+   /**
+    * Local memory cache to avoid getting the same key multiple times
+    * in the same session.  Only caches the first 1000
+    */
+   var $_localCache = array();
+
+   const MAX_LOCAL_CACHE = 1000;
+
    // }}}
    // }}}
    // {{{ methods
@@ -317,6 +325,8 @@ class memcached
    {
       if (!$this->_active)
          return false;
+
+      unset($this->_localCache[$key]);
 
       $sock = $this->get_sock($key);
       if (!is_resource($sock))
@@ -406,14 +416,19 @@ class memcached
          return false;
       }
 
+      @$this->stats['get']++;
+
+      if (isset($this->_localCache[$key])) {
+         return $this->_localCache[$key];
+      }
+
+      wfRunHooks('PreMemcacheGet', array(&$this, $key));
       $sock = $this->get_sock($key);
 
       if (!is_resource($sock)) {
          wfProfileOut( $fname );
          return false;
       }
-
-      @$this->stats['get']++;
 
       $cmd = "get $key\r\n";
       if (!$this->_safe_fwrite($sock, $cmd, strlen($cmd)))
@@ -430,8 +445,14 @@ class memcached
          foreach ($val as $k => $v)
             $this->_debugprint(@sprintf("MemCache: sock %s got %s => %s\r\n", serialize($sock), $k, $v));
 
+      $ret = @$val[$key];
+      if ($ret && count($this->_localCache) < self::MAX_LOCAL_CACHE) {
+         $this->_localCache[$key] = $ret;
+      }
+
       wfProfileOut( $fname );
-      return @$val[$key];
+
+      return $ret;
    }
 
    // }}}
@@ -453,8 +474,18 @@ class memcached
       $this->stats['get_multi']++;
       $sock_keys = array();
       
+      // Initialize the returned results
+      $val = array();
+
       foreach ($keys as $key)
       {
+         // Check local cache first
+         if (isset($this->_localCache[$key]))
+         {
+            $val[$key] = $this->_localCache[$key];
+            continue;
+         }
+
          $sock = $this->get_sock($key);
          if (!is_resource($sock)) continue;
          $key = is_array($key) ? $key[1] : $key;
@@ -486,10 +517,18 @@ class memcached
       }
 
       // Parse responses
-      $val = array();
       foreach ($gather as $sock)
       {
          $this->_load_items($sock, $val);
+      }
+
+      // Store results in localcache
+      foreach ($val as $k => $v)
+      {
+         if ($v && count($this->_localCache) < self::MAX_LOCAL_CACHE)
+         {
+            $this->_localCache[$k] = $v;
+         }
       }
 
       if ($this->_debug)
@@ -945,6 +984,8 @@ class memcached
       if (!$this->_active)
          return false;
 
+      unset($this->_localCache[$key]);
+
       $sock = $this->get_sock($key);
       if (!is_resource($sock))
          return false;
@@ -1028,7 +1069,7 @@ class memcached
       return $this->_cache_sock[$host];
    }
 
-   function _debugprint($str){
+   function _debugprint($str) {
       print($str);
    }
 

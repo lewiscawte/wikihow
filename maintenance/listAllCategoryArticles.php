@@ -6,9 +6,7 @@
  * Usage: php listAllCategoryArticles.php Category-Name
  */
 
-global $IP;
 require_once('commandLine.inc');
-require_once("$IP/maintenance/WikiPhoto.class.php");
 
 if (count($argv) < 1) {
 	print "usage: php listAllCategoryArticles.php <category-name-encoded>\n";

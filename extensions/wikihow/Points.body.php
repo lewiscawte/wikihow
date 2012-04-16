@@ -86,8 +86,6 @@ class Points extends UnlistedSpecialPage {
 	}
 
 	function getPoints($r, $d, $de, $showdetails = false) {
-		require_once("extensions/wikihow/WikiHow.php");
-
 		global $wgOut;
 		$points = 0; 
 

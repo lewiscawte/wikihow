@@ -17,8 +17,7 @@ class NVGadget extends UnlistedSpecialPage {
 		$r = Revision::newFromTitle($title);
 		if ($r) {
 			$text = $r->getText();
-			$whow = new WikiHow();
-			$whow->loadFromText($text);
+			$whow = WikiHow::newFromText($text);
 			$related = $whow->getSection('related wikihows');
 			$preg = "/\\|[^\\]]*/";
 			$related = preg_replace($preg, "", $related);

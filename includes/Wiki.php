@@ -327,6 +327,7 @@ class MediaWiki {
 		# Now commit any transactions, so that unreported errors after output() don't roll back the whole thing
 		$loadBalancer->commitMasterChanges();
 		$output->output();
+		wfRunHooks('PostOutput', array());
 		wfProfileOut( 'MediaWiki::finalCleanup' );
 	}
 
@@ -485,15 +486,8 @@ class MediaWiki {
 								$newArticle = true;
 							}
 							if (!$newArticle) {
-								global $IP;
-								require_once("$IP/extensions/wikihow/WikiHow.php");
-								$wHow = new WikiHow();
-								$wHow->loadFromArticle($article);
-								$validWikiHow = $wHow->useWrapperForEdit($article);
-								#if (!$validWikiHow) echo "invalid wikihow\n";
+								$validWikiHow = WikiHow::useWrapperForEdit($article);
 							}
-						} else {
-							#echo "uh oh!";
 						}
  
 						// use the wrapper if it's a new article or

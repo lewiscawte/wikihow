@@ -1,7 +1,5 @@
 <?php
 
-require_once('WikiHow.php');
-
 class GoogGadget extends UnlistedSpecialPage {
 
 	function __construct() {
@@ -16,25 +14,19 @@ class GoogGadget extends UnlistedSpecialPage {
 
 	private function getRelatedWikihowsFromSource($title, $num) {
 		global $wgParser;
-		$r = Revision::newFromTitle($title);
-		if ($r) {
-			$text = $r->getText();
-			$whow = new WikiHow();
-			$whow->loadFromText($text);
-			$related = $whow->getSection('related wikihows');
-			$preg = "/\\|[^\\]]*/";
-			$related = preg_replace($preg, "", $related);
-			//splice and dice
-			$rarray = split("\n", $related);
-			$related = implode("\n", array_splice($rarray, 0, $num));
-			$options = new ParserOptions();
-			$output = $wgParser->parse($related, $title, $options);
-			$ra = $this->addTargetBlank($output->getText());
-			return $ra;
+		$whow = WikiHow::newFromTitle($title);
+		if (!$whow) return '';
 
-		} else {
-			return "";
-		}
+		$related = $whow->getSection('related wikihows');
+		$preg = "/\\|[^\\]]*/";
+		$related = preg_replace($preg, "", $related);
+		//splice and dice
+		$rarray = split("\n", $related);
+		$related = implode("\n", array_splice($rarray, 0, $num));
+		$options = new ParserOptions();
+		$output = $wgParser->parse($related, $title, $options);
+		$ra = $this->addTargetBlank($output->getText());
+		return $ra;
 	}
 
 	function getLastPatrolledRevision($title) {

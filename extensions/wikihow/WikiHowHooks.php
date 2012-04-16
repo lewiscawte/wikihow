@@ -12,7 +12,7 @@ function getSearchKeyStopWords() {
 	$sql = "SELECT stop_words FROM stop_words limit 1";
 	$stop_words = null;
 	$db = wfGetDB(DB_SLAVE);
-	$res = $db->query($sql, __FUNCTION__);
+	$res = $db->query($sql, __METHOD__);
 	if ( $db->numRows($res) ) {
 		while ( $row = $db->fetchObject($res) ) {
 			$stop_words = split(", ", $row->stop_words);
@@ -50,7 +50,7 @@ function generateSearchKey($text) {
 }
 
 function updateSearchIndex($new, $old) {
-	$dbw =& wfGetDB(DB_MASTER);
+	$dbw = wfGetDB(DB_MASTER);
 	if ($new != null
 		&& ($new->getNamespace() == 0
 			|| $new->getNamespace() == 16) )
@@ -58,19 +58,19 @@ function updateSearchIndex($new, $old) {
 		$dbw->delete( 'skey',
 			array('skey_title' => $new->getDBKey(),
 				  'skey_namespace' => $new->getNamespace()),
-			__FUNCTION__ );
+			__METHOD__ );
 		$dbw->insert( 'skey',
 			array('skey_title' => $new->getDBKey(),
 				  'skey_namespace' => $new->getNamespace(),
 				  'skey_key' => generateSearchKey($new->getText()) ),
-			__FUNCTION__ );
+			__METHOD__ );
 	}
 
 	if ($old != null) {
 		$dbw->delete( 'skey',
 			array('skey_title' => $old->getDBKey(),
 				  'skey_namespace' => $old->getNamespace()),
-			__FUNCTION__ );
+			__METHOD__ );
 	}
 }
 
@@ -102,8 +102,8 @@ function wfArticleSaveComplete($article, $user, $p2, $p3, $p5, $p6, $p7) {
 
 	// In WikiHowSkin.php we cache the info for the author line. we want to
 	// remove this if that article was edited so that old info isn't cached.
-	if ($article) {
-		$cachekey = wfMemcKey('loadauth', $article->getID());
+	if ($article && class_exists('SkinWikihowskin')) {
+		$cachekey = SkinWikihowskin::getLoadAuthorsCachekey($article->getID());
 		$wgMemc->delete($cachekey);
 	}
 
@@ -131,7 +131,7 @@ function wfUpdateCatInfoMask(&$article, &$user) {
 			$dbw->update('page',
 				array('page_catinfo' => $mask),
 				array('page_id' => $article->getID()),
-				__FUNCTION__);
+				__METHOD__);
 		}
 	}
 	return true;
@@ -167,7 +167,7 @@ function wfUpdatePageFeaturedFurtherEditing($article, $user, $text, $summary, $f
 	}
 	if (sizeof($updates) > 0) {
 		$dbw = wfGetDB(DB_MASTER);
-		$dbw->update('page', $updates, array('page_id'=>$t->getArticleID()));
+		$dbw->update('page', $updates, array('page_id'=>$t->getArticleID()), __METHOD__);
 	}
 	return true;
 }
@@ -186,8 +186,6 @@ $wgHooks['OutputPageBeforeHTML'][] = array('wfSetPage404IfNotExists');
 // implemented in ArticleMetaInfo.class.php
 $wgHooks['ArticleSaveComplete'][] = array('ArticleMetaInfo::refreshMetaDataCallback');
 
-$wgHooks['AddCacheControlHeaders'][] = array('wfAddCacheControlHeaders');
-
 function wfAddCacheControlHeaders() {
 	global $wgTitle, $wgRequest;
 
@@ -197,3 +195,12 @@ function wfAddCacheControlHeaders() {
 
 	return true;
 }
+$wgHooks['AddCacheControlHeaders'][] = array('wfAddCacheControlHeaders');
+
+// Add to the list of available JS vars on every page
+function wfAddJSglobals(&$vars) {
+	$vars['wgCDNbase'] = wfGetPad('');
+	return true;
+}
+$wgHooks['MakeGlobalVariablesScript'][] = array('wfAddJSglobals');
+

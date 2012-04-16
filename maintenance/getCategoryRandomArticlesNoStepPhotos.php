@@ -6,9 +6,7 @@
  * Usage: php getCategoryRandomArticlesNoStepPhotos.php Category-Name
  */
 
-global $IP;
 require_once('commandLine.inc');
-require_once("$IP/maintenance/WikiPhoto.class.php");
 
 $numArticles = 5000;
 

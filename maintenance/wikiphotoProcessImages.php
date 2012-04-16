@@ -33,9 +33,9 @@ CREATE TABLE wikiphoto_image_names (
  *
  */
 
-
 require_once('commandLine.inc');
-require_once("$IP/maintenance/WikiPhoto.class.php");
+
+global $IP;
 require_once("$IP/extensions/wikihow/common/S3.php");
 
 class WikiPhotoProcess {
@@ -52,10 +52,7 @@ class WikiPhotoProcess {
 		$stepsMsg,
 		$imageExts = array('png', 'jpg'),
 		$excludeUsers = array('old', 'backup'),
-		$enlargePhotoUsers = array(
-			'amy', 'augosto', 'gerard', 'jameel',
-			'ledine', 'mario', 'muhammad', 'rona',
-			'evgeny');
+		$enlargePhotoUsers = array();
 
 	/**
 	 * Generate a string of random characters
@@ -419,6 +416,13 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 
 		// try to enlarge the uploaded photos of certain users
 		if (!$err) {
+			if (!self::$enlargePhotoUsers) {
+				$users = ConfigStorage::dbGetConfig('wikiphoto-enlarge-users');
+				if ($users) {
+					$users = preg_split('@\s+@', $users);
+					self::$enlargePhotoUsers = array_filter($users);
+				}
+			}
 			if (in_array($creator, self::$enlargePhotoUsers)) {
 				list($err, $numImages) =
 					Wikitext::enlargeImages($title, true, AdminEnlargeImages::DEFAULT_CENTER_PIXELS);

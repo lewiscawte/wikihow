@@ -36,7 +36,7 @@ function getNumCreatedThenDeleted($dbw, $cutoff, $cutoff2 = null) {
 	else
 		$sql = "select ar_title, ar_page_id, min(ar_timestamp) as M from archive where ar_namespace=0 group by ar_page_id having M >= '$cutoff'";
 	wfDebug("Dashboard: $sql\n");
-	$res = $dbw->query($sql, __FUNCTION__);
+	$res = $dbw->query($sql, __METHOD__);
 	return $dbw->numRows($res);
 }
 
@@ -65,7 +65,7 @@ function getWikiBirthdays($start, $w_cutoff, $dbw) {
 		$res = $dbw->select('user',
 			array('user_name', 'user_registration'),
 			array("user_registration > '$ts1'", "user_registration <= '$ts2'", "user_editcount >= 200"),
-			 __FUNCTION__);
+			 __METHOD__);
 		while ($row = $dbw->fetchObject($res)) {
 			$x = User::newFromName($row->user_name);
 			$result .= "<li> " . getUserLink($x) . " (" . getDateStr($row->user_registration) . ") - " . getUserToolLinks($x) . "</li>";
@@ -83,7 +83,7 @@ function newlyActiveUsers($cutoff, $start, $dbw, $tdstyle, $editcount, $period) 
 	$sql = "select rev_user, rev_user_text, max(rev_timestamp) as M, count(*) as C from $table $join $where group by rev_user having C >= $editcount and M >'{$cutoff}' and M <'{$start}';";
 	wfDebug("Dashboard new editors who became active this month/week: $sql\n");
 	echo "<!-- $sql --->";
-	$res = $dbw->query($sql, __FUNCTION__);
+	$res = $dbw->query($sql, __METHOD__);
 	while ($row = $dbw->fetchObject($res)) {
 		$count = selectField($dbw, "select count(*) from $table $join where rev_user=" . $row->rev_user . "  $andcond and rev_timestamp < '" . $cutoff . "'");
 		if ($count < $editcount ) {
@@ -108,14 +108,14 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 				"log_timestamp > '{$cutoff}'",
 				$cutoff2 ? "log_timestamp < '{$cutoff2}'" : "1=1",
 				'log_namespace' => 0),
-			__FUNCTION__));
+			__METHOD__));
 
 	$d = getNumCreatedThenDeleted($dbw, $cutoff, $cutoff2);
 	$result .= "\n</li><li> Articles that have been created : "  .
 		nf($dbw->selectField('newarticlepatrol', array('count(*)'),
 			array("nap_timestamp > '{$cutoff}'",
 				$cutoff2 ?  "nap_timestamp < '{$cutoff2}'" : "1=1"
-			), __FUNCTION__) + $d);
+			), __METHOD__) + $d);
 
 	$result .= "- (" . nf($d) . " deleted) \n</li><li>New articles that have been boosted: ".
 		nf($dbw->selectField(array('recentchanges', 'newarticlepatrol'), array('count(*)'),
@@ -124,7 +124,7 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			'rc_namespace='. NS_MAIN,
 			"rc_timestamp > '{$cutoff}'",
 			"nap_page=rc_cur_id",
-			"nap_patrolled=1"), __FUNCTION__));
+			"nap_patrolled=1"), __METHOD__));
 
 	$result .= "\n<li> Videos that have been embedded: "  .
 		nf($dbw->selectField(array('revision', 'page'),
@@ -134,14 +134,14 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			  $cutoff2 ?  "rev_timestamp < '{$cutoff2}'" : "1=1",
 			 "page_id = rev_page",
 				'page_namespace' => NS_VIDEO
-			), __FUNCTION__));
+			), __METHOD__));
 
 	$result .= "\n</li><li> Photos uploaded: "  .
 		nf($dbw->selectField('logging', array('count(*)'),
 		array('log_type' => 'upload',
 			  "log_timestamp > '{$cutoff}'",
 			  $cutoff2 ?  "log_timestamp < '{$cutoff2}'" : "1=1",
-			), __FUNCTION__));
+			), __METHOD__));
 
 	$result .= "\n</li><li>Main namespace edits : "  .
 	   nf($dbw->selectField(array('revision', 'page'),
@@ -152,7 +152,7 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			 "page_id = rev_page",
 			   'page_namespace' => NS_MAIN,
 				'rev_user ' . $notbot,
-			), __FUNCTION__));
+			), __METHOD__));
 
 	$result .= "\n</li><li> User talk namespace edits : "  .
 	   nf($dbw->selectField(array('revision', 'page'),
@@ -163,7 +163,7 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			 "page_id = rev_page",
 				'page_namespace' => NS_USER_TALK,
 				'rev_user ' . $notbot,
-			), __FUNCTION__));
+			), __METHOD__));
 
 	$result .= "\n</li><li> Reverted main namespace edits : "  .
 	   nf($dbw->selectField(array('revision', 'page'),
@@ -174,7 +174,7 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			 "page_id = rev_page",
 			  'page_namespace' => NS_MAIN,
 			 "rev_comment like 'Reverted%'"
-			), __FUNCTION__));
+			), __METHOD__));
 
 	$result .= "\n</li><li> User registrations : " .
 		nf($dbw->selectField(array('user'),
@@ -182,7 +182,7 @@ function articleStats($dbw, $cutoff, $cutoff2 = null) {
 			array(
 				"user_registration> '{$cutoff}'",
 				$cutoff2 ? "user_registration < '{$cutoff2}'" : "1=1",
-				"user_name NOT like 'Anonymous%'"), __FUNCTION__));
+				"user_name NOT like 'Anonymous%'"), __METHOD__));
 
 	$result .= "</ul>";
 	return $result;
@@ -195,7 +195,7 @@ function getActivityChange($dbw, $c1, $c2, $decline) {
 		WHERE rev_timestamp < '{$c1}' and rev_timestamp > '{$c2}' $andcond group by rev_user having C >= 100;";
 	#echo $sql . "\n";
 	wfDebug("Dashboard activity change: $sql\n");
-	$res = $dbw->query($sql, __FUNCTION__);
+	$res = $dbw->query($sql, __METHOD__);
 	while ($row = $dbw->fetchObject($res)) {
 		// how many edits in current period?
 		$add = false;
@@ -234,7 +234,7 @@ function getTopCreators($dbw, $cutoff, $start) {
 	$result = "<ol>";
 	$sql = "select fe_user, fe_user_text, count(*) as C from firstedit where fe_timestamp > '{$cutoff}' and fe_timestamp < '{$start}' "
 			. " and fe_user NOT IN (0, " . implode(", ", $wgBotIds) . ") group by fe_user order by C desc limit 20";
-	$res = $dbw->query($sql, __FUNCTION__);
+	$res = $dbw->query($sql, __METHOD__);
 	wfDebug("Dashboard top creators: $sql\n");
 	while ($row = $dbw->fetchObject($res)) {
 		$x = User::newFromName($row->fe_user_text);
@@ -259,7 +259,7 @@ function getTopCreators2($dbw, $cutoff, $start) {
 	wfDebug("Dashboard top creators: $sql\n");
 
 	debugMsg("getting nap $nap ");
-	$res = $dbw->query($sql, __FUNCTION__);
+	$res = $dbw->query($sql, __METHOD__);
 	$pages = array();
 	$revisions = array();
 	while ($row = $dbw->fetchObject($res)) {

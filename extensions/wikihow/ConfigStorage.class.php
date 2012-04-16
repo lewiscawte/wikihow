@@ -13,7 +13,7 @@
  *
 CREATE TABLE config_storage (
 	cs_key VARCHAR(64) NOT NULL PRIMARY KEY,
-	cs_config TEXT NOT NULL
+	cs_config LONGTEXT NOT NULL
 );
 INSERT INTO config_storage SET cs_key='wikiphoto-article-exclude-list', cs_config='';
  */
@@ -66,8 +66,8 @@ class ConfigStorage {
 		$cachekey = self::getMemcKey($key);
 		$wgMemc->delete($cachekey);
 
-		$dbr = wfGetDB(DB_SLAVE);
-		$dbr->replace('config_storage', 'cs_key', 
+		$dbw = wfGetDB(DB_MASTER);
+		$dbw->replace('config_storage', 'cs_key', 
 			array(
 				array('cs_key' => $key, 'cs_config' => $config)
 			),

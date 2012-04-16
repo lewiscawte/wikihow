@@ -276,7 +276,7 @@ function getUser(&$users, $userId) {
 function getStats(&$dbr) {
 	global $table;
 
-	$res = $dbr->select($table, '*', '', __FUNCTION__);
+	$res = $dbr->select($table, '*', '', __METHOD__);
 	$stats = array();
 	while($row = $dbr->fetchObject($res) ) {
 		$stats[$row->es_user] = array();
@@ -321,7 +321,7 @@ function updateStats(&$dbw, &$dbr, $startDate = null, $endDate = null) {
 	echo "Running query at " . $lastTime . "\n";
 	echo $sql . "\n";
 
-	$res = $dbr->query($sql, __FUNCTION__);
+	$res = $dbr->query($sql, __METHOD__);
 	
 	$newTime = microtime(true);
 	
@@ -346,7 +346,7 @@ function updateStats(&$dbw, &$dbr, $startDate = null, $endDate = null) {
 	echo "Running query at " . $lastTime . "\n";
 	echo $sql . "\n";
 	
-	$res = $dbr->query($sql, __FUNCTION__);
+	$res = $dbr->query($sql, __METHOD__);
 	
 	$newTime = microtime(true);
 	echo "Query done at " . $newTime . " for a total time of " . ($newTime - $lastTime) . "\n";
@@ -368,7 +368,7 @@ function updateStats(&$dbw, &$dbr, $startDate = null, $endDate = null) {
 	echo "Running query at " . $lastTime . "\n";
 	echo $sql . "\n";
 	
-	$res = $dbr->query($sql, __FUNCTION__);
+	$res = $dbr->query($sql, __METHOD__);
 	
 	$newTime = microtime(true);
 	echo "Query done at " . $newTime . " for a total time of " . ($newTime - $lastTime) . "\n";
@@ -390,7 +390,7 @@ function updateStats(&$dbw, &$dbr, $startDate = null, $endDate = null) {
 	echo "Running query at " . $lastTime . "\n";
 	echo $sql . "\n";
 	
-	$res = $dbr->query($sql, __FUNCTION__);
+	$res = $dbr->query($sql, __METHOD__);
 	
 	$newTime = microtime(true);
 	echo "Query done at " . $newTime . " for a total time of " . ($newTime - $lastTime) . "\n";
@@ -407,7 +407,7 @@ function updateStats(&$dbw, &$dbr, $startDate = null, $endDate = null) {
 	
 	foreach($stats as $userid => $data) {
 		$sql = "INSERT INTO {$table} (es_user, es_edits, es_created, es_nab, es_patrol, es_timestamp) VALUES (" . $userid . ", {$data['edits']}, {$data['created']}, {$data['nab']}, {$data['patrol']}, '{$now}') ON DUPLICATE KEY UPDATE es_edits = es_edits + {$data['edits']}, es_created = es_created + {$data['created']}, es_nab = es_nab + {$data['nab']}, es_patrol = es_patrol + {$data['patrol']}, es_timestamp = '{$now}'";
-		$dbw->query($sql, __FUNCTION__);
+		$dbw->query($sql, __METHOD__);
 	}
 	
 	$newTime = microtime(true);
@@ -432,7 +432,7 @@ function addData(&$stats, $userId, $field) {
 function getLastDate(&$dbr) {
 	global $table;
 	
-	$date = $dbr->selectField($table, 'es_timestamp', '' , __FUNCTION__, array("ORDER BY" => "es_timestamp DESC", "LIMIT" => 1));
+	$date = $dbr->selectField($table, 'es_timestamp', '' , __METHOD__, array("ORDER BY" => "es_timestamp DESC", "LIMIT" => 1));
 	
 	if($date === false)
 		return null;

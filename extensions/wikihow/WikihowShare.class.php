@@ -15,7 +15,7 @@ class WikihowShare{
 		
 		$url = urlencode($wgServer . "/" . $wgTitle->getPrefixedURL());
 		$img = urlencode(self::getPinterestImage($wgTitle));
-		$desc = urlencode(wfMsg('howto', $wgTitle->getText()) . self::getPinterestTitleInfo($wgTitle)); 
+		$desc = urlencode(wfMsg('howto', $wgTitle->getText()) . self::getPinterestTitleInfo()); 
 				
 		$fb = '<div class="like_button"><fb:like href="' . $url . '" send="false" layout="box_count" width="46" show_faces="false"></fb:like></div>';
 		$gp1 = '<div class="gplus1_button"><g:plusone size="tall" callback="plusone_vote"></g:plusone></div>';
@@ -155,13 +155,13 @@ class WikihowShare{
 		}
 	}
 	
-	public static function getPinterestTitleInfo($title) {
-		$r = Revision::newFromTitle($title);
-		if ($r == null) return '';
+	private static function getPinterestTitleInfo() {
+		$whow = WikiHow::newFromCurrent();
+		if (!$whow) return '';
 
-		$text1 = $r->getText();
+		$text = $whow->mLoadText;
 		$num_steps = 0;
-		if (preg_match("/^(.*?)==\s*".wfMsg('tips')."/ms", $text1, $sectionmatch)) {
+		if (preg_match("/^(.*?)==\s*".wfMsg('tips')."/ms", $text, $sectionmatch)) {
 			// has tips, let's assume valid candidate for detailed title
 			$num_steps = preg_match_all('/^#[^*]/im', $sectionmatch[1], $matches);
 		}

@@ -1,9 +1,5 @@
 <?
 
-global $IP;
-require_once("$IP/extensions/wikihow/WikiHow.php");
-require_once("$IP/extensions/wikihow/Wikitext.class.php");
-
 class GallerySlide extends UnlistedSpecialPage {
 
 	var $bInline = false;
@@ -29,7 +25,7 @@ class GallerySlide extends UnlistedSpecialPage {
 				$this->bNewLayout_02 = true;
 			}
 		
-			$t = Title::newFromID($wgRequest->getVal('aid'));
+			$t = Title::newFromID($wgRequest->getInt('aid'));
 			$wgOut->setArticleBodyOnly(true);
 			echo json_encode(self::getImageSlider($t));
 			return;
@@ -47,7 +43,7 @@ class GallerySlide extends UnlistedSpecialPage {
 		global $wgOut;
 		
 		$image = $vars[0];		
-		$articleID = $vars[1];
+		$articleID = intval($vars[1]);
 		
 		if ($vars[3] == 'inline') {
 			$this->bInline = true;
@@ -231,8 +227,7 @@ class GallerySlide extends UnlistedSpecialPage {
 	
 	function getRelatedWikihowsFromSource($r,$num) {
 		$text = $r->getText();
-		$whow = new WikiHow();
-		$whow->loadFromText($text);
+		$whow = WikiHow::newFromText($text);
 		$related = preg_replace("@^==.*@m", "", $whow->getSection('related wikihows'));
 		
 		$preg = "/\\|[^\\]]*/";
