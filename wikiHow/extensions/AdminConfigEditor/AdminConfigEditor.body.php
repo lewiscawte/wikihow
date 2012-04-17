@@ -1,25 +1,19 @@
-<?
-
-if (!defined('MEDIAWIKI')) die();
-
-global $IP;
-require_once("$IP/maintenance/WikiPhoto.class.php");
+<?php
 
 class AdminConfigEditor extends UnlistedSpecialPage {
-	private $specialPage;
-
+	/**
+	 * Constructor -- set up the new special page
+	 */
 	public function __construct() {
-		global $wgTitle;
-		$this->specialPage = $wgTitle->getPartialUrl();
-		UnlistedSpecialPage::UnlistedSpecialPage($this->specialPage);
+		parent::__construct( 'AdminConfigEditor', 'adminconfigeditor' );
 	}
 
-	private static function validateInput($key, $val) {
+	private static function validateInput( $key, $val ) {
 		$err = '';
-		if ('wikiphoto-article-exclude-list' == $key) {
-			$list = self::parseURLlist($val);
-			foreach ($list as $item) {
-				if (!$item['title']) {
+		if ( $key == 'wikiphoto-article-exclude-list' || $key == 'wikihow-watermark-article-list' ) {
+			$list = self::parseURLlist( $val );
+			foreach ( $list as $item ) {
+				if ( !$item['title'] || !$item['title']->isKnown() ) {
 					$err .= $item['url'] . "\n";
 				}
 			}
@@ -30,139 +24,230 @@ class AdminConfigEditor extends UnlistedSpecialPage {
 	/**
 	 * Parse the input field into an array of URLs and Title objects
 	 */
-	private static function parseURLlist($pageList) {
-		$pageList = preg_split('@[\r\n]+@', $pageList);
+	private static function parseURLlist( $pageList ) {
+		$pageList = preg_split( '@[\r\n]+@', $pageList );
 		$urls = array();
-		foreach ($pageList as $url) {
-			$url = trim($url);
-			if (!empty($url)) {
-				$title = WikiPhoto::getArticleTitleNoCheck($url);
-				$urls[] = array('url' => $url, 'title' => $title);
+		foreach ( $pageList as $url ) {
+			$url = trim( $url );
+			if ( !empty( $url ) ) {
+				$title = WikiPhoto::getArticleTitleNoCheck( urldecode( $url ) );
+				$urls[] = array(
+					'url' => $url,
+					'title' => $title
+				);
 			}
 		}
 		return $urls;
 	}
 
+	private static function translateValues( $values, $listType ) {
+		$result = '';
+		$list = self::parseURLlist( $values );
+
+		foreach ( $list as $item ) {
+			$value = '';
+			
+			if ( $item['title'] ) {
+				if ( $listType == 'id' ) {
+					$value = $item['title']->getArticleID();
+					if ( !empty( $value ) ) {
+						$result .= $value . "\r\n";
+					}
+				} elseif ( $listType == 'url' ) {
+					$value = $item['title']->getDBkey();
+					if ( !empty( $value ) ) {
+						$artid = $item['title']->getArticleID();
+						$result .= '<tr>
+									<td>' . $item['title']->getFullURL() . '</td>
+									<td class="x"><a href="#" class="remove_link" id="' . $artid . '">x</a></td>
+								</tr>';
+						$hidden .= $item['title']->getFullURL() . "\r\n";
+					}
+				}
+			}
+		}
+		
+		if ( $listType == 'url' ) {
+			$result = '<table>' . $result . '</table>
+					<div id="config_hidden_val">' . $hidden . '</div>';
+		}
+
+		return $result;
+	}
+	
+	private function removeLine( $key, $id ) {
+		$err = '';
+		if ( !empty( $id ) ) {
+			$val = ConfigStorage::dbGetConfig( $key );
+			$pageList = preg_split( '@[\r\n]+@', $val );
+			
+			$id_pos = array_search( $id, $pageList );
+			if ( $id_pos === false ) {
+				$err = wfMessage( 'adminconfigeditor-error-not-in-list' )->text();
+			} else {
+				unset( $pageList[$id_pos] );
+				$val = implode( "\r\n", $pageList );
+				ConfigStorage::dbStoreConfig( $key, $val );
+				
+				// now let's return the whole thing back
+				$result = $this->translateValues( $val, 'url' );
+			}
+		} else {
+			$err = wfMessage( 'adminconfigeditor-error-bad-aid' )->text();
+		}
+		return array( 'result' => $result, 'error' => $err );
+ 	}
+
 	/**
-	 * Execute special page.  Only available to wikihow staff.
+	 * Show the special page
+	 *
+	 * @param $par Mixed: parameter passed to the special page or null
 	 */
-	public function execute() {
+	public function execute( $par ) {
 		global $wgRequest, $wgOut, $wgUser, $wgLang;
 
-		$userGroups = $wgUser->getGroups();
-		if ($wgUser->isBlocked() || !in_array('staff', $userGroups)) {
-			$wgOut->setRobotpolicy('noindex,nofollow');
-			$wgOut->errorpage('nosuchspecialpage', 'nospecialpagetext');
+		// Check restrictions
+		if ( !$this->userCanExecute( $wgUser ) ) {
+			$this->displayRestrictionError();
 			return;
 		}
 
-		if ($wgRequest->wasPosted()) {
+		// Can't use the special page if database is locked...
+		if ( wfReadOnly() ) {
+			$wgOut->readOnlyPage();
+			return;
+		}
 
-			$action = $wgRequest->getVal('action');
-			$wgOut->setArticleBodyOnly(true);
+		// No access for blocked users
+		if ( $wgUser->isBlocked() ) {
+			$wgOut->blockedPage();
+			return;
+		}
 
-			if ('load-config' == $action) {
-				$key = $wgRequest->getVal('config-key', '');
-				$val = ConfigStorage::dbGetConfig($key);
-				$result = array('result' => $val);
-			} elseif ('save-config' == $action) {
-				$key = $wgRequest->getVal('config-key', '');
-				$val = $wgRequest->getVal('config-val', '');
-				ConfigStorage::dbStoreConfig($key, $val);
-				$errors = self::validateInput($key, $val);
-				$output = 'saved and checked input<br/><br/>';
-				if ($errors) {
-					$output .= 'ERRORS:<br/>' . str_replace("\n", "<br/>\n", $errors);
-				} else {
-					$output .= "no errors.";
+		if ( strtolower( $par ) == 'url' ) {
+			$style = 'url';
+		} else {
+			$style = '';
+		}
+
+		if ( $wgRequest->wasPosted() ) {
+			$action = $wgRequest->getVal( 'action' );
+			$wgOut->setArticleBodyOnly( true );
+
+			if ( $action == 'load-config' ) {
+				$key = $wgRequest->getVal( 'config-key', '' );
+				$val = ConfigStorage::dbGetConfig( $key );
+
+				$style = $wgRequest->getVal( 'style', '' );
+				if ( $style == 'url' ) {
+					// translate IDs to readable URLs
+					$val = $this->translateValues( $val, $style );
 				}
-				$result = array('result' => $output);
+
+				$result = array( 'result' => $val );
+			} elseif ( $action == 'save-config' ) {
+				$errors = '';
+				$key = $wgRequest->getVal( 'config-key', '' );
+				$val = $wgRequest->getVal( 'config-val', '' );
+
+				$style = $wgRequest->getVal( 'style', '' );
+				if ( $style == 'url' ) {
+					// add the hidden values to the new ones
+					$val = $wgRequest->getVal( 'hidden-val', '' ) . $val;
+					// validate for errors
+					$errors = self::validateInput( $key, $val );
+					// translate the good URLs back to IDs for storage purposes
+					$val = $this->translateValues( $val, 'id' );
+				}
+
+				ConfigStorage::dbStoreConfig( $key, $val );
+				$errors .= self::validateInput( $key, $val );
+				$output = wfMessage( 'adminconfigeditor-saved-and-checked'  )->text() . '<br /><br />';
+				if ( $errors ) {
+					$output .= wfMessage( 'adminconfigeditor-errors', str_replace( "\n", "<br />\n", $errors ) )->parse();
+				} else {
+					$output .= wfMessage( 'adminconfigeditor-no-errors' )->text();
+				}
+
+				if ( $style == 'url' ) {
+					// translate back to URLs for updated display
+					$val = $this->translateValues( $val, 'url' );
+				}
+				
+				$result = array( 'result' => $output, 'val' => $val );
+			} elseif ( $action == 'remove-line' ) {
+				$key = $wgRequest->getVal( 'config-key', '' );
+				$id = $wgRequest->getVal( 'id', '' );
+				$result = $this->removeLine( $key, $id );
+				$result = array(
+					'result' => $result['result'],
+					'error' => $result['error']
+				);
 			} else {
-				$result = array('error' => 'bad action');
+				$result = array(
+					'error' => wfMessage( 'adminconfigeditor-bad-action' )->text()
+				);
 			}
 
-			print json_encode($result);
+			print json_encode( $result );
 			return;
 		}
 
-		$wgOut->setHTMLTitle(wfMsg('pagetitle', 'Admin - Generalized Config Editor'));
+		$wgOut->setHTMLTitle( wfMsg( 'pagetitle', wfMsg( 'adminconfigeditor-page-title' ) ) );
 		$listConfigs = ConfigStorage::dbListConfigKeys();
 
-		$tmpl = self::getGuts($listConfigs);
+		// Add JS
+		$wgOut->addModules( 'ext.adminConfigEditor' );
 
-		$wgOut->addHTML($tmpl);
+		// Get the form HTML
+		$tmpl = self::getGuts( $listConfigs, $style );
+
+		// Output the form
+		$wgOut->addHTML( $tmpl );
 	}
 
-	function getGuts($configs) {
+	function getGuts( $configs, $style ) {
 		ob_start();
+
+		if ( $style == 'url' ) {
+			echo '<h1>' . wfMessage( 'adminconfigeditor-url-config-editor' )->text() . '</h1>';
+			$bURL = true;
+		} else {
+			$bURL = false;
+		}
 ?>
-		<form method='post' action='/Special:<?= $this->specialPage ?>'>
-		<h4>Select with config data you want to edit.</h4>
+		<style type="text/css">
+		table { width: 100%; }
+		td {
+			background-color: #EEE;
+			padding: 5px;
+		}
+		td.x { text-align: center; }
+		#config_hidden_val { display: none; }
+		</style>
+		<form method="post" action="<?php echo $this->getTitle()->getFullURL() ?>">
+		<h4><?php echo wfMessage( 'adminconfigeditor-instructions' )->text() ?></h4>
+		<br />
+		<select id="config-key">
+			<option value="">--</option>
+			<?php foreach ( $configs as $config ): ?>
+				<option value="<?php echo $config ?>"><?php echo $config ?></option>
+			<?php endforeach; ?>
+		</select><br />
 		<br/>
-		<select id='config-key'>
-			<option value=''>--</option>
-			<? foreach ($configs as $config): ?>
-				<option value='<?= $config ?>'><?= $config ?></option>
-			<? endforeach; ?>
-		</select><br/>
+		<?php
+		if ( $bURL ) {
+			echo wfMessage( 'adminconfigeditor-add-new' )->parse();
+		}
+		?>
+		<textarea id="config-val" type="text" rows="10" cols="70"></textarea>
+		<button id="config-save" disabled="disabled"><?php echo wfMessage( 'adminconfigeditor-save' )->text() ?></button><br />
 		<br/>
-		<textarea id='config-val' type='text' rows='10' cols='70'></textarea>
-		<button id='config-save' disabled='disabled'>save</button><br/>
-		<br/>
-		<div id='admin-result'>
-		</div>
+		<div id="admin-result"></div>
+		<div id="url-list"></div>
+		<input type="hidden" id="display-style" value="<?php echo $style ?>" />
 		</form>
-
-		<script>
-		(function($) {
-			$(document).ready(function() {
-				$('#config-save')
-					.click(function () {
-						$('#admin-result').html('saving ...');
-						$.post('/Special:<?= $this->specialPage ?>',
-							{ 'action': 'save-config',
-							  'config-key': $('#config-key').val(),
-							  'config-val': $('#config-val').val() },
-							function(data) {
-								$('#admin-result').html(data['result']);
-								$('#config-val').focus();
-							},
-							'json');
-						return false;
-					})
-
-				$('#config-val')
-					.keydown(function () {
-						$('#config-save').prop('disabled', '');
-					});
-
-				$('#config-key')
-					.change(function () {
-						var configKey = $('#config-key').val();
-						if (configKey) {
-							$('#admin-result').html('loading ...');
-							$.post('/Special:<?= $this->specialPage ?>',
-								{ 'action': 'load-config',
-								  'config-key': configKey },
-								function (data) {
-									$('#admin-result').html('');
-									$('#config-val')
-										.val(data['result'])
-										.focus();
-									$('#config-save').prop('disabled', '');
-								},
-								'json');
-						} else {
-							$('#config-val').val('');
-						}
-
-						return false;
-					});
-
-			});
-		})(jQuery);
-		</script>
-<?
+<?php
 		$html = ob_get_contents();
 		ob_end_clean();
 		return $html;
