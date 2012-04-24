@@ -8,6 +8,7 @@ abstract class MobileHtmlBuilder {
 	protected $t = null;
 	private static $jsScripts = array();
 	private static $jsScriptsCombine = array();
+	private $cssScriptsCombine = array();
 
 	public function createByRevision(&$t, &$r) {
 		global $wgParser, $wgOut;
@@ -37,6 +38,7 @@ abstract class MobileHtmlBuilder {
 		$this->t = $t;
 		$this->nonMobileHtml = $nonMobileHtml;
 		$this->setTemplatePath();
+		$this->addCSSLibs();
 		$this->addJSLibs();
 		return $this->generateHtml();
 	}
@@ -69,7 +71,7 @@ abstract class MobileHtmlBuilder {
 		$headerVars = array(
 			'isMainPage' => $isMainPage,
 			'title' => $titleBar,
-			'css' => array('mwhc'),
+			'css' => $this->cssScriptsCombine,
 			'randomUrl' => $randomUrl,
 			'deviceOpts' => $deviceOpts,
 			'canonicalUrl' => $canonicalUrl,
@@ -79,9 +81,13 @@ abstract class MobileHtmlBuilder {
 	}
 
 	protected function getDefaultFooterVars() {
+		global $wgRequest;
 		$t = $this->t;
 		$redirMainBase = '/' . wfMsg('special') . ':' . wfMsg('MobileWikihow') . '?redirect-non-mobile=';
 		$footerVars = array(
+			'showSharing' => !$wgRequest->getVal('share', 0),
+			'isMainPage' => $t->getText() == wfMsg('mainpage'),
+			'pageUrl' => $t->getFullUrl(),
 			'showAds' => false,  //temporarily taking ads out of the footer
 			'deviceOpts' => $this->getDevice(),
 			'redirMainUrl' => $redirMainBase,
@@ -96,13 +102,195 @@ abstract class MobileHtmlBuilder {
 		return $footerVars;
 	}
 
+	public static function showDeferredJS() {
+		static $displayed = false;
+		if (!$displayed) {
+			$displayed = true;
+			$vars = array(
+				'scripts' => self::$jsScripts,
+				'scriptsCombine' => self::$jsScriptsCombine,
+			);
+			return EasyTemplate::html('include-js.tmpl.php', $vars);
+		} else {
+			return '';
+		}
+	}
+
+	public static function showBootStrapScript() {
+		static $displayed = false;
+		if (!$displayed) {
+			$displayed = true;
+			return '<script>mobileWikihow.startup();</script>';
+		} else {
+			return '';
+		}
+	}
+	
+	protected function setTemplatePath() {
+		EasyTemplate::set_path( dirname(__FILE__).'/' );
+	}
+
+	protected function getDevice() {
+		return $this->deviceOpts;
+	}
+
+	protected function addJSLibs() {
+		// We separate the lib from JS from the other stuff so that it can
+		// be cached.  iPhone caches objects under 25k.
+		self::addJS('mjq', false); // jQuery
+
+		self::addJS('mwh', true); // wikiHow's mobile JS
+		self::addJS('mga', true); // google analytics script
+	}
+
+	protected function addCSSLibs() {
+		$this->addCSS('mwhc');
+	}
+
+	protected function addCSS($script) {
+		$this->cssScriptsCombine[] = $script;
+	}
+
+	public static function addJS($script, $combine) {
+		if ($combine) {
+			self::$jsScriptsCombine[] = $script;
+		} else {
+			self::$jsScripts[] = $script;
+		}
+	}
+}
+
+class MobileArticleBuilder extends MobileBasicArticleBuilder {
+
+	private function addCheckMarkFeatureHtml(&$vars) {
+		global $IP;
+		require_once("$IP/extensions/wikihow/checkmarks/CheckMarks.class.php");
+
+		CheckMarks::injectCheckMarksIntoSteps($vars['sections']);
+		$vars['checkmarks'] = CheckMarks::getCheckMarksHtml();
+	}
+
+	protected function addExtendedArticleVars(&$vars) {
+		global $wgLanguageCode;
+
+		if ($wgLanguageCode == 'en') {
+			$this->addCheckMarkFeatureHtml($vars);
+		}
+	}
+
+	protected function addCSSLibs() {
+		global $wgLanguageCode;
+
+		parent::addCSSLibs();
+		if ($wgLanguageCode == 'en') {
+			$this->addCSS('mcmc'); // Checkmark css
+		}
+	}
+
+	protected function addJSLibs() {
+		global $wgLanguageCode;
+
+		parent::addJSLibs();
+		if ($wgLanguageCode == 'en') {
+			self::addJS('cm', true); // checkmark js
+		}
+	}
+}
+class MobileBasicArticleBuilder extends MobileHtmlBuilder {
+
+	protected function generateHeader() {
+		$headerVars = $this->getDefaultHeaderVars();
+		//stu JS uses skinname=mobile to trigger mobile behavior
+		$headerVars['jsglobals'] = Skin::makeGlobalVariablesScript( array('skinname'=>'mobile') );
+
+		return EasyTemplate::html('header.tmpl.php', $headerVars);
+	}
+
+	protected function getArticleParts() {
+		return $this->parseNonMobileArticle($this->nonMobileHtml);
+	}
+
+
+	protected function generateBody() {
+		global $wgLanguageCode;
+
+		list($sections, $intro, $firstImage) = $this->getArticleParts();
+		if ($firstImage) {
+			$title = Title::newFromURL($firstImage, NS_IMAGE);
+			if ($title) {
+				$introImage = RepoGroup::singleton()->findFile($title);
+				$thumb = $introImage->getThumbnail(290, 194);
+				$width = $thumb->getWidth();
+				$height = $thumb->getHeight();
+			} else {
+				$firstImage = '';
+			}
+		} 
+
+		//articles that we don't want to have a top (above tabs)
+		//image displayed
+		$titleUrl = "";
+		if($this->t != null)
+			$titleUrl = $this->t->getFullURL();
+		$exceptions = ConfigStorage::dbGetConfig('mobile-topimage-exception');
+		$exceptionArray = explode("\n", $exceptions);
+		if(in_array($titleUrl, $exceptionArray)) {
+			$firstImage = false;
+		}
+
+		if (!$firstImage) {
+			$thumb = null;
+			$width = 0; $height = 0;
+		}
+
+		$deviceOpts = $this->getDevice();
+		$articleVars = array(
+			'title' => $this->t->getText(),
+			'sections' => $sections,
+			'intro' => $intro,
+			'thumb' => &$thumb,
+			'width' => $width,
+			'height' => $height,
+			'deviceOpts' => $deviceOpts,
+			'nonEng' => $wgLanguageCode != 'en',
+			'isGerman' => $wgLanguageCode == 'de',
+		);
+		$this->addExtendedArticleVars(&$articleVars);
+
+		$this->setTemplatePath();
+		return EasyTemplate::html('article.tmpl.php', $articleVars);
+	}
+
+	protected function addExtendedArticleVars(&$vars) {
+		// Nothing to add here. Used for subclasses to inject variables to be passed to article.tmpl.php html
+	}
+	protected function generateFooter() {
+		$footerVars = $this->getDefaultFooterVars();	
+		$t = $this->t;
+		$partialUrl = $t->getPartialURL();
+		$footerVars['redirMainUrl'] = $footerVars['redirMainUrl'] . urlencode($partialUrl);
+		$baseMainUrl = 'http://' . MobileWikihow::getNonMobileSite() . '/';
+		$footerVars['editUrl'] = $baseMainUrl . 'index.php?action=edit&title=' . $partialUrl;
+		return EasyTemplate::html('footer.tmpl.php', $footerVars);
+	}
+
+	protected function addCSSLibs() {
+		parent::addCSSLibs();
+		$this->addCSS('mwha');
+	}
+
+	protected function addJSLibs() {
+		parent::addJSLibs();
+		self::addJS('stu', true);
+	}
+
 	/**
 	 * Parse and transform the document from the old HTML for NS_MAIN articles to the new mobile
 	 * style. This should probably be pulled out and added to a subclass that can then be extended for
 	 * builders that focus on building NS_MAIN articles
 	 */
 	protected function parseNonMobileArticle(&$article) {
-		global $wgWikiHowSections, $IP;
+		global $wgWikiHowSections, $IP, $wgContLang;
 
 		$sectionMap = array(
 			wfMsg('Intro') => 'intro',
@@ -117,6 +305,7 @@ abstract class MobileHtmlBuilder {
 		);
 
 		$lang = MobileWikihow::getSiteLanguage();
+		$imageNsText = $wgContLang->getNsText(NS_IMAGE);
 		$device = MobileWikihow::getDevice();
 
 		// munge steps first
@@ -138,7 +327,9 @@ $article
 </body>
 </html>
 DONE;
+		require_once("$IP/extensions/wikihow/mobile/JSLikeHTMLElement.php");
 		$doc = new DOMDocument('1.0', 'utf-8');
+		$doc->registerNodeClass('DOMElement', 'JSLikeHTMLElement');
 		$doc->strictErrorChecking = false;
 		$doc->recover = true;
 		//$doc->preserveWhiteSpace = false;
@@ -226,8 +417,8 @@ DONE;
 				$parent = $img->parentNode;
 				if ($parent->nodeName == 'a') {
 					$href = $parent->attributes->getNamedItem('href')->nodeValue;
-					if (preg_match('@Image:@', $href)) {
-						$firstImage = preg_replace('@^.*Image:([^:]*)([#].*)?$@', '$1', $href);
+					if (preg_match('@(Image|' . $imageNsText . '):@', $href)) {
+						$firstImage = preg_replace('@^.*(Image|' . $imageNsText .'):([^:]*)([#].*)?$@', '$2', $href);
 						$firstImage = urldecode($firstImage);
 						break;
 					}
@@ -280,9 +471,9 @@ DONE;
 				$onclick = $a->attributes->getNamedItem('onclick')->nodeValue;
 				$onclick = preg_replace('@.*",[ ]*"@', '', $onclick);
 				$onclick = preg_replace('@".*@', '', $onclick);
-				$imgName = preg_replace('@.*Image:@', '', $onclick);
+				$imgName = preg_replace('@.*(Image|' . $imageNsText . '):@', '', $onclick);
 			} else {
-				$imgName = preg_replace('@^/Image:@', '', $href);
+				$imgName = preg_replace('@^/(Image|' . $imageNsText . '):@', '', $href);
 			}
 			
 			$title = Title::newFromURL($imgName, NS_IMAGE);
@@ -292,70 +483,72 @@ DONE;
 			}
 
 			if ($title) {
-				$image = new LocalFile($title, RepoGroup::singleton()->getLocalRepo());
-				$thumb = $image->getThumbnail($newWidth, $newHeight);
-				$newWidth = $thumb->getWidth();
-				$newHeight = $thumb->getHeight();
-				$url = wfGetPad($thumb->getUrl());
+				$image = RepoGroup::singleton()->findFile($title);
+				if ($image) {
+					$thumb = $image->getThumbnail($newWidth, $newHeight);
+					$newWidth = $thumb->getWidth();
+					$newHeight = $thumb->getHeight();
+					$url = wfGetPad($thumb->getUrl());
 
-				$srcNode->nodeValue = $url;
-				$widthNode->nodeValue = $newWidth;
-				$heightNode->nodeValue = $newHeight;
-				
-				// change surrounding div width and height
-				$div = $a->parentNode;
-				$styleNode = $div->attributes->getNamedItem('style');
-				if (preg_match('@^(.*width:)[0-9]+(px;\s*height:)[0-9]+(.*)$@', $styleNode->nodeValue, $m)) {
-					$styleNode->nodeValue = $m[1] . $newWidth . $m[2] . $newHeight . $m[3];
-				}
+					$srcNode->nodeValue = $url;
+					$widthNode->nodeValue = $newWidth;
+					$heightNode->nodeValue = $newHeight;
+					
+					// change surrounding div width and height
+					$div = $a->parentNode;
+					$styleNode = $div->attributes->getNamedItem('style');
+					if (preg_match('@^(.*width:)[0-9]+(px;\s*height:)[0-9]+(.*)$@', $styleNode->nodeValue, $m)) {
+						$styleNode->nodeValue = $m[1] . $newWidth . $m[2] . $newHeight . $m[3];
+					}
 
-				// change grandparent div width too
-				$grandparent = $div->parentNode;
-				if ($grandparent && $grandparent->nodeName == 'div') {
-					$class = $grandparent->attributes->getNamedItem('class');
-					if ($class && $class->nodeValue == 'thumb tright') {
-						$style = $grandparent->attributes->getNamedItem('style');
-						$style->nodeValue = 'width:' . $newWidth . 'px;';
-					}
-					else if($class && $class->nodeValue == 'thumb tcenter'){
-						$style = $grandparent->attributes->getNamedItem('style');
-						$style->nodeValue = 'width:' . $newWidth . 'px;';
-					}
-					else if ($class && $class->nodeValue == 'thumb tleft') {
-						//if its centered or on the left, give it double the width if too big
-						$style = $grandparent->attributes->getNamedItem('style');
-						$oldStyle = $style->nodeValue;
-						$matches = array();
-						preg_match('@(width:\s*)[0-9]+@', $oldStyle, $matches);
-						
-						if($matches[0]){
-							$curSize = intval(substr($matches[0], 6)); //width: = 6
-							if($newWidth*2 < $curSize){
-								$existingCSS = preg_replace('@(width:\s*)[0-9]+@', 'width:'.$newWidth*2, $oldStyle);
-								$style->nodeValue = $existingCSS;
+					// change grandparent div width too
+					$grandparent = $div->parentNode;
+					if ($grandparent && $grandparent->nodeName == 'div') {
+						$class = $grandparent->attributes->getNamedItem('class');
+						if ($class && $class->nodeValue == 'thumb tright') {
+							$style = $grandparent->attributes->getNamedItem('style');
+							$style->nodeValue = 'width:' . $newWidth . 'px;';
+						}
+						else if($class && $class->nodeValue == 'thumb tcenter'){
+							$style = $grandparent->attributes->getNamedItem('style');
+							$style->nodeValue = 'width:' . $newWidth . 'px;';
+						}
+						else if ($class && $class->nodeValue == 'thumb tleft') {
+							//if its centered or on the left, give it double the width if too big
+							$style = $grandparent->attributes->getNamedItem('style');
+							$oldStyle = $style->nodeValue;
+							$matches = array();
+							preg_match('@(width:\s*)[0-9]+@', $oldStyle, $matches);
+							
+							if($matches[0]){
+								$curSize = intval(substr($matches[0], 6)); //width: = 6
+								if($newWidth*2 < $curSize){
+									$existingCSS = preg_replace('@(width:\s*)[0-9]+@', 'width:'.$newWidth*2, $oldStyle);
+									$style->nodeValue = $existingCSS;
+								}
 							}
 						}
 					}
+
+					$thumb = $image->getThumbnail($device['image-zoom-width'], $device['image-zoom-height']);
+					$newWidth = $thumb->getWidth();
+					$newHeight = $thumb->getHeight();
+					$url = wfGetPad($thumb->getUrl());
+
+					$a->setAttribute('id', 'image-zoom-' . $imgNum);
+					$a->setAttribute('class', 'image-zoom');
+					$a->setAttribute('href', '#');
+					$details = array(
+						'url' => $url,
+						'width' => $newWidth,
+						'height' => $newHeight,
+					);
+					$newDiv = new DOMElement( 'div', htmlentities(json_encode($details)) );
+					$a->appendChild($newDiv);
+					$newDiv->setAttribute('style', 'display:none;');
+					$newDiv->setAttribute('id', 'image-details-' . $imgNum);
+					$imgNum++;
 				}
-
-				$thumb = $image->getThumbnail($device['image-zoom-width'], $device['image-zoom-height']);
-				$newWidth = $thumb->getWidth();
-				$newHeight = $thumb->getHeight();
-				$url = wfGetPad($thumb->getUrl());
-
-				$a->setAttribute('id', 'image-zoom-' . $imgNum);
-				$a->setAttribute('class', 'image-zoom');
-				$a->setAttribute('href', '#');
-				$details = array(
-					'url' => $url,
-					'width' => $newWidth,
-					'height' => $newHeight,
-				);
-				$newDiv = new DOMElement( 'div', htmlentities(json_encode($details)) );
-				$a->appendChild($newDiv);
-				$newDiv->setAttribute('style', 'display:none;');
-				$newDiv->setAttribute('id', 'image-details-' . $imgNum);
-				$imgNum++;
 			}
 		}
 
@@ -378,6 +571,12 @@ DONE;
 			if ($width > $device['screen-width'] - 20) {
 				$node->nodeValue = $device['screen-width'] - 20;
 			}
+		}
+
+		// Surround step content in its own div. We do this to support other features like checkmarks
+		$nodes = $xpath->query('//div[@id="steps"]/ol/li');
+		foreach ($nodes as $node) {
+			$node->innerHTML = '<div class="step_content">' . $node->innerHTML . '</div>';
 		}
 
 		//self::walkTree($doc->documentElement, 1);
@@ -414,127 +613,7 @@ DONE;
 			$last = preg_replace('@</body>(\s|\n)*</html>(\s|\n)*$@', '', $last);
 		}
 
-		//checkboxes
-		$checkbox = '<div class="step_checkbox"></div>';
-		$sections['steps']['html'] = preg_replace('@<li([^<]*)><div class="step_num">@','<li\1>'.$checkbox.'<div class="step_num">',$sections['steps']['html']);
-
 		return array($sections, $intro, $firstImage);
-	}
-
-	public static function showDeferredJS() {
-		static $displayed = false;
-		if (!$displayed) {
-			$displayed = true;
-			$vars = array(
-				'scripts' => self::$jsScripts,
-				'scriptsCombine' => self::$jsScriptsCombine,
-			);
-			return EasyTemplate::html('include-js.tmpl.php', $vars);
-		} else {
-			return '';
-		}
-	}
-
-	public static function showBootStrapScript() {
-		static $displayed = false;
-		if (!$displayed) {
-			$displayed = true;
-			return '<script>mobileWikihow.startup();</script>';
-		} else {
-			return '';
-		}
-	}
-	
-	private function setTemplatePath() {
-		EasyTemplate::set_path( dirname(__FILE__).'/' );
-	}
-
-	protected function getDevice() {
-		return $this->deviceOpts;
-	}
-
-	protected function addJSLibs() {
-		// We separate the lib from JS from the other stuff so that it can
-		// be cached.  iPhone caches objects under 25k.
-		self::addJS('mjq', false); // jQuery
-
-		self::addJS('mwh', true); // wikiHow's mobile JS
-		self::addJS('mga', true); // google analytics script
-	}
-
-	public static function addJS($script, $combine) {
-		if ($combine) {
-			self::$jsScriptsCombine[] = $script;
-		} else {
-			self::$jsScripts[] = $script;
-		}
-	}
-}
-
-class MobileArticleBuilder extends MobileHtmlBuilder {
-
-	protected function generateHeader() {
-		$headerVars = $this->getDefaultHeaderVars();
-		$headerVars['css'][] = 'mwha';
-		$headerVars['js'][] = 'stu';
-		$headerVars['cssFiles'][] = 'mobile-article.css';
-		$headerVars['headerClasses'] = $headerClasses;
-		//stu JS uses skinname=mobile to trigger mobile behavior
-		$headerVars['jsglobals'] = Skin::makeGlobalVariablesScript( array('skinname'=>'mobile') );
-
-		return EasyTemplate::html('header.tmpl.php', $headerVars);
-	}
-
-	protected function generateBody() {
-		list($sections, $intro, $firstImage) = $this->parseNonMobileArticle($this->nonMobileHtml);
-		if ($firstImage) {
-			$title = Title::newFromURL($firstImage, NS_IMAGE);
-			if ($title) {
-				$introImage = new LocalFile($title, RepoGroup::singleton()->getLocalRepo());
-				$thumb = $introImage->getThumbnail(290, 194);
-				$width = $thumb->getWidth();
-				$height = $thumb->getHeight();
-			} else {
-				$firstImage = '';
-			}
-		} 
-		
-		//articles that we don't want to have a top (above tabs)
-		//image displayed
-		$dbKey = "";
-		if($this->t != null)
-			$dbKey = $this->t->getDBkey();
-		if ($dbKey == "Develop-Self-Esteem" || $dbKey == "Be-Cool") {
-			$firstImage = false;
-		}
-
-		if (!$firstImage) {
-			$thumb = null;
-			$width = 0; $height = 0;
-		}
-
-		$deviceOpts = $this->getDevice();
-		$articleVars = array(
-			'title' => $this->t->getText(),
-			'sections' => $sections,
-			'intro' => $intro,
-			'thumb' => &$thumb,
-			'width' => $width,
-			'height' => $height,
-			'deviceOpts' => $deviceOpts,
-		);
-
-		return EasyTemplate::html('article.tmpl.php', $articleVars);
-	}
-
-	protected function generateFooter() {
-		$footerVars = $this->getDefaultFooterVars();	
-		$t = $this->t;
-		$partialUrl = $t->getPartialURL();
-		$footerVars['redirMainUrl'] = $footerVars['redirMainUrl'] . urlencode($partialUrl);
-		$baseMainUrl = 'http://' . MobileWikihow::getNonMobileSite() . '/';
-		$footerVars['editUrl'] = $baseMainUrl . 'index.php?action=edit&title=' . $partialUrl;
-		return EasyTemplate::html('footer.tmpl.php', $footerVars);
 	}
 }
 
@@ -542,7 +621,7 @@ class MobileArticleBuilder extends MobileHtmlBuilder {
 * Builds the body of the article with appropriate javascript and google analytics tracking.  
 * This is used primarily for the Mobile QG (MQG) tool.
 */
-class MobileQGArticleBuilder extends MobileArticleBuilder {
+class MobileQGArticleBuilder extends MobileBasicArticleBuilder {
 
 	protected function generateHeader() {
 		return "";
@@ -567,9 +646,6 @@ class MobileQGArticleBuilder extends MobileArticleBuilder {
 
 	protected function addJSLibs() {
 		// Don't include the jquery JS here.  This will be added in the MQG special page
-
-		//self::addJS('mwh', true); // wikiHow's mobile JS
-		//self::addJS('mga', true); // google analytics script
 	}
 }
 
@@ -578,12 +654,12 @@ class MobileMainPageBuilder extends MobileHtmlBuilder {
 	protected function generateHeader() {
 		$headerVars = $this->getDefaultHeaderVars();
 		$headerVars['showTagline'] = true;
-		$headerVars['css'][] = 'mwhf';
-		$headerVars['css'][] = 'mwhh';
 		return EasyTemplate::html('header.tmpl.php', $headerVars);
 	}
 
 	protected function generateBody() {
+		global $wgLanguageCode;
+
 		$featured = $this->getFeaturedArticles(7);
 		$randomUrl = '/' . wfMsg('special-randomizer');
 		$spotlight = $this->selectSpotlightFeatured($featured);
@@ -593,6 +669,7 @@ class MobileMainPageBuilder extends MobileHtmlBuilder {
 			'spotlight' => $spotlight,
 			'featured' => $featured,
 			'languagesUrl' => $langUrl,
+			'imageOverlay' => $wgLanguageCode == 'en',
 		);
 		return EasyTemplate::html('main-page.tmpl.php', $vars);
 	}
@@ -665,6 +742,13 @@ class MobileMainPageBuilder extends MobileHtmlBuilder {
 		$summary = Generatefeed::getArticleSummary($article, $title);
 		return $summary;
 	}
+
+	protected function addCSSLibs() {
+		parent::addCSSLibs();
+		$this->addCSS('mwhf');
+		$this->addCSS('mwhh');
+	}
+
 
 }
 
@@ -753,56 +837,5 @@ class Mobile404Builder extends MobileHtmlBuilder {
 	protected function generateFooter() {
 		$footerVars = $this->getDefaultFooterVars();	
 		return EasyTemplate::html('footer.tmpl.php', $footerVars);
-	}
-
-	private static function getLanguages() {
-		$ccedil = htmlspecialchars_decode('&ccedil;');
-		$ntilde = htmlspecialchars_decode('&ntilde;');
-		$ecirc = htmlspecialchars_decode('&ecirc;');
-		$langs = array(
-			array(
-				'code' => 'en', 
-				'name' => 'English',
-				'url'  => 'http://m.wikihow.com/',
-				'img'  => '/extensions/wikihow/mobile/images/flag_england.gif',
-			),
-			array(
-				'code' => 'es', 
-				'name' => "Espa{$ntilde}ol",
-				'url'  => 'http://es.m.wikihow.com/',
-				'img'  => '/extensions/wikihow/mobile/images/flag_spain.gif',
-			),
-			array(
-				'code' => 'de', 
-				'name' => 'Deutsch',
-				'url'  => 'http://de.m.wikihow.com/',
-				'img'  => '/extensions/wikihow/mobile/images/flag_germany.gif',
-			),
-			array(
-				'code' => 'pt', 
-				'name' => "Portugu{$ecirc}s",
-				'url'  => 'http://pt.m.wikihow.com/',
-				'img'  => '/extensions/wikihow/mobile/images/flag_portugal.gif',
-			),
-			array(
-				'code' => 'fr', 
-				'name' => "Fran${ccedil}ais",
-				'url'  => 'http://fr.m.wikihow.com/',
-				'img'  => '/extensions/wikihow/mobile/images/flag_france.gif',
-			),
-			array(
-				'code' => 'it', 
-				'name' => 'Italiano',
-				'url'  => 'http://it.m.wikihow.com/',
-				'img'  => '/extensions/wikihow/mobile/images/flag_italy.gif',
-			),
-			array(
-				'code' => 'nl', 
-				'name' => 'Nederlands',
-				'url'  => 'http://nl.m.wikihow.com/',
-				'img'  => '/extensions/wikihow/mobile/images/flag_netherlands.gif',
-			),
-		);
-		return $langs;
 	}
 }

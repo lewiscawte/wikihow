@@ -1,4 +1,5 @@
 <?
+
 /*
 * Ajax end-point for logging "bounce times" (time between
 * page-load and when the user navigates away.) 
@@ -9,7 +10,7 @@
 */
 class BounceTimeLogger extends UnlistedSpecialPage {
 
-	function __construct() {
+	public function __construct() {
 		UnlistedSpecialPage::UnlistedSpecialPage('BounceTimeLogger');
 
 		//this page gets requested onUnload. set ignore_user_abort()
@@ -18,7 +19,7 @@ class BounceTimeLogger extends UnlistedSpecialPage {
 		ignore_user_abort(true);
 	}
 
-	function getBuckets(){
+	private static function getBuckets() {
 		return array(
 				'0-10s'	=> 0,
 				'11-30s' => 11,
@@ -30,72 +31,64 @@ class BounceTimeLogger extends UnlistedSpecialPage {
 			);
 	}
 
-	function bucketize($n){
-		$buckets = $this->getBuckets();
+	private static function bucketize($n) {
+		$buckets = self::getBuckets();
 		$b = false; 
-		foreach($buckets as $label=>$threshold){
+		foreach ($buckets as $label => $threshold) {
 			//find highest bucket that $n is above
-			if ($n>=$threshold) $b = $label;
+			if ($n >= $threshold) $b = $label;
 		}
 		return $b;
 	}
 
-	function execute($par) {
+	public function execute($par) {
 		global $wgRequest, $wgOut;
 
-		$priority = $wgRequest->getVal('_priority');
+		$priority = $wgRequest->getVal('_priority', 0);
 		$domain = $wgRequest->getVal('_domain');
 		$message = $wgRequest->getVal('_message');
 		$v = $wgRequest->getVal('v');
 
-
 		$wgOut->setArticleBodyOnly(true);
 
-		if ($v!=6){
-			echo 'wrong version';
-			return;
-		}
-		if (!is_numeric($priority) || $priority<0 || $priority>3){
-			echo 'bad priority';
+		if ($v != 6) {
+			print 'wrong version';
 			return;
 		}
 
-
-		$parts = explode(' ',$message);
-		if (count($parts)<2){
-			echo "Bad message";
+		if (!is_numeric($priority) || $priority < 0 || $priority > 3) {
+			print 'bad priority';
 			return;
 		}
 
-		if ($parts[1]=='ct'){
+		$parts = explode(' ', $message);
+		if (count($parts) < 2) {
+			print "Bad message";
+			return;
+		}
+
+		if ($parts[1] == 'ct') {
 			$msg = $message;
-		}else if ($parts[1]=='btraw' && is_numeric($parts[2])){
-			$msg = '';
-			$bucket = $this->bucketize($parts[2]);
+		} elseif ($parts[1] == 'btraw' && is_numeric($parts[2])) {
+			$bucket = self::bucketize($parts[2]);
 			if (!$bucket) return; //bad bucket
-			$msg = $parts[0].' bt '.$bucket;
-			$msg .= ' '.$parts[2];	
-		}else if ($parts[1]=='bt'){
+			$msg = "{$parts[0]} bt $bucket {$parts[2]}";
+		} elseif ($parts[1] == 'bt') {
 			$msg = $message;
-		}else{
-			echo "Bad message";
+		} else {
+			print "Bad message";
 			return;
 		}
 
 		$msg = "$priority $domain $msg\r\n";
-		echo $msg;
-		//error_log($msg, 3, '/tmp/wh_bouncetime'.$v.'.log');
+		print $msg;
 
-		$this->logwrite($msg);
-		
+		self::logwrite($msg);
 	}
 
-
-	private function logwrite($msg){
-
+	private static function logwrite($msg) {
 		$fp = fsockopen("127.0.0.1", 30302);
 		if (!$fp) return;
-
 
 		fwrite($fp, $msg);
 		fclose($fp);

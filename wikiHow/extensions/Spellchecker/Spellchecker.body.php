@@ -238,7 +238,7 @@ class Spellchecker extends UnlistedSpecialPage {
 	 * 
 	 */
 	function markBreaks($text) {
-		$articleText = preg_replace("@<br>@", "<br class='exists'>", $text);
+		$articleText = preg_replace("@<br>@i", "<br class='exists'>", $text);
 
 		return $articleText;
 	}

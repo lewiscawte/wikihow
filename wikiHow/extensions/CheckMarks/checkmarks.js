@@ -17,36 +17,56 @@ jQuery.extend(WH, (function($) {
 			return lastLi[0] == li[0];
 		}
 
-		// Returns whether the step number if it's the 1st, 2nd or 3rd
-		// Returns -1 otherwise
 		function stepNum(li) {
-			var stepNum = -1;
-			var ul = li.parent('ul');
-			if (ul.index() == 0) {
-				var liStepNum = li.index() + 1;
-				if (liStepNum <= 3) {
-					stepNum = liStepNum;
-				}
-			}
+			var ols = $('#steps:first ol');
+			var stepNum = 0;
+			var found = false;
+			$.each(ols, function(i, ol) {
+				$.each($(ol).children('li'),function (j, currentLi) {
+					stepNum++;
+					currentLi = currentLi;
+					if (currentLi == li[0]) {
+						found = true;
+						return false;
+					}
+				});
+				if (found) { return false; }
+			});
 			return stepNum;
+		}
+
+		function randomFromTo(from, to){
+		 	return Math.floor(Math.random() * (to - from + 1) + from);
 		}
 
 		function generateMessage(li) {
 			var html = '';
 
+
 			if (isLastStep(li) && messages.last.length) {
 				// Get the last step message
-				html = getMessageHtml(messages.last.pop());
+				var lastMessage = messages.last.pop();
+				html = getMessageHtml(lastMessage, true);
 			} else if (messages.msgs.length) {
-				// Get a regular step message
-				html = getMessageHtml(messages.msgs.pop());
+				if (stepNum(li) == 1) {
+					// Always show a message on the first step
+					html = getMessageHtml(messages.msgs.pop(), false);
+				} else {
+					// 25% of the rest of the time show a message
+					if (randomFromTo(1, 100) < 25) {
+						html = getMessageHtml(messages.msgs.pop(), false);
+					}
+				}
 			}
 			return html;
 		}
 		
-		function getMessageHtml(msg) {
+		function getMessageHtml(msg, lastStep) {
 			var div = $('#chk_praise_content').clone();
 			$(div).find('.chk_msg').html(msg);
+			if (!lastStep) {
+				$(div).find('.chk_img_final').hide();
+			}
 			return $(div).html();
 		}
 
@@ -59,10 +79,9 @@ jQuery.extend(WH, (function($) {
 
 			// CheckMark click handlers
 			$('.step_checkbox').on('click', function() {
-				var li = $(this).parent();
+				var li = $(this).parents('li');
 				if ($(this).hasClass('step_checked')) {
 					$(this).removeClass('step_checked');
-					li.children('.chk_praise').slideUp('slow');
 					li.children('.step_content').removeClass('txt_strike');
 				}
 				else {
@@ -79,14 +98,15 @@ jQuery.extend(WH, (function($) {
 		}
 
 		function trackCheck(li) {
-			
 			var step = stepNum(li);
 			var action = '';
 			if (isLastStep(li)) {
 				action = 'step-last';
 			} else if (step == 1 || step == 2 || step == 3) {
 				action = 'step-' + step;
-			} 
+			} else {
+				action = 'step-other';
+			}
 			try{
 				if (action.length && pageTracker) {
 					pageTracker._trackEvent('m-checks', action, wgTitle);
@@ -95,7 +115,7 @@ jQuery.extend(WH, (function($) {
 		}
 
 		this.init = function() {
-			numSteps = $('#steps').find('li').size();
+			numSteps = $('#steps:first ol').children('li').size();
 			parseJSON();
 			initEventListeners();
 		}
@@ -104,6 +124,4 @@ jQuery.extend(WH, (function($) {
 	return {
 		CheckMarks: new CheckMarks()
 	};
-
-	//
 })(jQuery));

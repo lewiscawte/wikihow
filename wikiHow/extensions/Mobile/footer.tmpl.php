@@ -19,6 +19,13 @@
 			<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_afmc_ads.js"></script>
 		<? endif; ?>
 		<div id="footer">
+			<? if (!$isMainPage && $showSharing) { ?>
+			<div id="sharing">
+				<div id="sharing_inner">
+					<div class="g-plusone" data-size="medium" data-href="<?=$pageUrl?>"></div>
+				</div>
+			</div>
+			<? } ?>
 			<?= EasyTemplate::html('search-box') ?>
 			<div id="footer_links">
 				<a href="<?= $redirMainUrl ?>" rel="nofollow"><?= wfMsg('full-site') ?></a>
@@ -32,7 +39,9 @@
 			</div><!--end footer_links-->
 		</div>
 	<? endif; ?>
+	<!-- before deferred js -->
 	<?= MobileHtmlBuilder::showDeferredJS() ?>
+	<!-- after deferred js -->
 	<?= MobileHtmlBuilder::showBootStrapScript() ?>
 
 	<script type="text/javascript">

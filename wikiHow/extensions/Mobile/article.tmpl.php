@@ -1,5 +1,6 @@
 	<div id="article" class="<?=$articleClasses?>"> 
 		<div id='qg_cta'> Hey! We need your help! <a href="/Special:MQG" id='qg_intro_link'>Click here</a>.</div>
+		<?=$checkmarks?>
 		<div id="image-preview">
 <?
 	// image: /extensions/wikihow/winpop_x.gif
@@ -24,7 +25,9 @@
 					}
 				?>
 				<div id='intro_img' class="rounders grey <?= $className ?>" style="width:<?= $width ?>px; height:<?= $height ?>px;">
+					<? if (!$nonEng) { ?>
 					<img src="<?= wfGetPad('/extensions/wikihow/mobile/images/' . wfMsg('mobile-howto-image-overlay')) ?>" alt="" class="home_label" />
+					<? } ?>
 					<?= $thumb->toHtml() ?>
 					<div class="corner top_left"></div>
 					<div class="corner top_right"></div>
@@ -46,7 +49,8 @@
 			<div id="article_tabs">
 				<? $tabs = 0; ?>
 				<? if (isset($sections['steps'])): $tabs++; ?>
-					<div id="tab-steps" class="tab<?= $tabs == 1 ? ' active' : '' ?>"><div class="tab_item"><a href="#"><?= $sections['steps']['name'] ?></a></div></div>
+					<? $tab_name = $isGerman ? wfMsg('m_step') : $sections['steps']['name'] ?>
+					<div id="tab-steps" class="tab<?= $tabs == 1 ? ' active' : '' ?>"><div class="tab_item"><a href="#"><?= $tab_name ?></a></div></div>
 				<? endif; ?>
 				<? if (isset($sections['ingredients'])): $tabs++; ?>
 					<div id="tab-ingredients" class="tab"><div class="tab_item"><a href="#"><?= wfMsg('ingredients') ?></a></div></div>

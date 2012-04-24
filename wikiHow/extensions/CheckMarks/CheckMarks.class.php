@@ -1,14 +1,9 @@
 <?
 class CheckMarks {
 	static $stepsMsgs = array(
-		"\"Action is eloquence.\"  ~William Shakespeare",
-		"A journey of a thousand miles begins with a single step.",
-		"Another step bites the dust",
-		"Check it like you mean it",
+		"Another step bites the dust.",
 		"Crossing things off lists feels good, doesn't it?",
-		"Didn't that feel good?",
 		"Do it again!",
-		"\"Do not let what you cannot do interfere with what you can do.\" ~ John Wooden",
 		"Don't stop now, you are on a roll.",
 		"Getting close...",
 		"Getting closer...",
@@ -16,21 +11,19 @@ class CheckMarks {
 		"Go you!",
 		"Good job. ",
 		"Great!",
-		"Hasta la vista, baby.",
 		"He (or she) shoots, he (or she) scores!",
-		"Hurry! Another step awaits!",
+		"Hurry. Another step awaits!",
 		"I can't imagine anyone doing this better.",
 		"I feel a completed task in your future.",
 		"I forsee many completed steps in your future.",
 		"I like the way you check.",
-		"I like the way you roll.",
-		"I like you.",
-		"I've never seen a better completion of a step",
+		"I've never seen a better completion of a step.",
 		"Keep going!",
 		"Keep it up!",
 		"Keep on checkin!",
 		"Keep on keepin' on!",
-		"Movin' right along",
+		"Keep up the good work.",
+		"Movin' right along.",
 		"Nailed it!",
 		"Nice going!",
 		"Nice job!",
@@ -47,14 +40,12 @@ class CheckMarks {
 		"Slow down, you are making the rest of us slackers look bad.",
 		"Step by step, you'll make it.",
 		"Success.",
-		"Success breeds success.  Keep it going.",
 		"That step never stood a chance.",
 		"That's the sweet smell of progress.",
 		"The end is in sight.",
-		"This is it. You're really doing this.",
 		"Way to stay focused!",
 		"I'm very impressed with your progress.",
-		"Whistle while you work",
+		"Wasn't that fun?",
 		"Woot!",
 		"Wow,  nice work!",
 		"Wow, that was impressive!",
@@ -65,26 +56,25 @@ class CheckMarks {
 		"You got this.",
 		"You owned that step.",
 		"You rock!",
+		"You are doing a great job.",
 		"You'll get through this in no time.",
-		"You're blowing my mind!",
 		"You're fast!",
 		"You're on your way!",
-		"Youza!",
+		"Yowza!",
 		"I like.",
 		"Nice.",
 		"Congratulations! ",
 		"Congraulations. Can't wait for you to check another! :)",
-		"Easy, right?",
+		"Easy, right? ",
 		"Good form!",
 		"wikiHow to do it!",
 	);
 
-	 static $lastStepMsgs = array(
+	static $lastStepMsgs = array(
 		"Annnnd.... that's a wrap. Good job!",
 		"Nice. Now are you ready for another?",
 		"Awesome work!",
-		"Awesome!",
-		"Bet you thought you couldn't do it! Congrats.",
+		"Awesome! You're done.",
 		"Good job. Completed with flair and gusto.",
 		"Congrats!",
 		"Congratulations! You made it to the end.",
@@ -99,7 +89,6 @@ class CheckMarks {
 		"How to = DONE.",
 		"How to? Not anymore. Now you have know how.",
 		"I think you've earned some bragging rights.",
-		"If only everyone got as much done today as you just did.",
 		"Done. And just like a rockstar!",
 		"Done. Accomplishment feels good.",
 		"Not everyone can how to like you do.  Nice work!",
@@ -107,11 +96,11 @@ class CheckMarks {
 		"Yay, you're done!",
 		"Success!",
 		"Success! Now that deserves a fist bump.",
+		"",
 		"That's how it's done!",
 		"That's it... You're done!",
-		"We hereby grant you the title of \"How to master\".",
+		"We hereby grant you the title of How to master.",
 		"We hope you enjoyed the article!",
-		"We knew you could do it!",
 		"Congrats. wikiDone well.",
 		"wikiDone. Great job.",
 		"wikiHow-WOW!",
@@ -119,10 +108,10 @@ class CheckMarks {
 		"We knew you could do it. Congrats.",
 		"You did it. Great job.",
 		"You made that look easy.",
-		"You really know how to \"how to\".",
+		"You really know how to how to.",
 		"You rocked this wikiHow.",
 		"You showed that task who's boss!",
-		"Success. Now you are ready to master something new.",
+		"Success. Good work.",
 		"Good job.",
 		"You are done. We're very proud of you.",
 		"Congratulations! Job well done.",
@@ -132,9 +121,10 @@ class CheckMarks {
 	* Injects checkmark html into $sections variable returned from MobileBasicArticleBuilder::parseNonMobileArticle
 	*/
 	public static function injectCheckMarksIntoSteps(&$sections) {
-		$checkbox = '<div class="step_checkbox"></div>';
-		$sections['steps']['html'] = preg_replace('@<li([^<]*)><div class="step_num">@', '<li\1>'.$checkbox.'<div class="step_content"><div class="step_num">', $sections['steps']['html']);
-		$sections['steps']['html'] = preg_replace('@</li>@', '</span></li>', $sections['steps']['html']);
+		// Add checkbox, and move the step_num div as a child
+		$checkbox = '<div class="step_checkbox"><div class="step_num">\2</div></div>';
+		$sections['steps']['html'] = preg_replace('@<li([^<]*)><div class="step_content"><div class="step_num">([^<]+)</div>@', 
+			'<li\1>' . $checkbox . '<div class="step_content">', $sections['steps']['html']);
 	}
 
 	public static function getCheckMarksHtml() {

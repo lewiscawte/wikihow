@@ -391,6 +391,18 @@ class Importvideo extends SpecialPage {
 		}
 	}
 
+	function urlCleaner($url) {
+	  $U = explode(' ',$url);
+
+	  $W =array();
+	  foreach ($U as $k => $u) {
+		if (stristr($u,'http') || (count(explode('.',$u)) > 1)) {
+		  unset($U[$k]);
+		  return $this->urlCleaner( implode(' ',$U));
+		}
+	  }
+	  return implode(' ',$U);
+	}
 	function updateMainArticle($target, $updateMessage = 'importvideo_addingvideo_summary') {
 		global $wgOut, $wgRequest;
 		$title = Title::makeTitle(NS_MAIN, $target);
@@ -561,7 +573,7 @@ class ImportvideoPopup extends UnlistedSpecialPage {
 		$wgOut->addWikiText(wfMsg('importvideo_add_desc_details'));
 		if ($wgRequest->wasPosted()) {
 			$iv = Title::makeTitle(NS_SPECIAL, "Importvideo");
-			$wgOut->addHTML("<form method='POST' name='importvideofrompopup' action='{$iv->getFullURL()}'>");
+			$wgOut->addHTML("<form method='POST' name='importvideofrompopup' action='{$iv->getLocalUrl()}'>");
 			$vals = $wgRequest->getValues();
 			foreach($vals as $key=>$val) {
 				if ($key != "title") {

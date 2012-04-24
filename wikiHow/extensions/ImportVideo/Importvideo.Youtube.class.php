@@ -83,7 +83,8 @@ class ImportvideoYoutube extends Importvideo {
     	$this->parseResults($results);
         $title = Title::makeTitle(NS_VIDEO, $target);
         $v = $this->mResults[0];
-        $text = "{{Curatevideo|youtube|$id|{$v['TITLE']}|{$v['MEDIA:KEYWORDS']}|{$v['CONTENT']}|{$v['MEDIA:CATEGORY']}|{$desc}}}
+		$content = $this->urlCleaner($v['CONTENT']);
+        $text = "{{Curatevideo|youtube|$id|{$v['TITLE']}|{$v['MEDIA:KEYWORDS']}|$content|{$v['MEDIA:CATEGORY']}|{$desc}}}
 {{VideoDescription|{{{1}}} }}";
 		return $text;
 	}
