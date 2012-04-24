@@ -66,6 +66,7 @@ return array(
 	'mwha' => array('//extensions/wikihow/mobile/mobile-article.css'),
 	'ma2h' => array('//extensions/wikihow/mobile/add2home/add2home.css'),
 	'mqgc' => array('//extensions/wikihow/mqg/mqg.css'),
+	'mcmc' => array('//extensions/wikihow/checkmarks/checkmarks.css'),
 
     // 'js' => array('//js/file1.js', '//js/file2.js'),
     // 'css' => array('//css/file1.css', '//css/file2.css'),

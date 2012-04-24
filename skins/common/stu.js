@@ -14,15 +14,18 @@ var loadTime = false;
 var duration = 0;
 //var whC = (console && console.log);
 var etDebug = false;
+var DEFAULT_PRIORITY = 0;
 
 function getTime() {
 	var date = new Date();
 	return date.getTime();
 }
 
-function pingSend(priority, domain, message, doAsync){
-	var loggerUrl = '/Special:BounceTimeLogger?v=6&';
-	loggerUrl += '_priority=' + priority;
+function pingSend(priority, domain, message, doAsync) {
+	var loggerUrl = '/Special:BounceTimeLogger?v=6';
+	if (priority != DEFAULT_PRIORITY) {
+		loggerUrl += '&_priority=' + priority;
+	}
 	loggerUrl += '&_domain=' + domain;
 	loggerUrl += '&_message=' + encodeURI(message);
 	$.ajax({url: loggerUrl, async: doAsync});
@@ -47,7 +50,7 @@ function sendExitTime(e) {
 
 	var message = wgPageName + " btraw " + (duration / 1000);
 	var domain = getDomain();
-	pingSend(0, domain, message, false);
+	pingSend(DEFAULT_PRIORITY, domain, message, false);
 }
 
 function onUnload() { sendExitTime('unload'); }

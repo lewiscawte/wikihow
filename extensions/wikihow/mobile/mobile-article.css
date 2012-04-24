@@ -54,7 +54,7 @@
 #article .steps_list_2{
 	list-style:none;
 	/*margin:0 15px 20px 45px;*/
-	margin: 0 15px 20px 60px;
+	margin: 0 15px 20px 45px;
 	word-wrap: break-word;
 }
 
@@ -70,21 +70,9 @@
 	margin-top:9px;
 }
 
-.step_checkbox {
-	background: url(./images/checkmark_sprite.png) no-repeat 0 0;
-	width: 23px;
-	height: 24px;
+.step_content .step_num{
 	position: absolute;
 	margin-top: 2px;
-	left: 5px;
-}
-
-.step_checked { 
-	background-position: 0 -23px; 
-	margin-top: -6px;
-}
-
-.step_num{
 	clear:right;
 	float:left;
 	color:#ffffff;
@@ -99,6 +87,14 @@
 	height:17px;
 	padding:1px;
 	margin:0 0 0 -30px;
+}
+
+.step_checkbox .step_num{
+	width: 25px;
+	height: 25px;
+	text-align: center;
+	position: absolute;
+	top: 5px;
 }
 
 .thumb.tright{
@@ -170,6 +166,7 @@ h2.expanded a{
 
 #back_to_top{
 	border-top:1px solid #c7bfb0;
+	border-bottom:1px solid #c7bfb0;
 	display:block;
 	font-size:14px;
 	padding:15px;
@@ -234,5 +231,11 @@ span.caption {
 }
 
 .tcenter, .floatcenter {
-	margin-left: -25px;
+	/*margin-left: -25px;*/
 }
+
+#sharing {
+	display: none;
+	padding-top: 10px;
+}
+

@@ -16,6 +16,7 @@ if ($wgLanguageCode == 'en') {
 	require_once("$IP/extensions/wikihow/IheartwikiHow.php");
 	require_once("$IP/extensions/wikihow/fblogin/FBLink.php");
 	require_once("$IP/extensions/wikihow/h5e/Html5editor.php");
+	require_once("$IP/extensions/wikihow/HAWelcome/HAWelcome.php");
 }
 
 # International-specific extensions
@@ -175,7 +176,6 @@ require_once("$IP/extensions/wikihow/ImageCaptions.php");
 require_once("$IP/extensions/wikihow/TitleIterator.php");
 require_once("$IP/extensions/wikihow/nfd/NFDGuardian.php");
 require_once("$IP/extensions/wikihow/gallery/GallerySlide.php");
-require_once("$IP/extensions/wikihow/HAWelcome/HAWelcome.php");
 require_once("$IP/extensions/wikihow/ArticleMetaInfo.class.php");
 require_once("$IP/extensions/wikihow/TitleTests.class.php");
 require_once("$IP/extensions/wikihow/GoodRevision.class.php");

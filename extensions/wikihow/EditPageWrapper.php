@@ -616,7 +616,7 @@ enctype=\"application/x-www-form-urlencoded\"  onSubmit=\"return checkForm();\">
 		<br clear='all'/>
 <script language='javascript' src='" . wfGetPad('/extensions/min/f/extensions/wikihow/expandtextarea.js?rev=') . "'></script>
 <script language='javascript'>
-	var vp_URL = '{$vp->getFullURL()}';
+	var vp_URL = '{$vp->getLocalUrl()}';
 </script>
 <script language='javascript' src='" . wfGetPad('/extensions/min/f/extensions/wikihow/previewvideo.js?rev=') . "'></script>
 <style type='text/css' media='all'>/*<![CDATA[*/ @import '" . wfGetPad('/extensions/min/f/extensions/wikihow/expandtextarea.css,/extensions/wikihow/editpagewrapper.css,/extensions/wikihow/winpop.css,/extensions/wikihow/importvideo.css&rev=') . WH_SITEREV . "'; /*]]>*/</style>

@@ -20,7 +20,7 @@ class EmailLink extends SpecialPage {
 		$this->thanks();
 	}
 
-	function thanks () {
+	function thanks() {
 		global $wgOut, $wgRequest;
 		$wgOut->addHTML("<br/><br/>".wfMsg('thank-you-sending-article')."<br/><br/>");
 		if (!$wgRequest->getVal('fromajax')) {

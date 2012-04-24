@@ -423,7 +423,8 @@ EOT
 		$wgOut->addHtml( '<br /><ul>' );
 
 		# "Upload a new version of this file" link
-		if( UploadForm::userCanReUpload($wgUser,$this->img->name) ) {
+		# Disabling upload a new version of this file link per Bug #585
+		if(false && UploadForm::userCanReUpload($wgUser,$this->img->name) ) {
 			$ulink = $sk->makeExternalLink( $this->getUploadUrl(), wfMsg( 'uploadnewversion-linktext' ) );
 			$wgOut->addHtml( "<li><div class='plainlinks'>{$ulink}</div></li>" );
 		}

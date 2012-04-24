@@ -181,7 +181,7 @@ EOHTML;
 			$foundTech = false;
 			$title = $wgTitle->getFullURL();
 			$titleUrl = $wgTitle->getFullURL();
-			$msg = wfMsg('T_bin1'); //popular companies
+			$msg = ConfigStorage::dbGetConfig('T_bin1'); //popular companies
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $title){
@@ -205,7 +205,7 @@ EOHTML;
 			}
 
 			if (!$foundTech) {
-				$msg = wfMsg('T_bin2')  . "\n" . wfMsg('T_bin2a') . "\n" . wfMsg('T_bin2b'); //startup companies
+				$msg = ConfigStorage::dbGetConfig('T_bin2'); //startup companies
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -289,7 +289,7 @@ EOHTML;
             }
 			
 			//Original WRM bucket
-			$msg = wfMsg('Dec2010_bin0') . "\n" . wfMsg('Dec2010_bin0a') . "\n" . wfMsg('Dec2010_bin0b');
+			$msg = ConfigStorage::dbGetConfig('Dec2010_bin0');
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -302,7 +302,7 @@ EOHTML;
 			//WRM buckets
 			$found = false;
 			$title = $wgTitle->getFullText();
-			$msg = wfMsg('Dec2010_bin1') . "\n" . wfMsg('Dec2010_bin1a');
+			$msg = ConfigStorage::dbGetConfig('Dec2010_bin1');
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $title){
@@ -312,7 +312,7 @@ EOHTML;
 				}
 			}
 			if(!$found){
-				$msg = wfMsg('Dec2010_bin2');
+				$msg = ConfigStorage::dbGetConfig('Dec2010_bin2');
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -323,7 +323,7 @@ EOHTML;
 				}
 			}
 			if(!$found){
-				$msg = wfMsg('Dec2010_bin3'). "\n" . wfMsg('Dec2010_bin3a'). "\n" . wfMsg('Dec2010_bin3b'). "\n" . wfMsg('Dec2010_bin3c');
+				$msg = ConfigStorage::dbGetConfig('Dec2010_bin3');
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -334,7 +334,7 @@ EOHTML;
 				}
 			}
 			if(!$found){
-				$msg = wfMsg('Dec2010_bin4') . "\n" . wfMsg('Dec2010_bin4a') . "\n" . wfMsg('Dec2010_bin4b') . "\n" . wfMsg('Dec2010_bin4c') . "\n" . wfMsg('Dec2010_bin4d') . "\n" . wfMsg('Dec2010_bin4e') . "\n" . wfMsg('Dec2010_bin4f') . "\n" . wfMsg('Dec2010_bin4g') . "\n" . wfMsg('Dec2010_bin4h') . "\n" . wfMsg('Dec2010_bin4i') . "\n" . wfMsg('Dec2010_bin4j') . "\n" . wfMsg('Dec2010_bin4k') . "\n" . wfMsg('Dec2010_bin4l');
+				$msg = ConfigStorage::dbGetConfig('Dec2010_bin4');
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -345,7 +345,7 @@ EOHTML;
 				}
 			}
 			if(!$found){
-				$msg = wfMsg('Dec2010_bin5') . "\n" . wfMsg('Dec2010_bin5a');
+				$msg = ConfigStorage::dbGetConfig('Dec2010_bin5');
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -356,7 +356,7 @@ EOHTML;
 				}
 			}
 			if(!$found){
-				$msg = wfMsg('Dec2010_bin6');
+				$msg = ConfigStorage::dbGetConfig('Dec2010_bin6');
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -367,7 +367,7 @@ EOHTML;
 				}
 			}
 			if(!$found){
-				$msg = wfMsg('Dec2010_bin7') . "\n" . wfMsg('Dec2010_bin7a') . "\n" . wfMsg('Dec2010_bin7b');
+				$msg = ConfigStorage::dbGetConfig('Dec2010_bin7');
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -378,7 +378,7 @@ EOHTML;
 				}
 			}
 			if(!$found){
-				$msg = wfMsg('Dec2010_bin8') . "\n" . wfMsg('Dec2010_bin8a') . "\n" . wfMsg('Dec2010_bin8b') . "\n" . wfMsg('Dec2010_bin8c');
+				$msg = ConfigStorage::dbGetConfig('Dec2010_bin8');
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -389,7 +389,7 @@ EOHTML;
 				}
 			}
 			if(!$found){
-				$msg = wfMsg('Dec2010_bin9') . "\n" . wfMsg('Dec2010_bin9a') . "\n" . wfMsg('Dec2010_bin9b') . "\n" . wfMsg('Dec2010_bin9c') . "\n" . wfMsg('Dec2010_bin9d') . "\n" . wfMsg('Dec2010_bin9e');
+				$msg = ConfigStorage::dbGetConfig('Dec2010_bin9');
 				$articles = split("\n", $msg);
 				foreach ($articles as $article) {
 					if($article == $title){
@@ -417,7 +417,7 @@ EOHTML;
 				}
 			}
 
-			$msg = wfMsg('Dec2010_e1');
+			$msg = ConfigStorage::dbGetConfig('Dec2010_e1');
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -426,7 +426,7 @@ EOHTML;
 				}
 			}
 
-			$msg = wfMsg('Dec2010_e2') . "\n" . wfMsg('Dec2010_e2a');
+			$msg = ConfigStorage::dbGetConfig('Dec2010_e2');
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -435,7 +435,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('DrawTest')  . "\n" . wfMsg('DrawTest1') . "\n" . wfMsg('DrawTest2'); //drawing articles
+			$msg = ConfigStorage::dbGetConfig('DrawTest'); //drawing articles
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -449,7 +449,7 @@ EOHTML;
 				$sk->mGlobalChannels[] = "5820473342"; //Recipe articles
 			}
 			
-			$msg = wfMsg('CS_a'); //content strategy A
+			$msg = ConfigStorage::dbGetConfig('CS_a'); //content strategy A
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -459,7 +459,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_b'); //content strategy B
+			$msg = ConfigStorage::dbGetConfig('CS_b'); //content strategy B
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -469,7 +469,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_c'); //content strategy C
+			$msg = ConfigStorage::dbGetConfig('CS_c'); //content strategy C
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -479,7 +479,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_d'); //content strategy D
+			$msg = ConfigStorage::dbGetConfig('CS_d'); //content strategy D
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -489,7 +489,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_e'); //content strategy E
+			$msg = ConfigStorage::dbGetConfig('CS_e'); //content strategy E
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -499,7 +499,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_f'); //content strategy F
+			$msg = ConfigStorage::dbGetConfig('CS_f'); //content strategy F
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -509,7 +509,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_g'); //content strategy G
+			$msg = ConfigStorage::dbGetConfig('CS_g'); //content strategy G
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -519,7 +519,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_h') . "\n" . wfMsg('CS_h1'); //content strategy H
+			$msg = ConfigStorage::dbGetConfig('CS_h') . "\n" . wfMsg('CS_h1'); //content strategy H
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -529,7 +529,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_i'); //content strategy I
+			$msg = ConfigStorage::dbGetConfig('CS_i'); //content strategy I
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -539,7 +539,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_j'); //content strategy J
+			$msg = ConfigStorage::dbGetConfig('CS_j'); //content strategy J
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -549,7 +549,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_k'); //content strategy K
+			$msg = ConfigStorage::dbGetConfig('CS_k'); //content strategy K
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -559,7 +559,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_l'); //content strategy L
+			$msg = ConfigStorage::dbGetConfig('CS_l'); //content strategy L
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -569,7 +569,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_m'); //content strategy M
+			$msg = ConfigStorage::dbGetConfig('CS_m'); //content strategy M
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -579,7 +579,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_n'); //content strategy N
+			$msg = ConfigStorage::dbGetConfig('CS_n'); //content strategy N
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -589,7 +589,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_o'); //content strategy O
+			$msg = ConfigStorage::dbGetConfig('CS_o'); //content strategy O
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -599,7 +599,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_p'); //content strategy P
+			$msg = ConfigStorage::dbGetConfig('CS_p'); //content strategy P
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -609,7 +609,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_q'); //content strategy Q
+			$msg = ConfigStorage::dbGetConfig('CS_q'); //content strategy Q
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -619,7 +619,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_r'); //content strategy R
+			$msg = ConfigStorage::dbGetConfig('CS_r'); //content strategy R
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -629,7 +629,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_s'); //content strategy S
+			$msg = ConfigStorage::dbGetConfig('CS_s'); //content strategy S
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -639,7 +639,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_t'); //content strategy T
+			$msg = ConfigStorage::dbGetConfig('CS_t'); //content strategy T
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){
@@ -649,7 +649,7 @@ EOHTML;
 				}
 			}
 			
-			$msg = wfMsg('CS_u'); //content strategy U
+			$msg = ConfigStorage::dbGetConfig('CS_u'); //content strategy U
 			$articles = split("\n", $msg);
 			foreach ($articles as $article) {
 				if($article == $titleUrl){

@@ -7,8 +7,9 @@
 class Randomizer extends SpecialPage {
 
 	// change this to false if we don't want the reasons -- we don't once
-	// rolled out
-	const DEBUG = false;
+	// rolled out. debug_page_randomizer_reason table needs to be created
+	// (see schema below) before this functionality will work.
+	const DEBUG = false; 
 
 	/**
 	 * Special page constructor
@@ -233,6 +234,7 @@ CREATE TABLE page_randomizer (
 	INDEX(pr_random)
 ) Engine=InnoDB;
 
+-- this table has been removed now
 CREATE TABLE debug_page_randomizer_reason (
 	dprr_id INT UNSIGNED NOT NULL,
 	dprr_namespace INT UNSIGNED NOT NULL DEFAULT 0,

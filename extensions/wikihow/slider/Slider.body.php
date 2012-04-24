@@ -11,9 +11,10 @@ class Slider extends UnlistedSpecialPage {
 	}
 	
 	public function getBox() {
-		return self::getBox_02();
+		return self::getBox_03();
 	}
 	
+	//original slider
 	public function getBox_01() {
 		global $wgOut, $wgLanguageCode, $wgServer, $wgTitle;
 		wfLoadExtensionMessages('Slider');
@@ -40,6 +41,7 @@ class Slider extends UnlistedSpecialPage {
 		return $theBox;
 	}
 	
+	//wikihow logo slider
 	public function getBox_02() {
 		wfLoadExtensionMessages('Slider');
 		
@@ -50,6 +52,26 @@ class Slider extends UnlistedSpecialPage {
 							<div class='tta_text_02'>
 								<p class='tta_first'>".wfMsg('slider-text')."</p>
 								<p class='slider_subtext_plus1'>".wfMsg('slider-sub-text-plusone')."</p>
+							</div>
+						</div>
+					</div>";
+
+		return $theBox;
+	}
+	
+	//circle slider
+	public function getBox_03() {
+		wfLoadExtensionMessages('Slider');
+		
+		$theBox = "<div id='sliderbox' class='sliderbox_03'>
+							<div id='slider_thanks_outer_03'>
+						<div id='slider_thanks_03'>
+								<a href='#' id='slider_close_button'>x</a>
+								<div class='tta_text_03'>
+									<p class='tta_first_03'>".wfMsg('slider-text')."</p>
+									<p class='slider_subtext_plus1'>".wfMsg('slider-sub-text-plusone')."</p>
+								</div>
+								<div class='tta_plus1_03'><g:plusone size='tall'></g:plusone></div>
 							</div>
 						</div>
 					</div>";

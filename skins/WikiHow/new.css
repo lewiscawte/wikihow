@@ -603,6 +603,23 @@ margin-left:23px;
 	clear: right;
 }
 
+#article OL.steps_list_2 LI.steptest_li DIV.step_num {
+	position: relative;
+	z-index: 1;
+	background: url(/skins/WikiHow/images/bigsteps_bullet.png) no-repeat 0 0;
+	width: 37px;
+	height: 37px;
+	line-height: 37px;
+	color: #464646;
+	font-weight: bold;
+	margin: 10px 0 -50px 10px;
+	*margin: 10px 0 -50px 15px;
+}
+
+#article OL.steps_list_2 LI.steptest_li_fix DIV.step_num {
+	margin: 0 20px 0 -50px;
+}
+
 #steps OL.steps_list_2 LI.final_li { border: 0; }
 
 #steps OL.steps_list_2 LI LI {
@@ -3367,6 +3384,10 @@ span.tooltip_span {
    height:52px;   /* Height of the footer */
    background: url(/skins/WikiHow/images/savebar_bg.jpg) repeat-x left;
    z-index:2;
+}
+
+.fb_iframe_widget iframe{
+	position:relative !important; /* Temp fix for FB bug */
 }
 .fb_bar_outer {
 	background: #F5F7F9;

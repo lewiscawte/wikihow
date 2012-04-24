@@ -1,4 +1,4 @@
-mysqldump: Got error: 1033: Incorrect information in file: './wikidb_112/avatar.frm' when using LOCK TABLES
+mysqldump: Got error: 144: Table './wikidb_112/searchindex' is marked as crashed and last (automatic?) repair failed when using LOCK TABLES
 -- MySQL dump 10.11
 --
 -- Host: localhost    Database: wikidb_112

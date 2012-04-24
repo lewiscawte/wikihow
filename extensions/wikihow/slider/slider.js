@@ -11,7 +11,8 @@ Slider.prototype.init = function () {
 		
 	
 	$('#sliderbox').animate({
-		right: '+=510'
+		right: '+=510',
+		bottom: '+=300'
 	},function() {
 	
 		//initialize buttons/links
@@ -38,7 +39,8 @@ Slider.prototype.buttonize = function() {
 
 Slider.prototype.closeSlider = function() {
 	$('#sliderbox').animate({
-		right: '-510px'
+		right: '-510px',
+		bottom: '-300px'
 	});
 	
 	//set a 30-day cookie

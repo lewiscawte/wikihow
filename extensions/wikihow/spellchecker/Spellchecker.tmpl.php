@@ -8,6 +8,8 @@
 		<p id="spch-help"><?=wfMsg('spch-instructions') ?></p>
 		<?php if($addWords): ?>
 		<a href="#" id="spch-add-words"> Add words to whitelist</a>
+		<?php else: ?>
+		<a href="/wikiHow:Suggested-Spellchecker-Whitelist" target="_blank">Add words to whitelist</a>
 		<? endif; ?>
 	</div>
 	<div id='spch-error'>

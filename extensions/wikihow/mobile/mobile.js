@@ -46,6 +46,9 @@ var mobileWikihow = (function () {
 			$(document).ready( function() {
 				initQGCTA();
 				initAppLink();
+				if (typeof WH != "undefined"  && typeof WH.CheckMarks != "undefined") {
+					WH.CheckMarks.init();
+				}
 
 				// hide URL bar on iphone
 				iphoneHideUrlBar();
@@ -126,23 +129,48 @@ var mobileWikihow = (function () {
 					preview_obj.css("margin-left", (winWidth - previewWidth)/2);
 					preview_obj.show();
 				});
+			});
 
-				//add checkbox click handlers
-				$('.step_checkbox').click(function() {
-					if ($(this).hasClass('step_checked')) {
-						$(this).removeClass('step_checked');
-					}
-					else {
-						$(this).addClass('step_checked');
-						// track the clicks
-						try{
-							if (pageTracker) {
-								pageTracker._trackEvent('checks', 'mobile', 'checked');
+			$(window).load(function() {            
+				/*
+				if ($('.twitter-share-button').length) {
+					// Load twitter script
+					$.getScript("http://platform.twitter.com/widgets.js", function() {
+						twttr.events.bind('tweet', function(event) {
+							if (event) {                            
+								var targetUrl;
+								if (event.target && event.target.nodeName == 'IFRAME') {                              
+									targetUrl = extractParamFromUri(event.target.src, 'url');
+								}                            
+								if (pageTracker) {
+									pageTracker._trackSocial('twitter', 'tweet', targetUrl);                        
+								}
 							}
-						} catch(err) {}
-					}
-					return false;
-				});
+						});
+
+					});
+				}
+
+				if($('.g-plusone').length){
+					var node2 = document.createElement('script');
+					node2.type = 'text/javascript';
+					node2.async = true;
+					node2.src = 'http://apis.google.com/js/plusone.js';
+					$('body').append(node2);
+				}
+
+				// Init Facebook components
+				if($('.fb-like').length){
+					(function(d, s, id) {
+					  var js, fjs = d.getElementsByTagName(s)[0];
+					  if (d.getElementById(id)) return;
+					  js = d.createElement(s); js.id = id;
+					  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+					  js.async = true;
+					  fjs.parentNode.insertBefore(js, fjs);
+					}(document, 'script', 'facebook-jssdk'));
+				}
+				*/
 			});
 		}
 	};
