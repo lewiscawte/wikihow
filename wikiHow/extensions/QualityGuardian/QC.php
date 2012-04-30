@@ -98,8 +98,7 @@ $wgQCRulesToCheck = array("ChangedIntroImage", "ChangedVideo", "RCPatrol");
 
 
 $wgAvailableRights[] = 'qc';
-$wgGroupPermissions['qccheckers']['qc'] = true;
-$wgGroupPermissions['staff' ]['qc']   = true;
+$wgGroupPermissions['user']['qc'] = true;
 
 $wgHooks['ArticleDelete'][] = array("wfClearQCOnDelete"); 
 
