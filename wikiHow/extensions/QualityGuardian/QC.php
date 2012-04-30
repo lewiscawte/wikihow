@@ -98,7 +98,7 @@ $wgQCRulesToCheck = array("ChangedIntroImage", "ChangedVideo", "RCPatrol");
 
 
 $wgAvailableRights[] = 'qc';
-$wgGroupPermissions['user']['qc'] = true;
+$wgGroupPermissions['autoconfirmed']['qc'] = true;
 
 $wgHooks['ArticleDelete'][] = array("wfClearQCOnDelete"); 
 
