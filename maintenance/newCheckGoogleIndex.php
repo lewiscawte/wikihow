@@ -8,7 +8,6 @@ require_once( "commandLine.inc" );
 $cond = " AND page_id not In (SELECT gi_page FROM google_indexed WHERE datediff(now(), gi_timestamp) < 7)";
 //check pages at most once a week
 
-//require_once("GoogleSearch.php");
 if (isset($args[0]) )
 	$sql = "select page_id from page where page_is_redirect=0 and page_namespace=0 $cond order by rand() limit {$args[0]};";
 else
@@ -37,7 +36,7 @@ echo "checking $query\n";
 	$found = false;
 	while ($start < 90 && !$found) {
 //		echo "searching at $start\n";
-		$results = gSearch::serp($query, $start);
+		$results = SearchEngineAPI::serp($query, $start);
 		$gTotalAPIRequests++;
 		$i = $start + 1;
 		if ($results == null) {

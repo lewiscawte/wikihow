@@ -418,7 +418,7 @@ class ManageSuggestions extends UnlistedSpecialPage {
 					continue;
 				}
 
-				$count = $dbw->selectField('skey', array('count(*)'), array('skey_key' => $key));
+				$count = $dbw->selectField('title_search_key', array('count(*)'), array('tsk_key' => $key));
 				if ($count > 0) {
 					$wgOut->addHTML("Suggestion \"{$title}\" <b>not</b> added - duplicate article key.<br/>");
 					continue;

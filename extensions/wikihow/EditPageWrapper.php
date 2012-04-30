@@ -434,16 +434,16 @@ class EditPageWrapper extends EditPage {
 		if ($wgUser->getID() > 0 &&( $wgLanguageCode=='en' || $wgLanguageCode== 'fr' || $wgLanguageCode=='es' || $wgLanguageCode == 'nl' || $wgLanguageCode== 'he' )) {
 			$ctitle = $this->mTitle->getText();
 			$css = HtmlSnips::makeUrlTags('css', array('categoriespopup.css'), 'extensions/wikihow', false);
+			$editCatHtml = $wgLanguageCode == 'en' ? 
+				"<a href='#' id='ep_cat'>[".wfMsg('editcategory')."]</a><strong>$editCatLink</strong>&nbsp;&nbsp;<a href=\"{$wgScriptPath}/Writer%27s-Guide?section=2#" . wfMsg('more-info-categorization') . "\" target=\"new\">" . wfMsg('moreinfo') ."</a>": '';
 			$categoryHTML = "
 				$css
 				<div id='categories'>
 					<h3>".wfMsg('add-optional-categories') . "</h3>
 					<div class='article_inner'>
-						<strong><a href='#' id='ep_cat'>[".wfMsg('editcategory')."]</a></strong>&nbsp;&nbsp;<a href=\"{$wgScriptPath}/Writer%27s-Guide?section=2#" . wfMsg('more-info-categorization') . "\" target=\"new\">" . wfMsg('moreinfo') ."</a>"
-						. Categoryhelper::getCategoryOptionsForm2($cat_string, $whow->mCategories)
-				.
+					$editCatHtml" . Categoryhelper::getCategoryOptionsForm2($cat_string, $whow->mCategories) .
 					"</div>
-			</div>";
+				</div>";
 		}
 
 
@@ -551,7 +551,7 @@ class EditPageWrapper extends EditPage {
 		//$popup2 = Title::newFromText("ImportFreeImages", NS_SPECIAL);
 		//$imgBtn = "<a class='button white_button_150 " . ($wgUser->getID() == 0 ? " disabled" : "") . "' style='float:left;' onmouseover='button_swap(this);' onmouseout='button_unswap(this);' id='gatImagePopup' type='button' href=\"javascript:imagePopup ('" . $popup->getFullURL() . "', document.editform.summary);\"" . ($wgUser->getID() == 0 ? " disabled=\"disabled\" " : "") . ">".wfMsg('add-photo')."</a>";
 
-		$relBtn = PopBox::getGuidedEditorButton();
+		$relBtn = $wgLanguageCode == 'en' ? PopBox::getGuidedEditorButton() : '';
 		$relHTML = PopBox::getPopBoxJSGuided() . PopBox::getPopBoxDiv() . PopBox::getPopBoxCSS();
 
 		if ( $this->formtype == 'preview' ) {
@@ -676,7 +676,7 @@ enctype=\"application/x-www-form-urlencoded\"  onSubmit=\"return checkForm();\">
 		</div>
 	</div>
 	<div id='viewpreview' class='{$vidpreview_vis}' style='text-align: center; margin-top: 5px;'>
-		<center><a onclick='showHideVideoPreview();'>Hide Preview</a></center><br/>
+		<center><a onclick='showHideVideoPreview();'>" . wfMsg('ep_hide_preview') . "</a></center><br/>
 		<div id='viewpreview_innards'>{$vidpreview}</div>
 	</div>
 

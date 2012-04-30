@@ -24,43 +24,51 @@ class TitleSearch extends UnlistedSpecialPage {
 
 		$result = array();
 
-		$base = "SELECT skey.skey_title, p1.page_counter, p1.page_len, p1.page_is_featured FROM skey  "
-			. " LEFT JOIN page p1 ON skey_title = p1.page_title AND skey_namespace = p1.page_namespace WHERE "
-			. " p1.page_is_redirect = 0 AND skey_namespace = 0  ";
-		$sql = $base . " AND skey_key LIKE '%" . str_replace(" ", "%", $key) . "%' AND skey_namespace = 0  GROUP by p1.page_id ";
-		$sql .= " LIMIT $limit;";
-		$db =& wfGetDB( DB_MASTER );
-		$res = $db->query( $sql, 'WH TitleSearch::matchKeyTitles1' );
-		if ( $db->numRows( $res ) ) {
-			while ( $row = $db->fetchObject( $res ) ) {
-				$con = array();
-				$con[0] = $row->skey_title;
-				$con[1] = $row->page_counter;
-				$con[2] = $row->page_len;
-				$con[3] = $row->page_is_featured;
+		$base = "SELECT tsk_title, page_counter, page_len, page_is_featured
+				FROM title_search_key 
+				LEFT JOIN page ON tsk_title = page_title
+					AND tsk_namespace = page_namespace
+				WHERE page_is_redirect = 0
+					AND tsk_namespace = 0";
+		$sql = $base . "
+					AND tsk_key LIKE '%" . str_replace(" ", "%", $key) . "%'
+					AND tsk_namespace = 0
+				GROUP BY page_id
+				LIMIT $limit";
+		$db = wfGetDB(DB_MASTER);
+		$res = $db->query( $sql, __METHOD__ );
+		if ( $res->numRows() ) {
+			while ( $row = $res->fetchObject() ) {
+				$con = array(
+					$row->tsk_title,
+					$row->page_counter,
+					$row->page_len,
+					$row->page_is_featured,
+				);
 				$result[] = $con;
-				$gotit[$row->skey_title] = 1;
+				$gotit[$row->tsk_title] = 1;
 			}
 		}
 
 		if (count($result) < $limit) {
-			$sql = $base . " AND ( skey_key LIKE '%" . str_replace(" ", "%", $key) . "%' ";
+			$sql = $base . " AND ( tsk_key LIKE '%" . str_replace(" ", "%", $key) . "%' ";
 			$ksplit = split(" ", $key);
 			if (count($ksplit) > 1) {
 				foreach ($ksplit as $k) {
-					$sql .= " OR skey_key LIKE '%$k%'";
+					$sql .= " OR tsk_key LIKE '%$k%'";
 				}
 			}
 			$sql .= " ) ";
 			$sql .= " LIMIT $limit;";
-			$res = $db->query( $sql, 'WH TitleSearch::matchKeyTitles2' );
-			while ( count($result) < $limit && $row = $db->fetchObject( $res ) ) {
-				if (!isset($gotit[$row->skey_title]))  {
-					$con = array();
-					$con[0] = $row->skey_title;
-					$con[1] = $row->page_counter;
-					$con[2] = $row->page_len;
-					$con[3] = $row->page_is_featured;
+			$res = $db->query( $sql, __METHOD__ );
+			while ( count($result) < $limit && $row = $res->fetchObject() ) {
+				if (!isset($gotit[$row->tsk_title]))  {
+					$con = array(
+						$row->tsk_title,
+						$row->page_counter,
+						$row->page_len,
+						$row->page_is_featured,
+					);
 					$result[] = $con;
 				}
 			}
@@ -75,7 +83,7 @@ class TitleSearch extends UnlistedSpecialPage {
 
 		$t1 = time();
 		$search = $wgRequest->getVal("qu");
-		$limit = intval($wgRequest->getVal("lim", 10));
+		$limit = $wgRequest->getInt("lim", 10);
 
 		if ($search == "") exit;
 

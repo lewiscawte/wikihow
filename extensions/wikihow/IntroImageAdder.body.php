@@ -7,23 +7,33 @@ class IntroImageAdder extends UnlistedSpecialPage {
 	}
 
 	/**	
-	 * checkForProblems
+	 * hasProblems
+	 * (returns TRUE if there's a problem)
 	 * - Checks an article to see if it contains an image in the intro section
-	 * - Checks an article to see if there's a {{nointroimg}} template
+	 * - Checks to see if there's a {{nointroimg}} template
+	 * - Checks to see if there's an {{nfd}} template
+	 * - Makes sure an article has been NABbed
+	 * - Makes sure last edit has been patrolled
 	 **/
-	function checkForProblems($t) {
+	function hasProblems($t,$dbr) {
 		$r = Revision::newFromTitle($t);
 		$intro = Article::getSection($r->getText(), 0);
 
 		//check for intro image
-		if (preg_match('/\[\[Image:(.*?)\]\]/', $intro)) {
-			return true;
-		}
+		if (preg_match('/\[\[Image:(.*?)\]\]/', $intro)) return true;
 		
 		//check for {{nointroimg}} template
-		if (preg_match('/{{nointroimg}}/', $intro)) {
-			return true;
-		}
+		if (preg_match('/{{nointroimg/', $intro)) return true;
+		
+		//check for {{nfd}} template
+		if (preg_match('/{{nfd/', $intro)) return true;
+		
+		//is it NABbed?
+		$is_nabbed = Newarticleboost::isNABbed($dbr,$t->getArticleId());
+		if (!$is_nabbed) return true;
+		
+		//last edit patrolled?
+		if (!GoodRevision::patrolledGood($t)) return true;
 		
 		//all clear?
 		return false;
@@ -192,7 +202,7 @@ $content
 		}
 		$a = array();
 		
-		for ($i = 0; $i < 15; $i++) {
+		for ($i = 0; $i < 30; $i++) {
 		
 			$timediff = date("YmdHis", strtotime("-1 day")); //24 hours ago
 			
@@ -248,10 +258,9 @@ $content
 			if ($t->isProtected()) $b_good = false;
 			
 			//check the wikitext for problems
-			if ($this->checkForProblems( $t ) ) {
+			if ($this->hasProblems( $t, $dbr ) ) {
 	 			$b_good = false;
-				$dbw = wfGetDB(DB_MASTER);
-				$dbw->update('imageadder', array('imageadder_hasimage'=>1), array("imageadder_page"=>$pageid));
+				$dbm->update('imageadder', array('imageadder_hasimage'=>1), array("imageadder_page"=>$pageid));
 			}
 			
 			//is this a redirect?

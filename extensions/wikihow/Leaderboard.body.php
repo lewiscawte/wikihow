@@ -1411,7 +1411,8 @@ class Leaderboard extends SpecialPage {
 		$index = 1;
 
 		//display difference in only new articles
-		if ($target != 'rc_edits') {
+		//don't sort nfd b/c numbers can be big and include "," so don't sort nicely
+		if ($target != 'rc_edits' && $target != 'nfd') {
 			arsort($data);
 		}
 		foreach($data as $key => $value) {

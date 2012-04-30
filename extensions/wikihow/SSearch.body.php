@@ -46,13 +46,6 @@ class SSearch extends UnlistedSpecialPage {
 		return $titles;
 	}
 
-	private function getSpellingInfo($q) {
-		global $IP;
-		require_once("$IP/extensions/wikihow/GoogleSearch.php");
-		$spelling = gSearch::suggest($q);
-		return $spelling;
-	}
-
 	private function doSearch($q, $page) {
 		global $wgOut;
 

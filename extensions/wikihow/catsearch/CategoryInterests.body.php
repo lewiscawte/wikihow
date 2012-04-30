@@ -126,6 +126,8 @@ class CategoryInterests extends UnlistedSpecialPage {
 	* Given a NS_CATEGORY-namespaced title object, return a subcategory associative array tree
 	*/
 	public static function getSubCategoryTree(&$t) {
+		global $wgContLang;
+
 		$flattened = array();
 		$parentTree = $t->getParentCategoryTree();
 		if (is_array($parentTree)) {
@@ -136,7 +138,8 @@ class CategoryInterests extends UnlistedSpecialPage {
 		// Don't forget to add the actual category
 		$flattened[] = $t->getPartialURL();
 		// Convert it to a format that matches the result of Categoryhelper::getCategoryTreeArray(); 
-		$flattened = str_replace('Category:', '', $flattened);
+		$catNsText = $wgContLang->getNSText (NS_CATEGORY);
+		$flattened = str_replace($catNsText . ':', '', $flattened);
 		$flattened = str_replace('-', ' ', $flattened);
 
 		$ch = new Categoryhelper();

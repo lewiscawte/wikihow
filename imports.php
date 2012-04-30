@@ -179,6 +179,7 @@ require_once("$IP/extensions/wikihow/gallery/GallerySlide.php");
 require_once("$IP/extensions/wikihow/ArticleMetaInfo.class.php");
 require_once("$IP/extensions/wikihow/TitleTests.class.php");
 require_once("$IP/extensions/wikihow/GoodRevision.class.php");
+require_once("$IP/extensions/wikihow/DailyEdits.class.php");
 require_once("$IP/extensions/wikihow/ArticleWidgets/ArticleWidgets.php");
 require_once("$IP/extensions/wikihow/spellchecker/Spellchecker.php");
 require_once("$IP/extensions/wikihow/ToolSkip.class.php");

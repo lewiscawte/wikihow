@@ -2,45 +2,53 @@
 
 class Managepagelist extends UnlistedSpecialPage {
 
-	function __construct() {
+	public function __construct() {
 		UnlistedSpecialPage::UnlistedSpecialPage( 'Managepagelist' );
 	}
 
-	function execute($par) {
+	private static function checkValidListName($list) {
+		return preg_match('@^[-A-Za-z ]+$@', $list) > 0;
+	}
+
+	public function execute($par) {
 		global $wgOut, $wgRequest, $wgUser;
 
-		if ( !in_array( 'sysop', $wgUser->getGroups() ) ) {
+		if ( !in_array( 'staff', $wgUser->getGroups() )
+			&& !in_array( 'newarticlepatrol', $wgUser->getGroups() ))
+		{
 		 	$wgOut->errorpage( 'nosuchspecialpage', 'nospecialpagetext' );
 		 	return;
 		}
 
 		$list = $wgRequest->getVal('list', 'risingstar');
-		$wgOut->addHTML('<link rel="stylesheet" href="/extensions/wikihow/pagelist.css" type="text/css" />');
+		if (!self::checkValidListName($list)) {
+			$wgOut->addHTML('bad list');
+			return;
+		}
+
+		$wgOut->addHTML('<link rel="stylesheet" href="' . wfGetPad('/extensions/min/f/extensions/wikihow/pagelist.css') . '" type="text/css" />');
 
 		$dbr = wfGetDB(DB_SLAVE);
 
 		// handle removals
 		if ($wgRequest->getVal('a') == 'remove') {
-			$t = Title::newFromID($wgRequest->getVal('id'));
+			$articleID = $wgRequest->getInt('id');
+			$t = Title::newFromID($articleID);
 			$dbw = wfGetDB(DB_MASTER);
-			$dbw->delete('pagelist', array('pl_page' => $wgRequest->getVal('id'), 'pl_list'=>$list), __METHOD__);
+			$dbw->delete('pagelist', array('pl_page' => $articleID, 'pl_list' => $list), __METHOD__);
 			$wgOut->addHTML("<p style='color:blue; font-weight: bold;'>{$t->getFullText()} has been remove from the list.</p>");
 
 		}
+
 		if ($wgRequest->wasPosted()) {
-			if ($wgRequest->getVal('newlist')) {
-				$list = $wgRequest->getVal('newlist');
-				$mw = Title::makeTitle(NS_MEDIAWIKI, 'Pagelist_' . $wgRequest->getVal('newlist'));
-				$a = new Article($mw);
-				$a->doEdit($wgRequest->getVal('newlistname'), "creating new page list");
-			}
-			if ($wgRequest->getVal('newtitle')) {
-				$url = $wgRequest->getVal('newtitle');
+			$newtitle = strip_tags($wgRequest->getVal('newtitle'));
+			if ($newtitle) {
+				$url = $newtitle;
 				$url = preg_replace("@http://@", "", $url);
 				$url = preg_replace("@.*/@U", "", $url);
 				$t = Title::newFromURL($url);
 				if (!$t || !$t->getArticleID()) {
-					$wgOut->addHTML("<p style='color:red; font-weight: bold;'>Error: Couldn't find article id for {$wgRequest->getVal('newtitle')}</p>");
+					$wgOut->addHTML("<p style='color:red; font-weight: bold;'>Error: Couldn't find article id for {$newtitle}</p>");
 				} else {
 					if ($dbr->selectField("pagelist", array("count(*)"), array('pl_page' => $t->getArticleID(), 'pl_list'=>$list), __METHOD__) > 0) {
 						$wgOut->addHTML("<p style='color:red; font-weight: bold;'>Oops! This title is already in the list</p>");
@@ -65,12 +73,12 @@ class Managepagelist extends UnlistedSpecialPage {
 				}
 			}
 		}
-		$wgOut->setPageTitle("Manage page list - " . wfMsg('pagelist_' . $list));
+		$wgOut->setPageTitle( "Manage page list - " . wfMsg('pagelist_' . $list) );
 		$wgOut->addHTML("<form name='addform' method='POST' action='/Special:Managepagelist'>
 				<table style='width: 100%;'><tr><td style='width: 430px;'>
 					Add article to this list by URL or title: 
 						<input type='text' name='newtitle' id='newtitle'></td>
-					<td style='width: 32px; vertical-align: bottom;'><input type='image' class='addicon' src='/extensions/wikihow/plus.png' onclick='javascript:document.addform.submit()'/></td>
+					<td style='width: 32px; vertical-align: bottom;'><input type='image' class='addicon' src='" . wfGetPad('/extensions/wikihow/plus.png') . "' onclick='javascript:document.addform.submit()'/></td>
 		<td style='text-align: right;'>View list:<br/>
 					<select onchange='window.location.href=\"/Special:Managepagelist&list=\" + this.value;'>
 			");
@@ -85,6 +93,7 @@ class Managepagelist extends UnlistedSpecialPage {
 		}
 		$wgOut->addHTML("</select></td></tr></table>
 				</form>");
+
 		$res = $dbr->select(array('page', 'pagelist'),
 			array('page_title', 'page_namespace', 'page_id'),
 			array('page_id=pl_page', 'pl_list'=>$list),
@@ -105,24 +114,10 @@ class Managepagelist extends UnlistedSpecialPage {
 			else
 				$wgOut->addHTML("<tr class='shaded'>");
 			$wgOut->addHTML("<td class='pagelist_title'><a href='{$t->getFullURL()}' target='new'>{$t->getFullText()}</td>
-				<td><a href='/Special:Managepagelist?a=remove&list={$list}&id={$row->page_id}' onclick='return confirm(\"Do you really want to remove this article?\")'><img src='http://www.wikihow.com/extensions/wikihow/rcwDelete.png' style='height: 24px; width: 24px;'></a></td>");
+				<td><a href='/Special:Managepagelist?a=remove&list={$list}&id={$row->page_id}' onclick='return confirm(\"Do you really want to remove this article?\")'><img src='" . wfGetPad('/extensions/wikihow/rcwDelete.png') . "' style='height: 24px; width: 24px;'></a></td>");
 			$wgOut->addHTML("</tr>");
 			$index++;
 		}	
 		$wgOut->addHTML("</table>");
-
-
-   $wgOut->addHTML("<form name='addlistform' method='POST' action='/Special:Managepagelist'>
-				<br/><br/><table width='100%'><tr><td>
-					Create a new list: (Example: ID risingstar Name: Rising Stars, every list needs 1+ article)<br/><br/>
-	
-						ID: <input type='text' name='newlist' id='newlist'> Name: <input type='text' name='newlistname' id='newlistname'><br/><br/>
-						Article: <input type='text' name='newtitle' id='newtitle'>
-					</td>
-					<td style='width: 32px; vertical-align: bottom;'><input type='image' class='addicon' src='/extensions/wikihow/plus.png' onclick='javascript:document.addlistform.submit()'/></td>
-				</tr></table>
-				</form>
-			");
-
 	}
 }

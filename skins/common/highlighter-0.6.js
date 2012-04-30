@@ -40,7 +40,7 @@ highlighter.addStyle('', '#FFFFCC', ''); // bold, black text on yellow backgroun
 
 //Uncomment the following lines to only show highlighter for a few seconds
 highlighter.tempHighlight = true;
-highlighter.highlightTime = 5000;
+highlighter.highlightTime = 10000;
 
 // ---------------------------------------------------------------------------
 
@@ -190,6 +190,7 @@ function SearchTermHighlighter()
 		if (!ok) return;
 		if (!isInitialized) this.init();
 		searchTerms.sort(function(term1, term2){return(term2.term.length-term1.term.length)});
+		if (searchTerms.length == 0) return;
 		for (var i = 0; i < searchTerms.length; i++)
 		{
 			this.highlightTerm(document.getElementsByTagName("body")[0], searchTerms[i]);

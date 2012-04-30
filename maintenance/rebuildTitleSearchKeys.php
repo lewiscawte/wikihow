@@ -1,8 +1,8 @@
 <?php
 //
-// Clear out and rebuild the skey table. skey table is used for searching
-// wikiHow. We believe the skey table is used to check either suggested
-// titles or existing titles in the CreatePage and TitleSearch special pages. 
+// Clear out and rebuild the title_search_key table. The title_search_key 
+// table is used for searching wikiHow titles. It is used to check existing 
+// titles in the CreatePage and TitleSearch special pages. 
 //
 
 require_once('commandLine.inc');
@@ -17,20 +17,19 @@ function updateKey($row) {
 		return;
 	}
 	$skey = generateSearchKey($t->getText());
-	#echo "Title " . $t->getText() . " skey $skey \n";
-	$p1 = $dbw->addQuotes($row->page_title);
-	$p2 = $dbw->addQuotes($skey);
+	$page_title = $dbw->addQuotes($row->page_title);
+	$search_key = $dbw->addQuotes($skey);
 	$featured = 0;
 	if ($row->tl_from != null) $featured = 1;
-	$sql = "INSERT INTO skey (skey_title, skey_namespace, skey_key, skey_wasfeatured) VALUES ($p1, 0, $p2, $featured) ON DUPLICATE KEY UPDATE skey_key=$p2, skey_wasfeatured=$featured";
-	$dbw->query($sql, "rebuildSkeys.php:updateKey");
+	$sql = "INSERT INTO title_search_key
+			(tsk_title, tsk_namespace, tsk_key, tsk_wasfeatured)
+			VALUES ($page_title, 0, $search_key, $featured)
+			ON DUPLICATE KEY UPDATE tsk_key=$search_key, tsk_wasfeatured=$featured";
+	$dbw->query($sql, __METHOD__);
 }
 
-#global $wgUser;
-#$wgUser = User::newFromName('Tderouin');
-
 # CLEAR OUT TABLE
-$dbw->query("DELETE FROM skey");
+$dbw->query("DELETE FROM title_search_key", __METHOD__);
 
 # GET DATA WITH WHICH TO REPOPULATE
 $res = $dbw->query("SELECT p1.page_title, tl_from
@@ -42,15 +41,16 @@ $res = $dbw->query("SELECT p1.page_title, tl_from
 		AND tl_title = 'Featured'
 	WHERE p1.page_namespace = 0
 		AND p1.page_is_redirect = 0
-	ORDER BY p1.page_id DESC");
-$count = $dbw->numRows($res);
+	ORDER BY p1.page_id DESC",
+	__METHOD__);
+$count = $res->numRows();
 
 print "Found $count main namespace articles\n";
 $rows = array();
-while ( $row = $dbw->fetchObject($res) ) {
+while ( $row = $res->fetchObject() ) {
 	$rows[] = $row;
 }
-$dbw->freeResult($res);
+$res->free();
 
 # REPOPULATE TABLE
 foreach ($rows as $row) {

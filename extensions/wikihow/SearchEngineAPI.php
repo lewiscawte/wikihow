@@ -3,13 +3,13 @@
 global $IP;
 require_once("$IP/extensions/wikihow/common/nusoap/nusoap.php");
 
-class gSearch {
+class SearchEngineAPI {
 
 	function suggest($terms) {
 		global $wgGoogleAPIKey;
 
-		// prepare an array of input parameters to be passed to the remote   procedure
-		// doGoogleSearch()
+		// prepare an array of input parameters to be passed to the remote
+		// procedure doGoogleSearch
 		$params = array(
 			'Googlekey' => $wgGoogleAPIKey, // Google license
 			'queryStr' => $terms . ' site:www.wikihow.com',  // search term that was being typed
@@ -24,20 +24,21 @@ class gSearch {
 		);
 
 		$skey = strtolower($terms);
-		$dbw =& wfGetDB(DB_MASTER);
+		$dbw = wfGetDB(DB_MASTER);
 
 		// check the cache
-		$sql = "SELECT * from sugg where sugg_query=" . $dbw->addQuotes($skey);
-		$res = $dbw->query($sql);
+		$sql = "SELECT suggest FROM google_spell_suggest_cache where query=" . $dbw->addQuotes($skey);
+		$res = $dbw->query($sql, __METHOD__);
 		$suggest = null;
-		$row = $dbw->fetchObject($res);
+		$row = $res->fetchObject();
 		if ($row) {
 
 			// found an item
-			$suggest = $row->sugg_suggest;
+			$suggest = $row->suggest;
 			$dbw->freeResult($res);
-			$sql = "UPDATE sugg set sugg_hits=sugg_hits+1 where sugg_query= " . $dbw->addQuotes($skey)." LIMIT 1;";
-			$dbw->query($sql);
+			$sql = "UPDATE google_spell_suggest_cache SET hits=hits+1 WHERE query= " . $dbw->addQuotes($skey)." LIMIT 1";
+			$dbw->query($sql, __METHOD__);
+
 		} else {
 			return null; // Google SOAP API no longer available
 
@@ -48,7 +49,7 @@ class gSearch {
 			//$ch = curl_init($url);
 
 			// create entry, make the call to Google
-			$soapclient = new soapclient("http://api.google.com/search/beta2");
+			/*$soapclient = new soapclient("http://api.google.com/search/beta2");
 			$params = array(
 				'key' => $wgGoogleAPIKey,
 				'phrase' => $terms,
@@ -64,8 +65,8 @@ class gSearch {
 			if (!is_array($spell)) {
 				$suggest = $spell;
 			}
-			$dbw->insert("sugg", array("sugg_query" => $skey, "sugg_suggest" => $suggest), "gSearch::suggest");
-			log_query("SUGG:", $terms);
+			$dbw->insert('google_spell_suggest_cache', array("query" => $skey, "suggest" => $suggest), __METHOD__);
+			self::logQuery("SUGG:", $terms);*/
 
 		}
 		//echo "returning $suggest"; exit;
@@ -134,7 +135,7 @@ class gSearch {
 		$result[] = $MyResult['resultElements'];
 		//$result[]= gSearch::suggest($terms);
 		//return $MyResult['resultElements'];
-		log_query($queryType, $terms);
+		self::logQuery($queryType, $terms);
 
 		return $result;
 	}
@@ -148,7 +149,7 @@ class gSearch {
 		$params = array(
 			'Googlekey' => $wgGoogleAPIKey, // Google license
 			// key
-			'queryStr' => $terms ,
+			'queryStr' => $terms,
 			'startFrom' => $startFrom,               // start from result n
 			'maxResults' => 10,              // show a total of 10 results
 			'filter' => true,               // remove similar results
@@ -203,12 +204,13 @@ class gSearch {
 		//return $MyResult['resultElements'];
 
 		return $result;
-		}
 	}
 
-function log_query($type, $query) {
-	$dbw =& wfGetDB( DB_MASTER );
-	$sql = "INSERT INTO google_api_checker (request) VALUES (" . $dbw->addQuotes($type . " " . $query) . ");";
-	$dbw->query($sql);
+	function logQuery($type, $query) {
+		$dbw = wfGetDB( DB_MASTER );
+		$sql = "INSERT INTO google_api_checker (request) VALUES (" . $dbw->addQuotes($type . " " . $query) . ");";
+		$dbw->query($sql, __METHOD__);
+	}
+
 }
 

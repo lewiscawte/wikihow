@@ -21,7 +21,10 @@ class WikihowShare{
 		$gp1 = '<div class="gplus1_button"><g:plusone size="tall" callback="plusone_vote"></g:plusone></div>';
 
 		$pinterest = '<div id="pinterest"><a href="http://pinterest.com/pin/create/button/?url=' . $url . '&media=' . $img . '&description=' . $desc . '" class="pin-it-button" count-layout="vertical">Pin It</a></div>';
-		$tb = '<div class="admin_state"><a href="http://twitter.com/share" data-lang="' . $wgLanguageCode . '" style="display:none; background-image: none; color: #ffffff;" class="twitter-share-button" data-count="vertical" data-via="wikiHow" data-text="How to ' . htmlspecialchars($wgTitle->getText()) . '" data-related="JackHerrick:Founder of wikiHow">Tweet</a></div>';
+
+		// German includes "how to " in the title text
+		$howto = $wgLanguageCode != 'de' ? wfMsg('howto', htmlspecialchars($wgTitle->getText())) : htmlspecialchars($wgTitle->getText());
+		$tb = '<div class="admin_state"><a href="http://twitter.com/share" data-lang="' . $wgLanguageCode . '" style="display:none; background-image: none; color: #ffffff;" class="twitter-share-button" data-count="vertical" data-via="wikiHow" data-text="' . $howto . '" data-related="JackHerrick:Founder of wikiHow">Tweet</a></div>';
 		
 		if ($wgLanguageCode != 'en') {
 			return $gp1 . $tb . $fb;
@@ -44,7 +47,9 @@ class WikihowShare{
 		$url = urlencode($wgServer . "/" . $wgTitle->getPrefixedURL());
 				
 		$fb_share = '<div class="like_button like_tools"><fb:like href="' . $url . '" send="false" layout="button_count" width="86" show_faces="false"></fb:like></div>';
-		$tb_share = '<a href="http://twitter.com/share" data-lang="' . $wgLanguageCode . '" style="display:none; background-image: none; color: #ffffff;" class="twitter-share-button" data-count="horizontal" data-via="wikiHow" data-text="How to ' . htmlspecialchars($wgTitle->getText()) . '" data-related="JackHerrick:Founder of wikiHow">Tweet</a>';
+		// German includes "how to " in the title text
+		$howto = $wgLanguageCode != 'de' ? wfMsg('howto', htmlspecialchars($wgTitle->getText())) : htmlspecialchars($wgTitle->getText());
+		$tb_share = '<a href="http://twitter.com/share" data-lang="' . $wgLanguageCode . '" style="display:none; background-image: none; color: #ffffff;" class="twitter-share-button" data-count="horizontal" data-via="wikiHow" data-text="' . $howto. '" data-related="JackHerrick:Founder of wikiHow">Tweet</a>';
 
 		
 		if ($wgLanguageCode != 'en') {

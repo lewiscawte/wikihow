@@ -413,7 +413,7 @@ print_r($bottomlevel);
 		}
 
 		if ($catlist == "" ) {
-			$html .= "<div id=\"catdiv\">Article has not been categorized.</div>\n";
+			$html .= "<div id=\"catdiv\">" . wfMsg('ep_not_categorized') . "</div>\n";
 		} else {
 			$html .= "<div id=\"catdiv\">$catlist</div>\n";
 		}

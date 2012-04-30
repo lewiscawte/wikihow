@@ -11,20 +11,20 @@ cat_views				- Tracks logged in users page views by top level category so we can
 categorylinks			- Mediawiki 
 categorylinkstop		- Links pages to their top level category
 checkjs					- Was used for tracking some sort of javascript thing, has 2018747 rows, if no more updates, can delete
-cu_changes				- Check user
-cu_log					- Check user
+cu_changes				- Check user extension
+cu_log					- Check user extension
 docentcategories		- Docents feature, obsolete by keep for now
 docentwarnings			- Docents feature, obsolete by keep for now
 drafts					- Drafts extension
 edit_track				- Used to track how many people who click edit, click "Save"
 email_notifications		- Email notifications table
 emailfeed				- Used for capturing email addresses for future email list?	
-et						- Track rejected emails 
+rejected_email_links	- Track rejected emails 
 externallinks			- Mediawiki
-facebook_sessions		- Use for Facebook App, last update 2010-11, could be deleted
+facebook_sessions		- Use for Facebook App, last update 2010-11. could be deleted -- version in wiki_shared should be used
 filearchive				- Mediawiki
 firstedit				- Aggregrate count of who started which article, makes it easier than scanning the revision table for rev_user
-gmini					- Logs GSA searches/errors	
+site_search_log			- Logs GSA searches/errors
 google_indexed			- Was used to track which pages had been indexed in Google, hasn't been updated since 09/2009
 google_monitor			- Extension for tracking a subset of pages that are indexed in Google
 google_monitor_results 	- Extension for tracking a subset of pages that are indexed in Google
@@ -42,7 +42,7 @@ logging					- Mediawiki
 mailman_subscribe		- Docents feature
 mailman_unsubscribe		- Docents feature
 math					- Mediawiki
-me						- UserMailer spam tracker
+sent_emails				- UserMailer spam tracker
 newarticlepatrol		- New article boost feature
 objectcache				- Mediawiki
 oldimage				- Mediawiki
@@ -51,7 +51,7 @@ page_restrictions		- Mediawiki
 pagelinks				- Mediawiki
 pagelist				- Rising star feed, etc
 pageswithbrokenlinks	- Pageswithbrokenlinks extension
-passcaptcha				- Catpcha
+passcaptcha				- Captcha
 profilebox				- Profile boxes for user pages
 proposedredirects		- CreatePage users can suggest creating redirects to existing articles
 protected_titles		- Mediawiki
@@ -70,13 +70,13 @@ share_id				- Rudimentary tracking system for clicking specific links see clicks
 share_track				- Rudimentary tracking system for clicking specific links see clickshare in wikibits
 site_stats				- Mediawiki
 sitesnap				- Dailystats
-skey					- Keys for various searching like Related wikihows drop down, could be improved with Sphinx
-slog					- Old archive of searches performed on the site
+skey (gone)					- Keys for various searching like Related wikihows drop down, could be improved with Sphinx
+search_log_archive		- Old archive of searches performed on the site
 snap					- DailyStats extension
 spoofuser				- AntiSpoof extension
 stcl					- Batch of suggestions, possibly could be deleted
 stop_words				- Used for generating search keys for skey
-sugg					- Spelling suggestions that were logged from Google SOAP API back in the day
+google_spelling_suggest_cache - Spelling suggestions that were logged from Google SOAP API back in the day
 suggest_cats			- CreatePage, users can store what categories they are interested in for suggestions
 suggested_links			- Links suggestions to actual article pages for "Articles for you to write" section
 suggested_notify		- You can be notified when your suggestion has ben written
@@ -85,7 +85,7 @@ templatelinks			- Mediawiki
 text					- Mediawiki
 trackbacks				- Mediawiki
 transcache				- Mediawiki
-urls					- Used for page counter script from front ends
+tmp.urls				- Used for page counter script from front ends
 user					- Mediawiki, but now obsolete since we store this table in wiki_shared
 user_groups				- Mediawiki
 user_newkudos			- Mediawiki
@@ -99,5 +99,4 @@ video_removedlinks		- Related videos extension
 video_titles			- Related videos extension
 videoaddear				- Video adder extension, similar to Intro Image Adder
 watchlist				- Mediawiki
-ytas_meta				- Used for Youtube upload extnesion, not really used anymore but the extension still exists
-
+ytas_meta				- Used for Youtube upload extension, not really used anymore but the extension still exists

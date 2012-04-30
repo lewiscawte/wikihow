@@ -216,17 +216,17 @@ class UserMailer {
 						break;
 					}
 				}
-				$dbw->insert('me',
-						array('me_user' 	=> $wgUser->getID(),
-							'me_user_text' 	=> $wgUser->getName(),
-							'me_fullip'		=> $fullip,
-							'me_baseip'		=> $baseip,
-							'me_subject'	=> $subject,
-							'me_from'		=> $from->toString(),
-							'me_to'			=> is_array($to) ? print_r($to, true) : $to->toString(),
-							'me_caller'		=> $caller,
-							'me_caller_linenum' => $line,
-							'me_timestamp'	=> wfTimestampNow(TS_MW)
+				$dbw->insert('sent_email',
+						array('se_user' 	=> $wgUser->getID(),
+							'se_user_text' 	=> $wgUser->getName(),
+							'se_fullip'		=> $fullip,
+							'se_baseip'		=> $baseip,
+							'se_subject'	=> $subject,
+							'se_from'		=> $from->toString(),
+							'se_to'			=> is_array($to) ? print_r($to, true) : $to->toString(),
+							'se_caller'		=> $caller,
+							'se_caller_linenum' => $line,
+							'se_timestamp'	=> wfTimestampNow(TS_MW)
 						)
 					);
 			}

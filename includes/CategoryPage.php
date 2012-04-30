@@ -605,7 +605,7 @@ echo "hi: $page_further_editing<br/>";
 
 		$r = '<div id="mw-pages"><h2>' . wfMsg( 'category_header', $ti ) . "</h2>\n"; 
 		$r .= '<p>'.wfMsg('Category_articlecount', 'ARTICLECOUNT').'</p>';
-		$rf = '<div id="mw_featured"><h2>Featured Articles</h2>';
+		$rf = '<div id="mw_featured"><h2>' . wfMsg('featured_articles') . '</h2>';
 		$rf .= "<div class='featured_articles_inner' id='featuredArticles'><table class='featuredArticle_Table'><tr>";
 
 		$index = 0;

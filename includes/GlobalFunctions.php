@@ -2442,7 +2442,6 @@ function wfGenerateToken( $salt = '' ) {
 //XXCHANGED
 function wfGetPad($relurl = '') {
 	global $wgServer, $wgIsDomainTest, $wgRequest;
-	$akamai = $wgRequest && $wgRequest->getVal('ak', 'no') != 'no';
 
 	// Find the hostname of the machine.  Note that this is different from 
 	// the $wgServer MediaWiki variable, which is the web virtual host.
@@ -2475,7 +2474,7 @@ function wfGetPad($relurl = '') {
 	// uniform results.
 	$crc = crc32($relurl) & 0x7fffffff;
     $pad = ($crc % $numPads) + 1;
-	$prefix = $akamai ? 'static' : 'pad';
+	$prefix = 'pad';
 	return "http://{$prefix}{$pad}.whstatic.com{$relurl}";
 }
 

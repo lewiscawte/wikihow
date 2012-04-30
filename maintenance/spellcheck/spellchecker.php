@@ -3,7 +3,7 @@ require_once('../commandLine.inc');
 require_once('extensions/wikihow/WikiHow.php');
 require_once('extensions/wikihow/spellchecker/Spellchecker.php');
 
-echo "Start: " . date('G:i:s:u') . "\n\n";
+echo "Start: " . $argv[0] . " " . date('G:i:s:u') . "\n";
 switch ($argv[0]) {
 	case "all":
 		checkAllArticles();
@@ -15,7 +15,7 @@ switch ($argv[0]) {
 		wikiHowDictionary::batchAddWordsToDictionary();
 		break;
 }
-echo "Finish: " . date('G:i:s:u') . "\n\n";
+echo "Finish: " . $argv[0] . " " . date('G:i:s:u') . "\n\n";
 
 /**
  * Checks all articles in the db for spelling mistakes
@@ -30,7 +30,7 @@ function checkAllArticles() {
     $res = $dbr->select('page', 'page_id', array('page_namespace' => 0, 'page_is_redirect' => 0 ), __FUNCTION__);
 	
 	echo "SQL query done at " . microtime(true) . "\n";
-
+	
     while ($row = $dbr->fetchObject($res)) {
         $articles[] = $row->page_id;
     }
@@ -105,8 +105,7 @@ function spellCheckArticle (&$dbw, $articleId, &$pspell, &$capsString) {
 		$text = $revision->getText();
 		
 		//now need to remove the sections we're not going to check
-		$wikiArticle = new WikiHow();
-		$wikiArticle->loadFromText($text);
+		$wikiArticle = WikiHow::newFromText($text);
 		
 		$sourceText = $wikiArticle->getSection(wfMsg('sources'));//WikiHow::textify($wikiArticle->getSection(wfMsg('sources'), array('remove_ext_links'=>1)));
 		$newtext = str_replace($sourceText, "", $text);

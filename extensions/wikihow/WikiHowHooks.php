@@ -55,21 +55,22 @@ function updateSearchIndex($new, $old) {
 		&& ($new->getNamespace() == 0
 			|| $new->getNamespace() == 16) )
 	{
-		$dbw->delete( 'skey',
-			array('skey_title' => $new->getDBKey(),
-				  'skey_namespace' => $new->getNamespace()),
+		$dbw->delete( 'title_search_key',
+			array('tsk_title' => $new->getDBKey(),
+				  'tsk_namespace' => $new->getNamespace()),
 			__METHOD__ );
-		$dbw->insert( 'skey',
-			array('skey_title' => $new->getDBKey(),
-				  'skey_namespace' => $new->getNamespace(),
-				  'skey_key' => generateSearchKey($new->getText()) ),
+
+		$dbw->insert( 'title_search_key',
+			array('tsk_title' => $new->getDBKey(),
+				  'tsk_namespace' => $new->getNamespace(),
+				  'tsk_key' => generateSearchKey($new->getText()) ),
 			__METHOD__ );
 	}
 
 	if ($old != null) {
-		$dbw->delete( 'skey',
-			array('skey_title' => $old->getDBKey(),
-				  'skey_namespace' => $old->getNamespace()),
+		$dbw->delete( 'title_search_key',
+			array('tsk_title' => $old->getDBKey(),
+				  'tsk_namespace' => $old->getNamespace()),
 			__METHOD__ );
 	}
 }

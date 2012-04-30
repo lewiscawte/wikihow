@@ -207,7 +207,7 @@ class Wikitext {
 	/**
 	 * Extract the video section from the wikitext of an article
 	 */
-	private static function getSection($wikitext, $sectionMsg, $withHeader) {
+	public static function getSection($wikitext, $sectionMsg, $withHeader) {
 		global $wgParser;
 		if (empty($sectionMsg)) throw new Exception('Must provide the section message');
 
@@ -467,8 +467,8 @@ class Wikitext {
 
 		$wikitext = self::getWikitext($dbr, $title);
 //debugging
-//$t = Title::newFromText('Make Chocolate Covered Peeps');
-//$r = Revision::loadFromTitle($dbr, $t, 7544205);
+//$t = Title::newFromText('Assess Your Relationship Stage');
+//$r = Revision::loadFromTitle($dbr, $t, 7607372);
 //$wikitext = $r->getText();
 		if ($wikitext) {
 			list($stepsText, $sectionID) = 
@@ -562,7 +562,7 @@ class Wikitext {
 	 */
 	private static function ensureNewlineTerminatedStrings(&$arr) {
 		foreach ($arr as &$str) {
-			$len = mb_strlen($str);
+			$len = strlen($str);
 			if ($len > 0 && $str{$len - 1} != "\n") {
 				$str .= "\n";
 			}

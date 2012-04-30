@@ -1,4 +1,4 @@
-WH = WH || {};
+if (!WH) var WH = {};
 
 jQuery.extend(WH, (function($) {
 

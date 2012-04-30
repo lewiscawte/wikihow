@@ -478,6 +478,12 @@ function gatStartObservers() {
 		});
 	}
 	
+	if (document.getElementById("gatFooterCategories")) {
+		regClickEvent('gatFooterCategories', function(e) {
+			gatTrack("Browsing","Category_browsing","Footer_categories");
+		});
+	}
+	
 	//Follow widget
 	if(document.getElementById("gatFollowFacebook")){
 		regClickEvent('gatFollowFacebook', function(e) {

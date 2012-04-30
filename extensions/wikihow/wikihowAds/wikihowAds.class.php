@@ -244,7 +244,7 @@ EOHTML;
             if ($fe == 'WRM' && !$foundTech) { //only care if we didn't put into a tech bucket
 				$sk->mGlobalComments[] = "wrm";
 				$ts = $details->rev_timestamp;
-
+				
 				if (preg_match("@^201112@", $ts)){
 					$sk->mGlobalChannels[] = "6155290251";
 				} else if (preg_match("@^201111@", $ts)){
@@ -655,6 +655,46 @@ EOHTML;
 				if($article == $titleUrl){
 					$ts = $details->rev_timestamp;
 					$sk->mGlobalChannels[] = "8414472671"; //Content Strategy U
+					break;
+				}
+			}
+			
+			$msg = ConfigStorage::dbGetConfig('WRM_2012Q1'); 
+			$articles = split("\n", $msg);
+			foreach ($articles as $article) {
+				if($article == $titleUrl){
+					$ts = $details->rev_timestamp;
+					$sk->mGlobalChannels[] = "4126436138"; 
+					break;
+				}
+			}
+			
+			$msg = ConfigStorage::dbGetConfig('WRM_2012Q2'); 
+			$articles = split("\n", $msg);
+			foreach ($articles as $article) {
+				if($article == $titleUrl){
+					$ts = $details->rev_timestamp;
+					$sk->mGlobalChannels[] = "3130480452"; 
+					break;
+				}
+			}
+			
+			$msg = ConfigStorage::dbGetConfig('WRM_2012Q3');
+			$articles = split("\n", $msg);
+			foreach ($articles as $article) {
+				if($article == $titleUrl){
+					$ts = $details->rev_timestamp;
+					$sk->mGlobalChannels[] = "5929918148";
+					break;
+				}
+			}
+			
+			$msg = ConfigStorage::dbGetConfig('WRM_2012Q4'); 
+			$articles = split("\n", $msg);
+			foreach ($articles as $article) {
+				if($article == $titleUrl){
+					$ts = $details->rev_timestamp;
+					$sk->mGlobalChannels[] = "5980804200"; 
 					break;
 				}
 			}

@@ -49,13 +49,6 @@ class SphinxSearch {
 		return $titles;
 	}
 
-	/*private function getSpellingInfo($q) {
-		global $IP;
-		require_once("$IP/extensions/wikihow/GoogleSearch.php");
-		$spelling = gSearch::suggest($q);
-		return $spelling;
-	}*/
-
 	public function searchSuggestedTitles($q, $limit = 10) {
 		$index = 'suggested_titles';
 		$weights = array('st_title' => 5, 'st_key' => 2);

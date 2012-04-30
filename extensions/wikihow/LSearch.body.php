@@ -31,7 +31,8 @@ class LSearch extends SpecialPage {
 	}
 
 	/**
-	 * Used to log the search in the gmini table, just to keep this data.
+	 * Used to log the search in the site_search_log table, to store this data for 
+	 * later analysis.
 	 */
 	private function logSearch($q, $host_id, $cache, $error, $curl_err, $gm_tm_count, $gm_ts_count, $username, $userid, $rank, $num_results, $gm_type) {
 		if ($this->logSearch) {
@@ -39,23 +40,20 @@ class LSearch extends SpecialPage {
 			$q = $dbw->strencode($q);
 			$username = $dbw->strencode($username);
 			$vals = array(
-					'gm_query' 			=> strtolower($q),
-					'gm_host_id' 		=> $host_id,
-					'gm_cache' 			=> $cache,
-					'gm_error' 			=> $error,
-					'gm_curl_error'		=> $curl_err,
-					'gm_ts_count' 		=> $gm_ts_count,
-					'gm_tm_count' 		=> $gm_tm_count,
-					'gm_user'			=> $userid,
-					'gm_user_text' 		=> $username,
-					'gm_num_results'	=> $num_results,
-					'gm_rank'			=> $rank,
-					'gm_type'			=> $gm_type
+					'ssl_query' 		=> strtolower($q),
+					'ssl_host_id' 		=> $host_id,
+					'ssl_cache' 		=> $cache,
+					'ssl_error' 		=> $error,
+					'ssl_curl_error'	=> $curl_err,
+					'ssl_ts_count' 		=> $gm_ts_count,
+					'ssl_tm_count' 		=> $gm_tm_count,
+					'ssl_user'			=> $userid,
+					'ssl_user_text' 	=> $username,
+					'ssl_num_results'	=> $num_results,
+					'ssl_rank'			=> $rank,
+					'ssl_type'			=> $gm_type
 				);
-			$res = $dbw->insert('gmini',
-				$vals,
-				"GMini:LogSearch"
-			);
+			$res = $dbw->insert('site_search_log', $vals, __METHOD__);
 		}
 	}
 
@@ -148,7 +146,7 @@ class LSearch extends SpecialPage {
 				$wgOut->addHTML(
 					"Sorry! An error was experienced while processing your search. Try refreshing the page or click <a href=\"{$wgRequest->getRequestURL()}\">here</a> to try again. " );
 
-				self::logSearch($q, $host_id, 0, 1, curl_errno($ch), $gm_tm_count, 0, $wgUser->getName(), $wgUser->getID(), 0, 0, $gm_type);
+				//self::logSearch($q, $host_id, 0, 1, curl_errno($ch), $gm_tm_count, 0, $wgUser->getName(), $wgUser->getID(), 0, 0, $gm_type);
 				curl_close($ch);
 				return null;
 			} else {
@@ -158,7 +156,7 @@ class LSearch extends SpecialPage {
 		}
 
 		$num_results = $contents['totalresults'] ? $contents['totalresults'] : 0;
-		self::logSearch($q, $host_id, $cache, 0, 0, $gm_tm_count, 0, $wgUser->getName(), $wgUser->getId(), 0, $num_results, $gm_type);
+		//self::logSearch($q, $host_id, $cache, 0, 0, $gm_tm_count, 0, $wgUser->getName(), $wgUser->getId(), 0, $num_results, $gm_type);
 
 		if ($set_cache) {
 			$wgMemc->set($key, $contents, 3600); // 1 hour

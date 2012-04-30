@@ -83,7 +83,9 @@ class CatSearch extends UnlistedSpecialPage {
 	}
 
 	public static function getParentCats(&$t) {
-		$cats = str_replace("Category:", "", array_keys($t->getParentCategories()));
+		global $wgContLang;
+		$catNsText = $wgContLang->getNSText (NS_CATEGORY);
+		$cats = str_replace("$catNsText:", "", array_keys($t->getParentCategories()));
 		foreach($cats as $key => $cat) {
 			if (self::ignoreCategory($cat)) {
 				unset($cats[$key]);

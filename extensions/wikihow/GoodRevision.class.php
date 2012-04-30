@@ -51,7 +51,7 @@ class GoodRevision {
 	/**
 	 * Look up the latest good revision for an article.
 	 */
-	private function latestGood() {
+	public function latestGood() {
 		global $wgMemc;
 
 		$res = $wgMemc->get($this->cachekey);
@@ -182,6 +182,23 @@ class GoodRevision {
 	private static function getRevFromRC($rcid) {
 		$rc = RecentChange::newFromId($rcid, true);
 		return $rc ? $rc->getAttribute('rc_this_oldid') : 0;
+	}
+	
+	/**
+	 * Grab the last good patrol
+	 * - return true if the last edit on the article was patrolled
+	 */
+	public static function patrolledGood($t) {		
+		//get the last revision
+		$a = new Article($t);
+		$a->loadLastEdit();
+		$last_rev = $a->mLastRevision;
+		
+		//get the last good revision
+		$goodRev = self::newFromTitle($t);
+		$last_good_rev = $goodRev->latestGood();
+		
+		return $last_rev->mId == $last_good_rev;
 	}
 
 	/**

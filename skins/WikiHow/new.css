@@ -603,23 +603,6 @@ margin-left:23px;
 	clear: right;
 }
 
-#article OL.steps_list_2 LI.steptest_li DIV.step_num {
-	position: relative;
-	z-index: 1;
-	background: url(/skins/WikiHow/images/bigsteps_bullet.png) no-repeat 0 0;
-	width: 37px;
-	height: 37px;
-	line-height: 37px;
-	color: #464646;
-	font-weight: bold;
-	margin: 10px 0 -50px 10px;
-	*margin: 10px 0 -50px 15px;
-}
-
-#article OL.steps_list_2 LI.steptest_li_fix DIV.step_num {
-	margin: 0 20px 0 -50px;
-}
-
 #steps OL.steps_list_2 LI.final_li { border: 0; }
 
 #steps OL.steps_list_2 LI LI {
@@ -1374,6 +1357,10 @@ UL#social_box LI {
 
 .follow-android{
 	background-position: -166px -111px;
+}
+
+.follow-orkut{
+	background-position: -111px -166px;
 }
 
 .follow-plus{

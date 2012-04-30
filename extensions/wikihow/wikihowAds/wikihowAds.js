@@ -37,21 +37,26 @@ WH.wikihowAds = (function ($) {
 	
 	function setupAd(adId) {
 		var ad;
+		var googleAds = 'Ads by Google';
+		if(wgContentLanguage == "es")
+			googleAds = 'Anucios Google';
+		else if(wgContentLanguage == "pt")
+			googleAds = 'Anúncios Google';
 		if(adIndex < adArray.length) {
 			if(adId == "2" || adId == "2a")
 				var adHtml = s = '<div class="adunit adunitp2"><div id="adunit1" ' + adPadding + '><p style="margin:0 0 5px 0; padding:0; font-size:1em;"><a href="'
-			+ google_info.feedback_url + '" ' + adColor + '>Ads by Google</a></p>';
+			+ google_info.feedback_url + '" ' + adColor + '>' + googleAds + '</a></p>';
 			else if( adId == "5" ) {
 				discussionAd(adId);
 				return;
 			}
 			else if(adId == "7") {
 				var adHtml = s = '<div class="horiztonalAdContainer"><div class="adunit adunitp0"><div id="adunit1" ' + adPadding + '><p style="margin:0 0 5px 0; padding:0; font-size:1em;"><a href="'
-			+ google_info.feedback_url + '" ' + adColor + '>Ads by Google</a></p>';
+			+ google_info.feedback_url + '" ' + adColor + '>' + googleAds + '</a></p>';
 			}
 			else
 				var adHtml = s = '<div class="adunit adunitp0"><div id="adunit1" ' + adPadding + '><p style="margin:0 0 5px 0; padding:0; font-size:1em;"><a href="'
-			+ google_info.feedback_url + '" ' + adColor + '>Ads by Google</a></p>';
+			+ google_info.feedback_url + '" ' + adColor + '>' + googleAds + '</a></p>';
 		
 			for(i = 0; i < adCount[adId]; i++) {
 				ad = adArray[adIndex];
@@ -75,9 +80,14 @@ WH.wikihowAds = (function ($) {
 	}
 	
 	function discussionAd(adId) {
+		var googleAds = 'Ads by Google';
+		if(wgContentLanguage == "es")
+			googleAds = 'Anucios Google';
+		else if(wgContentLanguage == "pt")
+			googleAds = 'Anúncios Google';
 		
 		s = '<div class="de"><div style="background-color: #eee; height: 24px; width: 623px;"><p class="de_user"><a class="new" href="' 
-                        + google_info.feedback_url + '" style="">Ads by Google</a></p></div><div style="padding: 15px;">'; 
+                        + google_info.feedback_url + '" style="">' + googleAds + '</a></p></div><div style="padding: 15px;">'; 
         for(i = 0; i < adCount[adId]; i++) {
 			ad = adArray[adIndex];
 			adIndex++;
