@@ -97,7 +97,7 @@ class Categorizer extends UnlistedSpecialPage {
 		$pageId = -1;
 		foreach ($pageIds as $page) {
 			try {
-				if (!$this->skipped($page) && !$this->inUse($page)) {
+				if (!$this->skipped($page) && !$this->inUse($page) && GoodRevision::patrolledGood(Title::newFromId($page))) {
 					$this->markInUse($page);
 					$pageId = $page;
 					break;
@@ -265,12 +265,15 @@ class Categorizer extends UnlistedSpecialPage {
 	}
 
 	function getCategories(&$t) {
+		global $wgContLang;
+
 		$parentCats = array_keys($t->getParentCategories());
 		$templates = split("\n", wfMsgForContent('templates_further_editing'));
 		$cats = array();
 		foreach ($parentCats as $parentCat) {
 			$parentCat = str_replace("-", " ", $parentCat);
-			$parentCat = str_replace("Category:", "", $parentCat);
+			$catNsText = $wgContLang->getNSText (NS_CATEGORY);
+			$parentCat = str_replace("$catNsText:", "", $parentCat);
 			// Trim category text in case someone manually entered a category and left some leading whitespace
 			$parentCat = trim($parentCat);
 			if (false === array_search($parentCat, $templates)) { 

@@ -56,7 +56,7 @@ abstract class MobileHtmlBuilder {
 	abstract protected function generateFooter();
 
 	protected function getDefaultHeaderVars() {
-		global $wgRequest;
+		global $wgRequest, $wgLanguageCode;
 
 		$t = $this->t;
 		$articleName = $t->getText();
@@ -67,15 +67,18 @@ abstract class MobileHtmlBuilder {
 		$isMainPage = $articleName == wfMsg('mainpage');
 		$titleBar = $isMainPage ? wfMsg('mobile-mainpage-title') : wfMsg('pagetitle', $articleName);
 		$canonicalUrl = 'http://' . MobileWikihow::getNonMobileSite() . '/' . $t->getPartialURL();
+		$js = $wgLanguageCode == 'en' ? array('stu') : null;
 
 		$headerVars = array(
 			'isMainPage' => $isMainPage,
 			'title' => $titleBar,
 			'css' => $this->cssScriptsCombine,
+			'js' => $js,  // only include stu js in header. The rest of the js will get loaded by showDeferredJS called in article.tmpl.php
 			'randomUrl' => $randomUrl,
 			'deviceOpts' => $deviceOpts,
 			'canonicalUrl' => $canonicalUrl,
 			'pageExists' => $pageExists,
+			'jsglobals' => Skin::makeGlobalVariablesScript(array('skinname' => 'mobile')),
 		);
 		return $headerVars;
 	}
@@ -200,9 +203,6 @@ class MobileBasicArticleBuilder extends MobileHtmlBuilder {
 
 	protected function generateHeader() {
 		$headerVars = $this->getDefaultHeaderVars();
-		//stu JS uses skinname=mobile to trigger mobile behavior
-		$headerVars['jsglobals'] = Skin::makeGlobalVariablesScript( array('skinname'=>'mobile') );
-
 		return EasyTemplate::html('header.tmpl.php', $headerVars);
 	}
 
@@ -281,7 +281,6 @@ class MobileBasicArticleBuilder extends MobileHtmlBuilder {
 
 	protected function addJSLibs() {
 		parent::addJSLibs();
-		self::addJS('stu', true);
 	}
 
 	/**

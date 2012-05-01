@@ -398,6 +398,8 @@ class AuthorEmailNotification extends SpecialPage {
 	 * @return Boolean: true
 	 */
 	static function notifyMod( &$article, &$editUser, &$revision ) {
+		global $wgMemc;
+
 		$authors = $article->getContributors( 1 );
 		// Don't send an email if the author of the revision is the creator of the article
 		if ( $editUser->getName() == $authors[0][1] ) {
@@ -416,27 +418,34 @@ class AuthorEmailNotification extends SpecialPage {
 		}
 
 		$t = $article->getTitle();
-		$dbw = wfGetDB( DB_MASTER );
-		$res = $dbw->select(
+		$dbr = wfGetDB( DB_SLAVE );
+		$res = $dbr->select(
 			array( 'email_notifications' ),
 			array( 'en_watch', 'en_user', 'en_watch_email', 'en_last_emailsent' ),
 			array( 'en_page' => $t->getArticleID() ),
 			__METHOD__
 		);
-		$row = $dbw->fetchObject( $res );
+		$row = $dbr->fetchObject( $res );
 
 		if ( $row ) {
+			$key = wfMemcKey( $t->getArticleID() . '-aen' );
+			$recentEmail = $wgMemc->get( $key );
+			if ( is_null( $recentEmail ) ) {
+				$recentEmail = false;
+			}
+
 			// They're watching this, right?
 			$sendEmail = $row->en_watch == 1;
 			// See how long it's been since we've sent an email. If it's been more than a day, send an email
 			if ( !is_null( $row->en_watch_email ) ) {
 				$last = strtotime( $row->en_watch_email . ' UTC' );
 				if ( time() - $last > 86400 ) {
-					$sendEmail = true && $sendEmail;
+					$sendEmail = true && $sendEmail && !$recentEmail;
 				}
 			}
 			$recipientUser = User::newFromID( $row->en_user );
 			if ( $sendEmail ) {
+				$dbw = wfGetDB( DB_MASTER );
 				$dbw->update(
 					'email_notifications',
 					array(
@@ -450,6 +459,10 @@ class AuthorEmailNotification extends SpecialPage {
 					__METHOD__
 				);
 
+				// Set a flag that lets us know a recent email was set
+				// This is to prevent us from sending multiple e-mails if there
+				// are database delays in replication
+				$wgMemc->set( $key, true, time() + 60 * 30 );
 				AuthorEmailNotification::sendModEmail( $t, $recipientUser, $revision, $editUser );
 			}
 		} else {

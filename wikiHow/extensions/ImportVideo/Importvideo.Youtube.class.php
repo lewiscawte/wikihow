@@ -22,7 +22,7 @@ class ImportvideoYoutube extends Importvideo {
 		if ($v['YT:NOEMBED'] == 1 || in_array(strtolower($v['NAME']), $wgImportVideoBadUsers) )  {
 			$importOption = wfMsg('importvideo_noimportpossible');
 		} else {
-			$importOption = "<input class='button white_button_100 submit_button' onmouseout='button_unswap(this);' onmouseover='button_swap(this);' type='button' value='Embed It!' onclick='importvideo(\"{$id}\"); gatTrack(\"Registered_Editing\",\"Import_video\",\"Editing_page\");'/>";
+			$importOption = "<input class='button white_button_100 submit_button' onmouseout='button_unswap(this);' onmouseover='button_swap(this);' type='button' value='" . wfMsg('importvideo_embedit') . "' onclick='importvideo(\"{$id}\"); gatTrack(\"Registered_Editing\",\"Import_video\",\"Editing_page\");'/>";
 		}
 		
 		

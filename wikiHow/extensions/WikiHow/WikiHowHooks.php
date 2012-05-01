@@ -64,29 +64,29 @@ function updateSearchIndex( $new, $old ) {
 	)
 	{
 		$dbw->delete(
-			'skey',
+			'title_search_key',
 			array(
-				'skey_title' => $new->getDBKey(),
-				'skey_namespace' => $new->getNamespace()
+				'tsk_title' => $new->getDBKey(),
+				'tsk_namespace' => $new->getNamespace()
 			),
 			__FUNCTION__
 		);
 		$dbw->insert(
-			'skey',
+			'title_search_key',
 			array(
-				'skey_title' => $new->getDBKey(),
-				'skey_namespace' => $new->getNamespace(),
-				'skey_key' => generateSearchKey( $new->getText() )
+				'tsk_title' => $new->getDBKey(),
+				'tsk_namespace' => $new->getNamespace(),
+				'tsk_key' => generateSearchKey( $new->getText() )
 			),
 			__FUNCTION__
 		);
 	}
 
 	if ( $old != null ) {
-		$dbw->delete( 'skey',
+		$dbw->delete( 'title_search_key',
 			array(
-				'skey_title' => $old->getDBKey(),
-				'skey_namespace' => $old->getNamespace()
+				'tsk_title' => $old->getDBKey(),
+				'tsk_namespace' => $old->getNamespace()
 			),
 			__FUNCTION__
 		);

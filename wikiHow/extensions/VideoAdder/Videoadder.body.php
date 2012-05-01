@@ -138,7 +138,7 @@ class Videoadder extends SpecialPage {
             }
             $skipids = " AND va_page NOT IN (" . implode(",", $good) . ") ";
         }
-		for ($i = 0; $i < 10; $i++) {
+		for ($i = 0; $i < 30; $i++) {
 			$r = rand(0, 2);
 			// if it's been in use for more than x minutes, forget 'em
 			$ts = wfTimestamp(TS_MW, time() - 10 * 60);
@@ -172,7 +172,7 @@ class Videoadder extends SpecialPage {
 			$res = $dbr->query($sql);
 			if ($row = $dbr->fetchObject($res)) {
 				$title = Title::newFromID($row->va_page);
-				if ($title) {
+				if ($title && !$this->hasProblems( $title, $dbr )) {
 					$iv->getTopResults($title, 1, wfMsg("howto", $title->getText()));
 				}
 			}
@@ -258,6 +258,34 @@ class Videoadder extends SpecialPage {
 		return $table;
 	}
 	
+	
+	/**	
+	 * hasProblems
+	 * (returns TRUE if there's a problem)
+	 * - Checks to see if there's an {{nfd}} template
+	 * - Makes sure an article has been NABbed
+	 * - Makes sure last edit has been patrolled
+	 **/
+	function hasProblems($t,$dbr) {
+		$r = Revision::newFromTitle($t);
+		if ($r) {
+			$intro = Article::getSection($r->getText(), 0);
+			
+			//check for {{nfd}} template
+			if (preg_match('/{{nfd/', $intro)) return true;
+			
+			//is it NABbed?
+			$is_nabbed = Newarticleboost::isNABbed($dbr,$t->getArticleId());
+			if (!$is_nabbed) return true;
+			
+			//last edit patrolled?
+			if (!GoodRevision::patrolledGood($t)) return true;
+		}
+		
+		//all clear?
+		return false;
+	}
+	
     function execute ($par) {
 		global $wgOut, $wgRequest, $wgUser, $wgParser;
 
@@ -331,10 +359,21 @@ class Videoadder extends SpecialPage {
 				}
 			}
 			$results = self::getNext();
+			
+			if (empty($results)) {
+				$wgOut->addHTML("Something went wrong. Refresh.");
+				return;
+			}
+			
  			$title = $results[0];
 			$vid	= $results[1];
 			$id 	= str_replace("http://gdata.youtube.com/feeds/api/videos/", "", $vid['ID']);
 
+			if (!$title) {
+				$wgOut->addHTML("Something went wrong. Refresh.");
+				return;
+			}
+			
 			$who = WikiHow::newFromTitle($title);
 			$intro = $who->getSection("summary");
 			$intro = WikiHow::removeWikitext($intro);

@@ -57,7 +57,7 @@ class NewCheckGoogleIndex extends Maintenance {
 		$found = false;
 		while ( $start < 90 && !$found ) {
 			//$this->output( "searching at $start\n" );
-			$results = gSearch::serp( $query, $start ); // @todo FIXME
+			$results = SearchEngineAPI::serp( $query, $start ); // @todo FIXME
 			$gTotalAPIRequests++;
 			$i = $start + 1;
 			if ( $results == null ) {

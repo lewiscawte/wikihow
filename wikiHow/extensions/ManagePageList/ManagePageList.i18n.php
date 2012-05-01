@@ -21,6 +21,7 @@ $messages['en'] = array(
 	'managepagelist-error-make-title' => "Couldn't make title out of $1 $2",
 	'managepagelist-error-page-id' => "Error: Couldn't find article ID for $1",
 	'managepagelist-id' => 'ID: ',
+	'managepagelist-invalid-name' => 'Invalid name for a page list.',
 	'managepagelist-name' => 'Name: ',
 	'managepagelist-page' => 'Page: ',
 	'managepagelist-page-added' => '$1 has been added to the list.',

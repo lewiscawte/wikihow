@@ -426,7 +426,7 @@ class Spellcheckerwhitelist extends UnlistedSpecialPage {
 }
 
 class wikiHowDictionary{
-	const DICTIONARY_LOC = "/images/spellcheck/custom.pws";
+	const DICTIONARY_LOC = "/maintenance/spellcheck/custom.pws";
 	const TEMP_TABLE = "spellchecker_temp";
 	const CAPS_TABLE = "spellchecker_caps";
 	const WORD_TABLE = "spellchecker_word";
@@ -477,6 +477,9 @@ class wikiHowDictionary{
 		
 		$pspell = self::getLibrary();
 		
+		if(count($words))
+			echo "Adding to whitelist: ";
+		
 		foreach($words as $word) {
 			
 			//check to see if its an ALL CAPS word
@@ -487,6 +490,8 @@ class wikiHowDictionary{
 			else
 				pspell_add_to_personal($pspell, $word);
 			
+			echo $word . ",";
+			
 			//now go through and check articles that contain that word.
 			$sql = "SELECT * FROM `" . self::WORD_TABLE . "` JOIN `spellchecker_page` ON `sp_word` = `sw_id` WHERE sw_word = " . $dbr->addQuotes($word);
 			$res = $dbr->query($sql, __METHOD__);
@@ -496,6 +501,8 @@ class wikiHowDictionary{
 				$dbw->update('spellchecker', array('sc_dirty' => "1"), array('sc_page' => $page_id), __METHOD__);
 			}
 		}
+		
+		echo "\n";
 		
 		pspell_save_wordlist($pspell);
 		

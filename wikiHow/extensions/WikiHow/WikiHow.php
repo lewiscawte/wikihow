@@ -89,7 +89,7 @@ class WikiHow {
 			$cat = str_replace( '[[' . $categoryName . ':', '', $cat );
 			$cat = trim( str_replace( ']]', '', $cat ) );
 			$this->mCategories[] = $cat;
-			$text = str_replace( '[[Category:' . $cat . ']]', '', $text );
+			$text = str_replace( '[[' . $categoryName . ':' . $cat . ']]', '', $text );
 		}
 		// extract interlanguage links
 		$matches = array();
@@ -259,6 +259,8 @@ class WikiHow {
 	// BuildWikiHow.body.php and EditPageWrapper.php are the only files
 	// that should use it
 	public function formatWikiText() {
+		global $wgContLang;
+
 		$text = $this->mSummary . "\n";
 
 		// move all categories to the end of the intro
@@ -266,7 +268,7 @@ class WikiHow {
 		foreach ( $this->mCategories as $cat ) {
 			$cat = trim( $cat );
 			if ( $cat != '' ) {
-				$text .= "\n[[Category:$cat]]";
+				$text .= "\n[[" . $wgContLang->getNsText( NS_CATEGORY ) . ":$cat]]";
 			}
 		}
 

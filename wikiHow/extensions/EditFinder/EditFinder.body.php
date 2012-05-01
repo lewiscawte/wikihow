@@ -52,13 +52,13 @@ class EditFinder extends UnlistedSpecialPage {
 		$skip_article = $wgRequest->getVal( 'skip' );
 
 		// flip through a few times in case we run into problem articles
-		for ( $i = 0; $i < 10; $i++ ) {
+		for ( $i = 0; $i < 30; $i++ ) {
 			if ( $this->topicMode ) {
 				$pageId = $this->getNextByInterest( $skip_article );
 			} else {
 				$pageId = $this->getNext( $skip_article );
 			}
-			if ( !empty( $pageId ) ) {
+			if ( !$this->hasProblems( $pageId ) ) {
 				return $this->returnNext( $pageId );
 			}
 		}
@@ -407,6 +407,31 @@ class EditFinder extends UnlistedSpecialPage {
 		}
 
 		return $skipped;
+	}
+
+	/**
+	 * Makes sure last edit has been patrolled
+	 *
+	 * @param $pageId Integer: page ID number to check
+	 * @return Boolean: true if there's a problem, otherwise false
+	 */
+	function hasProblems( $pageId ) {
+		if ( empty( $pageId ) ) {
+			return true;
+		}
+
+		$t = Title::newFromId( $pageId );
+		if ( !$t ) {
+			return true;
+		}
+
+		// Last edit patrolled?
+		if ( !GoodRevision::patrolledGood( $t ) ) {
+			return true;
+		}
+
+		// All clear?
+		return false;
 	}
 
 	/**

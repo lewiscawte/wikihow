@@ -209,7 +209,7 @@ class Wikitext {
 	/**
 	 * Extract the given section from the wikitext of an article
 	 */
-	private static function getSection( $wikitext, $sectionMsg, $withHeader ) {
+	public static function getSection( $wikitext, $sectionMsg, $withHeader ) {
 		global $wgParser;
 		if ( empty( $sectionMsg ) ) {
 			throw new MWException( 'Must provide the section message' );
@@ -579,7 +579,7 @@ class Wikitext {
 	 */
 	private static function ensureNewlineTerminatedStrings( &$arr ) {
 		foreach ( $arr as &$str ) {
-			$len = mb_strlen( $str );
+			$len = strlen( $str );
 			if ( $len > 0 && $str{$len - 1} != "\n" ) {
 				$str .= "\n";
 			}

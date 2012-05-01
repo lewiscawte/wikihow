@@ -9,9 +9,9 @@ class EmailLink extends SpecialPage {
 	function reject() {
 		global $wgOut, $wgUser;
 		$dbw = wfGetDB(DB_MASTER);
-		$dbw->insert('et',
+		$dbw->insert('rejected_email_links',
 			array(
-				'et_text' => "REJECTED\nuserid: " . $wgUser->getID() . "\n"
+				'rel_text' => "REJECTED\nuserid: " . $wgUser->getID() . "\n"
 				. wfReportTime() . "\nReferer:" . $_SERVER["HTTP_REFERER"] . "\n"
 				. $_SERVER['HTTP_X_FORWARDED_FOR'] . "\n" . print_r($_POST, true)
 			),

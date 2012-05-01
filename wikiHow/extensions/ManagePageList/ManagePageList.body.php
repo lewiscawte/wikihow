@@ -10,6 +10,16 @@ class ManagePageList extends UnlistedSpecialPage {
 	}
 
 	/**
+	 * Check that the given name is a valid name for a page list.
+	 *
+	 * @param $list String: list name to validate
+	 * @return Boolean
+	 */
+	private static function checkValidListName( $list ) {
+		return preg_match( '@^[-A-Za-z ]+$@', $list ) > 0;
+	}
+
+	/**
 	 * Show the new special page
 	 *
 	 * @param $par Mixed: parameter passed to the special page or null
@@ -39,17 +49,22 @@ class ManagePageList extends UnlistedSpecialPage {
 		$wgOut->addModules( 'ext.managePageList' );
 
 		$list = $wgRequest->getVal( 'list', 'risingstar' );
+		if ( !self::checkValidListName( $list ) ) {
+			$wgOut->addHTML( wfMsg( 'managepagelist-invalid-name' ) );
+			return;
+		}
 
 		$dbr = wfGetDB( DB_SLAVE );
 
 		// Handle removals
 		if ( $wgRequest->getVal( 'a' ) == 'remove' ) {
-			$t = Title::newFromID( $wgRequest->getInt( 'id' ) );
+			$articleID = $wgRequest->getInt( 'id' );
+			$t = Title::newFromID( $articleID );
 			$dbw = wfGetDB( DB_MASTER );
 			$dbw->delete(
 				'pagelist',
 				array(
-					'pl_page' => $wgRequest->getInt( 'id' ),
+					'pl_page' => $articleID,
 					'pl_list' => $list
 				),
 				__METHOD__
@@ -62,27 +77,16 @@ class ManagePageList extends UnlistedSpecialPage {
 		}
 
 		if ( $wgRequest->wasPosted() ) {
-			if ( $wgRequest->getVal( 'newlist' ) ) {
-				$list = $wgRequest->getVal( 'newlist' );
-				$mw = Title::makeTitle(
-					NS_MEDIAWIKI,
-					'Pagelist_' . $wgRequest->getVal( 'newlist' )
-				);
-				$a = new Article( $mw );
-				$a->doEdit(
-					$wgRequest->getVal( 'newlistname' ),
-					wfMsgForContent( 'managepagelist-creation-summary' )
-				);
-			}
-			if ( $wgRequest->getVal( 'newtitle' ) ) {
-				$url = $wgRequest->getVal( 'newtitle' );
+			$newTitle = strip_tags( $wgRequest->getVal( 'newtitle' ) );
+			if ( $newTitle ) {
+				$url = $newTitle;
 				$url = preg_replace( '@http://@', '', $url );
 				$url = preg_replace( '@.*/@U', '', $url );
 				$t = Title::newFromURL( $url );
 				if ( !$t || !$t->getArticleID() ) {
 					$wgOut->addHTML(
 						'<p style="color: red; font-weight: bold;">' .
-						wfMsg( 'managepagelist-error-page-id', $wgRequest->getVal( 'newtitle' ) ) .
+						wfMsg( 'managepagelist-error-page-id', $newTitle ) .
 						'</p>'
 					);
 				} else {
@@ -246,24 +250,5 @@ class ManagePageList extends UnlistedSpecialPage {
 			$index++;
 		}
 		$wgOut->addHTML( '</table>' );
-
-		$wgOut->addHTML(
-			'<form name="addlistform" method="post" action="' . $this->getTitle()->escapeFullURL() . '">
-				<br /><br />
-				<table width="100%">
-					<tr>
-						<td>' . wfMsg( 'managepagelist-create-new' ) . '<br /><br />' .
-
-						wfMsg( 'managepagelist-id' ) . '<input type="text" name="newlist" id="newlist" />' .
-						wfMsg( 'managepagelist-name' ) . '<input type="text" name="newlistname" id="newlistname" /><br /><br />' .
-						wfMsg( 'managepagelist-page' ) . '<input type="text" name="newtitle" id="newtitle" />
-					</td>
-					<td style="width: 32px; vertical-align: bottom;">
-						<input type="image" class="addicon" src="' . $wgExtensionAssetsPath . '/ManagePageList/plus.png" onclick="javascript:document.addlistform.submit()" />
-					</td>
-				</tr>
-			</table>
-		</form>'
-		);
 	}
 }
