@@ -37,7 +37,7 @@ $wgResourceModules['ext.adminRemoveAvatar'] = array(
 
 // New user right, required to use the special page
 $wgAvailableRights[] = 'adminremoveavatar';
-$wgGroupPermissions['bureaucrat']['adminremoveavatar'] = true;
+$wgGroupPermissions['sysop']['adminremoveavatar'] = true;
 
 // Set up logging
 $wgLogTypes[]             = 'avatarrm';
