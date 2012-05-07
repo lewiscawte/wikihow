@@ -1,3 +1,4 @@
+
 <?php
 
 /**
@@ -20,48 +21,53 @@
  */
 
 
-if(php_sapi_name() != 'cli'){
-		die("This script can only be run from the command line.\n");
+if ( php_sapi_name() != 'cli' ) {
+		die( "This script can only be run from the command line.\n" );
 }
 
-require_once(dirname(__FILE__).'/Maintenance.php');
+require_once( dirname( __FILE__ ) . '/Maintenance.php' );
 
-class CheckProxy extends Maintenance {
-		public function __construct(){
-			parent::__construct();
-			$this->mDescription = "Check for an open proxy at a specified location.";
-			$this->addArg( 'ip', 'IP to connect to', true);
-			$this->addArg( 'port', 'Port to connect on', true);
-			$this->addArg( 'url', 'Target URL', true);
-
-		  }
-
-	      public function getDbType() {
-		return Maintenance::DB_NONE;
-	}
-
-
-		public function execute(){
-			      $ip = $this->getArg(0);
-			      $port = $this->getArg(1);
-			      $url = $this->getArg(2);
-			      
-			      $host = trim(`hostname`);
-			      $this->output("Connecting to $ip:$port -- Target: $url\n");
-			      $sock = @fsockopen($ip,$port,$errno,$errstr,5);
-			      
-			      if(!$errno){
-					   $this->output("Connected.\n");
-					   $request = "GET $url HTTP/1.0\r\n";
-					   $request .= "\r\n";
-					   @fputs($sock,$request);
-					   $response = fgets($sock,65536);
-					   $this->output($response);
-					   @fclose($sock);
-				      } else {
-					    $this->output("No connection.");
+class CheckProxy extends Maintenance
+{
+		public function __construct( )
+		{
+				parent::__construct();
+				$this->mDescription = "Check for an open proxy at a specified location.";
+				$this->addArg( 'ip', 'IP to connect to', true );
+				$this->addArg( 'port', 'Port to connect on', true );
+				$this->addArg( 'url', 'Target URL', true );
+				
+		}
+		
+		public function getDbType( )
+		{
+				return Maintenance::DB_NONE;
+		}
+		
+		
+		public function execute( )
+		{
+				$ip   = $this->getArg( 0 );
+				$port = $this->getArg( 1 );
+				$url  = $this->getArg( 2 );
+				
+				$host = trim( `hostname` );
+				$this->output( "Connecting to $ip:$port -- Target: $url\n" );
+				$sock = @fsockopen( $ip, $port, $errno, $errstr, 5 );
+				
+				if ( !$errno ) {
+						$this->output( "Connected.\n" );
+						$request = "GET $url HTTP/1.0\r\n";
+						$request .= "\r\n";
+						@fputs( $sock, $request );
+						$response = fgets( $sock, 1024 );
+						$this->output( $response );
+						@fclose( $sock );
+						
+				} else {
+						$this->output( "No connection." );
 				}
-		      }
+		}
 }
 
 $maintClass = "CheckProxy";
