@@ -14,6 +14,12 @@ switch ($argv[0]) {
 	case "addWords":
 		wikiHowDictionary::batchAddWordsToDictionary();
 		break;
+	case "populateWhitelistTable":
+		populateWhitelistTable();
+		break;
+	case "addWordFile":
+		addWordFile($argv[1]);
+		break;
 }
 echo "Finish: " . $argv[0] . " " . date('G:i:s:u') . "\n\n";
 
@@ -146,6 +152,42 @@ function spellCheckArticle (&$dbw, $articleId, &$pspell, &$capsString) {
 	}
 }
 
+/**
+ *
+ * Takes all of the words out of the custom dictionary and adds them
+ * to the whitelist table.
+ * 
+ */
+function populateWhitelistTable() {
+	global $IP;
+	
+	$filecontents = file_get_contents($IP . wikiHowDictionary::DICTIONARY_LOC);
+	$words = explode("\n", $filecontents);
+	asort($words);
+	
+	$dbw = wfGetDB(DB_MASTER);
+	
+	foreach($words as $word) {
+		$word = trim($word);
+		if($word != "" && stripos($word, "personal_ws-1.1") === false)
+			$dbw->insert(wikiHowDictionary::WHITELIST_TABLE, array(wikiHowDictionary::WORD_FIELD => $word, wikiHowDictionary::ACTIVE_FIELD => 1), __METHOD__, "IGNORE");
+	}
+}
+
+function addWordFile($fileName) {
+	echo "getting file " . $fileName . "\n";
+	$fileContents = file_get_contents($fileName);
+	$words = explode("\n", $fileContents);
+	
+	$dbw = wfGetDB(DB_MASTER);
+	
+	foreach($words as $word) {
+		$word = trim($word);
+		if($word != "" && stripos($word, "personal_ws-1.1") === false)
+			$dbw->insert(wikiHowDictionary::WHITELIST_TABLE, array(wikiHowDictionary::WORD_FIELD => $word, wikiHowDictionary::ACTIVE_FIELD => 0), __METHOD__, "IGNORE");
+	}
+}
+
 
 /**
 
@@ -164,6 +206,7 @@ CREATE TABLE IF NOT EXISTS `spellchecker_caps` (
   `sc_word` varchar(20) collate utf8_unicode_ci NOT NULL,
   UNIQUE KEY `sc_word` (`sc_word`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+ALTER TABLE `spellchecker_caps` ADD `sc_user` MEDIUMINT( 8 ) NOT NULL;
 
 CREATE TABLE IF NOT EXISTS `spellchecker_page` (
   `sp_id` int(10) unsigned NOT NULL auto_increment,
@@ -185,6 +228,16 @@ CREATE TABLE IF NOT EXISTS `spellchecker_word` (
   PRIMARY KEY  (`sw_id`),
   UNIQUE KEY `sw_id` (`sw_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `wikidb_112`.`spellchecker_whitelist` (
+`sw_word` VARCHAR( 20 ) NOT NULL ,
+`sw_active` TINYINT NOT NULL ,
+`sw_user` MEDIUMINT( 8 ) NOT NULL, 
+UNIQUE (
+`sw_word`
+)
+) ENGINE = InnoDB ;
+ALTER TABLE `spellchecker_whitelist` CHANGE `sw_word` `sw_word` VARCHAR( 20 ) CHARACTER SET latin1 COLLATE latin1_general_cs NOT NULL 
 
 
 **/

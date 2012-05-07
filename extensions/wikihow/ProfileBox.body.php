@@ -867,8 +867,8 @@ Event.observe(window, 'load', pbInitForm);
 		$res = $dbr->select(
 			array('firstedit','page'),
 			array ('page_id', 'page_title', 'page_namespace', 'fe_timestamp', 'page_counter'),
-			array ('fe_page=page_id', 'fe_user' => $u->getID(), "page_title not like 'Youtube%'"),
-			"",
+			array ('fe_page=page_id', 'fe_user' => $u->getID(), "page_title not like 'Youtube%'", 'page_is_redirect' => 0, 'page_namespace' => NS_MAIN),
+			__FUNCTION__,
 			$order
 			);
 
@@ -878,7 +878,7 @@ Event.observe(window, 'load', pbInitForm);
 
 		$dbr->freeResult($res);
 
-		$wgMemc->get($cachekey, $results);
+		$wgMemc->set($cachekey, $results);
 
 		return $results;
 	}

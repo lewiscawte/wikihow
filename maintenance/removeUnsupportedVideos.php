@@ -12,8 +12,9 @@ $wgUser = User::newFromName('vidbot');
 $wgUser->load();
 
 $dbr = wfGetDB(DB_SLAVE);
+$dbw = wfGetDB(DB_MASTER);
+$res = $dbr->select('page', array('page_id'), array('page_namespace' => 24, 'page_is_redirect' => 0), "removeUnsupportedVideos.php");
 $res = $dbr->select('page', array('page_id'), array('page_namespace' => 24, 'page_is_redirect' => 0), "removeUnsupportedVideos.php", array("LIMIT 150,100"));
-#$res = $dbr->select('page', array('page_id'), array('page_namespace' => 24, 'page_is_redirect' => 0), "removeUnsupportedVideos.php");
 
 while ($row = $dbr->fetchObject($res)) {
 	$pages[] = $row->page_id;
@@ -24,6 +25,11 @@ foreach ($pages as $page) {
 	if (!$dbr->ping()) {
 		$dbr->close();
 		$dbr = wfGetDB(DB_SLAVE);
+	}
+
+	if (!$dbw->ping()) {
+		$dbw->close();
+		$dbw = wfGetDB(DB_MASTER);
 	}
 
 	$r = Revision::loadFromPageId($dbr, $page);

@@ -3,18 +3,13 @@ if (typeof WH === 'undefined') WH = {};
 // BOUNCE TIMER MODULE
 WH.ExitTimer = (function ($) {
 
-//var odds = 2;
-//var rand = Math.floor(Math.random()*odds);
-//var LOGGER_ENABLE = (rand==1 && wgNamespaceNumber==0 && wgAction=="view");
 var LOGGER_ENABLE = (wgNamespaceNumber == 0 && wgAction == "view");
 
 var startTime = false;
-var loadTime = false;
-//var id = Math.floor(Math.random() * 100000);
 var duration = 0;
-//var whC = (console && console.log);
 var etDebug = false;
 var DEFAULT_PRIORITY = 0;
+var fromGoogle = false;
 
 function getTime() {
 	var date = new Date();
@@ -32,18 +27,22 @@ function pingSend(priority, domain, message, doAsync) {
 }
 
 function getDomain() {
-	if (skin=="mobile") return "mb";
-	return "bt";
+	if (fromGoogle) {
+		if (skin == 'mobile') {
+			return 'vm'; // virtual domain mapping to mb and pv domains
+		} else {
+			return 'vw'; // virtual domain mapping to bt and pv domains
+		}
+	} else {
+		return 'pv';
+	}
 }
 
 function sendExitTime(e) {
-	if (!LOGGER_ENABLE) return;  //do nothing if startTime wasn't set
-
-	var viewTime = -1;
 	if (startTime) {
 		//startTime may not be set if window was blurred, then close
 		//without being brought to the foreground
-		viewTime = (getTime() - startTime);
+		var viewTime = (getTime() - startTime);
 		duration = duration + viewTime;
 	}
 	startTime = false;
@@ -53,16 +52,21 @@ function sendExitTime(e) {
 	pingSend(DEFAULT_PRIORITY, domain, message, false);
 }
 
-function onUnload() { sendExitTime('unload'); }
+function onUnload() {
+	sendExitTime('unload');
+}
 
 function onBlur() {
-	if (!LOGGER_ENABLE) return;
 	var viewTime = getTime() - startTime;
-	duration += viewTime; 
+	duration += viewTime;
 	startTime = false;
 }
 
-function fromGoogle() {
+function onFocus() {
+	startTime = getTime();
+}
+
+function checkFromGoogle() {
 	var ref = typeof document.referrer === 'string' ? document.referrer : '';
 	var googsrc = !!(ref.match(/^[a-z]*:\/\/[^\/]*google/i));
 	return googsrc;
@@ -70,13 +74,11 @@ function fromGoogle() {
 
 function start(dbg) {
 	etDebug = dbg;
-	if (LOGGER_ENABLE && (etDebug || fromGoogle())){
+	if (LOGGER_ENABLE) {
+		fromGoogle = checkFromGoogle();
 		startTime = getTime(); 
-		loadTime = getTime();
 		$(window).unload(onUnload);
-		$(window).focus( function() {
-			if (LOGGER_ENABLE) startTime = getTime();
-		});
+		$(window).focus(onFocus);
 		$(window).blur(onBlur);
 	} 
 }
