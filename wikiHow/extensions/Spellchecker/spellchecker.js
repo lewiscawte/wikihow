@@ -76,6 +76,13 @@ $("document").ready(function() {
 	$('#dialog-box').hide();
 	
 	$('#spch-add-words').click(function(e) {
+		//put the words into the list
+		checkBoxHtml = '';
+		//alert(wordArray);
+		for(word in wordArray) {
+			checkBoxHtml += '<input type="checkbox" name="words" value="' + wordArray[word] + '" /> ' + wordArray[word] + '<br />';
+		}
+		$('.spch-word-list').html(checkBoxHtml);
 		$('#dialog-box').dialog({
 		   width: 600,
 		   modal: true,
@@ -284,6 +291,30 @@ function updateStats(){
 	);
 }
 
+//not in use yet
+function checkReferences() {
+	//look for ref tags that are of the format 
+	// <ref ... /> not <ref ...>...</ref>
+	
+	var regString = "@<ref [^>]*/>@";
+	var myExp = new RegExp(regString, "g");
+	var replace = function($0) {
+		if($0.search(/^[A-Z]*$/) >= 0) {
+			//all caps so see if its in the exclusion list
+			for(var i = 0; i < exclusions.length; i++) {
+				if(exclusions[i] == $0)
+					return $0;
+			}
+		}
+
+		return "<span class='" + misspell + "'>" + $0 + "</span>";
+	};
+	
+	articleText = articleText.replace(/([^[]+)((?:\[[^\]]+\])*)/g, function($0, $1, $2) {
+		return $1.replace(myExp, replace) + ($2 || "");
+	});
+}
+
 function wrapWords(articleText, words, exclusions, textFormat) {
 	//first store and capture all the images in the article before messing with anything
 	//only need to do this for HTML
@@ -455,22 +486,28 @@ function clearMisspellings(word) {
  * 
  */
 function addWord(elem){
-	var word = $(elem).parent().find('.spch-word').val();
-	if(word != "") {
+	var addWords = new Array();
+	$(elem).parent().find('.spch-word-list input').each(function(){
+		if(this.checked) {
+			addWords.push(this.value);
+		}
+	});
+	//var word = $(elem).parent().find('.spch-word').val();
+	if(addWords.length > 0) {
 		$(elem).parent().find(".spch-message").html("");
 		
 		//submit word to backend for addition to personal dictionary
 		$.post(toolURL, {
-		addWord: true,
-		word: word
+		addWords: true,
+		words: addWords
 		},
 		function (result) {
 			if(result.success) {
-				$(elem).parent().find(".spch-message").html(word + " will be added to the dictionary within the hour");
+				$(elem).parent().find(".spch-message").html(addWords + " will be added to the dictionary within the hour");
 				clearMisspellings(word);
 			}
 			else {
-				$(elem).parent().find(".spch-message").html(word + " cannot be added to the dictionary");
+				$(elem).parent().find(".spch-message").html(addWords + " cannot be added to the dictionary");
 			}
 			$(elem).parent().find('.spch-word').val("");
 		},

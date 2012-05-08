@@ -257,10 +257,12 @@ function createEmail(&$editedStats, &$createdStats, &$nabStats, &$patrolStats, &
 		$email .= "</ol>";
 	}
 	
-	$headers  = 'MIME-Version: 1.0' . "\r\n";
-	$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+	$to = new MailAddress("bebeth@wikihow.com");
+	$from = new MailAddress("reports@wikihow.com");
+	$subject = "Editor Stats";
+	$content_type = "text/html; charset={$wgOutputEncoding}";
 	
-	mail('reports@wikihow.com', 'Editor Stats', $email, $headers);
+	UserMailer::send($to, $from, $subject, $email, null, $content_type);
 	
 }
 

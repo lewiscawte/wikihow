@@ -15,4 +15,5 @@ $messages['en'] = array (
 	'spch-no' => 'No, Skip Article',
 	'spch-summary' => 'Edits from the spell checker tool',
 	'spch-whitelist' => 'Spell Checker Whitelist',
+	'spch-whitelist-inst' => 'Contact [[User:Krystle|Krystle]] to have words removed from the whitelist.',
 );

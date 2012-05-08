@@ -6,11 +6,7 @@
 		</div>
 		<h1><?= wfMsg('spch-question'); ?></h1>
 		<p id="spch-help"><?=wfMsg('spch-instructions') ?></p>
-		<?php if($addWords): ?>
-		<a href="#" id="spch-add-words"> Add words to whitelist</a>
-		<?php else: ?>
-		<a href="/wikiHow:Suggested-Spellchecker-Whitelist" target="_blank">Add words to whitelist</a>
-		<? endif; ?>
+		<a href="#" id="spch-add-words"> Add all words to whitelist</a>
 	</div>
 	<div id='spch-error'>
 		An error occurred while trying to get another article.
@@ -25,9 +21,11 @@
 		<?php if($addWords): ?>
 		<div id="spch-words">
 			<h3 style="color: #4A3C31">Add word to whitelist</h3>
-			<p>Enter individual words at a time</p>
-			<input class="spch-word" /> 
-			<a href="#" class="button white_button_100 spch-add">Add word</a>
+			<p>Select the words you want to add to the whitelist.</p>
+			<div class="spch-word-list">
+				
+			</div>
+			<a href="#" class="button white_button_100 spch-add">Add words</a>
 			<div class="spch-message"></div>
 		</div>
 		<? endif; ?>

@@ -87,6 +87,12 @@ class Spellchecker extends UnlistedSpecialPage {
 			print_r(json_encode($result));
 			return;
 		}
+		else if ( $wgRequest->getVal('addWords') ) {
+			$wgOut->setArticleBodyOnly(true);
+			$result->success = wikiHowDictionary::addWordsToDictionary($wgRequest->getArray('words'));
+			print_r(json_encode($result));
+			return;
+		}
 		else if ($wgRequest->wasPosted()) {
 			$wgOut->setArticleBodyOnly(true);
 			if ( $wgRequest->getVal('submitEditForm')) {
@@ -390,14 +396,21 @@ class Spellcheckerwhitelist extends UnlistedSpecialPage {
 			return;
 		}
 		
-		wfLoadExtensionMessages("Spellchecker");
+		$isStaff = in_array('staff', $wgUser->getGroups());
 		
-		$filecontents = file_get_contents($IP . wikiHowDictionary::DICTIONARY_LOC);
-		$words = explode("\n", $filecontents);
-		asort($words);
+		wfLoadExtensionMessages("Spellchecker");
 
 		
 		$dbr = wfGetDB(DB_SLAVE);
+		
+		$wgOut->addWikiText(wfMsg('spch-whitelist-inst'));
+		
+		$words = array();
+		$res = $dbr->select(wikiHowDictionary::WHITELIST_TABLE, "*", '', __METHOD__);
+		while($row = $dbr->fetchObject($res)) {
+			$words[] = $row;
+		}
+		asort($words);
 		
 		$res = $dbr->select(wikiHowDictionary::CAPS_TABLE, "*", '', __METHOD__);
 
@@ -409,8 +422,13 @@ class Spellcheckerwhitelist extends UnlistedSpecialPage {
 		
 		$wgOut->addHTML("<ul>");
 		foreach($words as $word) {
-			if($word != "" && stripos($word, "personal_ws-1.1") === false)
-				$wgOut->addHTML("<li>" . $word . "</li>");
+			if($word->{wikiHowDictionary::WORD_FIELD} != "")
+				$wgOut->addHTML("<li>" . $word->{wikiHowDictionary::WORD_FIELD} );
+			if($isStaff && $word->{wikiHowDictionary::USER_FIELD} > 0) {
+				$user = User::newFromId($word->{wikiHowDictionary::USER_FIELD});
+				$wgOut->addHTML(" (" . $user->getName() . ")");
+			}
+			$wgOut->addHTML("</li>");
 		}
 		
 		foreach($caps as $word) {
@@ -426,11 +444,13 @@ class Spellcheckerwhitelist extends UnlistedSpecialPage {
 }
 
 class wikiHowDictionary{
-	const DICTIONARY_LOC = "/maintenance/spellcheck/custom.pws";
-	const TEMP_TABLE = "spellchecker_temp";
-	const CAPS_TABLE = "spellchecker_caps";
-	const WORD_TABLE = "spellchecker_word";
-	const WORD_FIELD = "st_word";
+	const DICTIONARY_LOC	= "/maintenance/spellcheck/custom.pws";
+	const WHITELIST_TABLE	= "spellchecker_whitelist";
+	const CAPS_TABLE		= "spellchecker_caps";
+	const WORD_TABLE		= "spellchecker_word";
+	const WORD_FIELD		= "sw_word";
+	const USER_FIELD		= "sw_user";
+	const ACTIVE_FIELD		= "sw_active";
 	
 	/***
 	 * 
@@ -441,6 +461,8 @@ class wikiHowDictionary{
 	 * 
 	 */
 	static function addWordToDictionary($word) {
+		global $wgUser;
+		
 		$word = trim($word);
 		
 		//now check to see if the word can be added to the library
@@ -450,9 +472,19 @@ class wikiHowDictionary{
 			return false;
 		
 		$dbw = wfGetDB(DB_MASTER);
-		$dbw->insert(self::TEMP_TABLE, array(self::WORD_FIELD => $word), __METHOD__);
+		$dbw->insert(self::WHITELIST_TABLE, array(self::WORD_FIELD => $word, self::USER_FIELD => $wgUser->getID(), self::ACTIVE_FIELD => 0), __METHOD__, "IGNORE");
 		
 		return true;
+	}
+	
+	static function addWordsToDictionary($words) {
+		$success = true;
+		
+		foreach($words as $word) {
+			$success = wikiHowDictionary::addWordToDictionary($word) && $success;
+		}
+		
+		return $success;
 	}
 	
 	/***
@@ -464,10 +496,10 @@ class wikiHowDictionary{
 	static function batchAddWordsToDictionary() {
 		$dbr = wfGetDB(DB_SLAVE);
 		
-		$res = $dbr->select(self::TEMP_TABLE, '*', '', __METHOD__);
+		$res = $dbr->select(self::WHITELIST_TABLE, '*', array(self::ACTIVE_FIELD => 0), __METHOD__);
 		$words = array();
 		while($row = $dbr->fetchObject($res)) {
-			$words[] = $row->st_word;
+			$words[] = $row;
 		}
 		
 		if (count($words) <= 0)
@@ -480,22 +512,23 @@ class wikiHowDictionary{
 		if(count($words))
 			echo "Adding to whitelist: ";
 		
-		foreach($words as $word) {
-			
+		foreach($words as $wordRow) {
+			$word = $wordRow->{self::WORD_FIELD};
 			//check to see if its an ALL CAPS word
 			if ( !preg_match('@[^A-Z]@', $word) ) {
-				$sql = "INSERT IGNORE INTO " . self::CAPS_TABLE . " value ('" . $word . "')";
-				$dbw->query($sql, __METHOD__);
+				$dbw->insert(self::CAPS_TABLE, array('sc_word' => $word, 'sc_user' => $wordRow->{self::USER_FIELD}), __METHOD__, "IGNORE");
+				
+				$dbw->delete(self::WHITELIST_TABLE, array(self::WORD_FIELD => $word), __FUNCTION__);
 			}
-			else
+			else 
 				pspell_add_to_personal($pspell, $word);
 			
 			echo $word . ",";
-			
+
 			//now go through and check articles that contain that word.
 			$sql = "SELECT * FROM `" . self::WORD_TABLE . "` JOIN `spellchecker_page` ON `sp_word` = `sw_id` WHERE sw_word = " . $dbr->addQuotes($word);
 			$res = $dbr->query($sql, __METHOD__);
-			
+
 			while($row = $dbr->fetchObject($res)) {
 				$page_id = $row->sp_page;
 				$dbw->update('spellchecker', array('sc_dirty' => "1"), array('sc_page' => $page_id), __METHOD__);
@@ -504,9 +537,15 @@ class wikiHowDictionary{
 		
 		echo "\n";
 		
-		pspell_save_wordlist($pspell);
-		
-		$dbw->query("TRUNCATE " . self::TEMP_TABLE, __METHOD__);
+		if(pspell_save_wordlist($pspell)){
+			foreach($words as $wordRow) {
+				$word = $wordRow->{self::WORD_FIELD};
+				$dbw->update(self::WHITELIST_TABLE, array(self::ACTIVE_FIELD => 1), array(self::WORD_FIELD => $word), __METHOD__);
+			}
+		}
+		else{
+			mail('bebeth@wikihow.com', 'spellchecker error', 'Unable to save new words to the spellchecker whitelist.');
+		}
 	}
 	
 	/***
