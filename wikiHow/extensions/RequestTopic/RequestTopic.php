@@ -16,11 +16,17 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 
 // Extension credist that will show up on Special:Version
 $wgExtensionCredits['specialpage'][] = array(
+	'path' => __FILE__,
 	'name' => 'Request Topic',
 	'version' => '1.0',
 	'author' => 'Travis Derouin',
 	'description' => 'Provides a basic way of suggesting new topics to be added to the article base',
 );
+
+// Register the namespaces here, too, so that RequestTopic::registerCanonicalNamespaces()
+// doesn't have to whine about it
+define( 'NS_ARTICLE_REQUEST', 16 );
+define( 'NS_ARTICLE_REQUEST_TALK', 17 );
 
 // Register the JS with ResourceLoader
 $wgResourceModules['ext.requestTopic'] = array(

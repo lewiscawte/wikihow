@@ -10,6 +10,7 @@ $messages = array();
 
 /** English */
 $messages['en'] = array(
+	'listrequestedtopics' => 'List of Suggested Topics',
 	'listrequestedtopics-about' => 'This is a list of "How to" topics that users of {{SITENAME}} have suggested. If you have the answers to one or more, please click on the title for more information about their suggestion.',
 	'listrequestedtopics-browse' => 'Or browse requests by categories:
 
@@ -53,6 +54,7 @@ $messages['en'] = array(
 	'listrequestedtopics-request-topic-here' => 'Click here to [[Special:RequestTopic|suggest a topic]]',
 	'listrequestedtopics-view-article' => 'View article',
 	'listrequestedtopics-write-article' => 'Write Article',
+	'requesttopic' => 'Request a New Article',
 	'requesttopic-additional-topic-details' => 'Enter any additional details regarding your topic. Please recognize that {{SITENAME}} authors write articles for a wide audience, and will not write an article that addresses concerns unique to only one person:',
 	'requesttopic-already-related-topics' => 'Did you know that {{SITENAME}} already contains articles on the following related topics?',
 	'requesttopic-anonymous-user' => 'Anonymous',
@@ -87,20 +89,20 @@ $messages['en'] = array(
 
 How to $1
 
-In response, a volunteer author on {{SITENAME}} has written a first draft 
-of the article here: 
+In response, a volunteer author on {{SITENAME}} has written a first draft
+of the article here:
 
 $2
 
 We hope that the author was able to provide you with the instructions
-you need.  Please recognize that this article is a first draft and it 
-will improve over time as more volunteer {{SITENAME}} editors work on the 
-article! While we hope this first draft helps you, we hope you forgive 
-us if it isn\'t useful yet. 
+you need.  Please recognize that this article is a first draft and it
+will improve over time as more volunteer {{SITENAME}} editors work on the
+article! While we hope this first draft helps you, we hope you forgive
+us if it isn\'t useful yet.
 
 
-{{SITENAME}} is a collaborative writing project aiming to build the world\'s 
-largest how-to manual. Our mission is to provide free and useful 
+{{SITENAME}} is a collaborative writing project aiming to build the world\'s
+largest how-to manual. Our mission is to provide free and useful
 instructions to help people solve the problems of everyday life.
 
 Thanks,
@@ -110,28 +112,28 @@ Thanks,
 
 How to $1
 
-In response, $3, a volunteer author on {{SITENAME}}, has written 
-a first draft of the article here: 
+In response, $3, a volunteer author on {{SITENAME}}, has written
+a first draft of the article here:
 
 $2
 
-We hope that the author was able to provide you with the instructions 
-you need.  Please recognize that this article is a first draft and it 
-will improve over time as more volunteer {{SITENAME}} editors work on the 
-article. While we hope this first draft helps you, we hope you forgive 
-us if it isn\'t useful yet. 
+We hope that the author was able to provide you with the instructions
+you need.  Please recognize that this article is a first draft and it
+will improve over time as more volunteer {{SITENAME}} editors work on the
+article. While we hope this first draft helps you, we hope you forgive
+us if it isn\'t useful yet.
 
-If you like what the author wrote, we highly recommend sending a quick 
-thank you note to show your appreciation. Keep in mind that {{SITENAME}} 
-contributors are not paid, they simply volunteer their time to help answer 
-"how to" questions for anyone who needs some advice. So please thank 
-the author accordingly! You can do so by sending the author a note via 
+If you like what the author wrote, we highly recommend sending a quick
+thank you note to show your appreciation. Keep in mind that {{SITENAME}}
+contributors are not paid, they simply volunteer their time to help answer
+"how to" questions for anyone who needs some advice. So please thank
+the author accordingly! You can do so by sending the author a note via
 this page:
 
 $4
 
-{{SITENAME}} is a collaborative writing project aiming to build the world\'s 
-largest how-to manual. Our mission is to provide free and useful 
+{{SITENAME}} is a collaborative writing project aiming to build the world\'s
+largest how-to manual. Our mission is to provide free and useful
 instructions to help people solve the problems of everyday life.
 
 Thanks,
@@ -141,7 +143,7 @@ Thanks,
 	'requesttopic-request-category' => '$1 Requests',
 	'requesttopic-request-no-longer-answered' => 'Request no longer answered, target article deleted.',
 	'requesttopic-request-now-answered' => 'Request now answered',
-	'requesttopic-requestcategories-page' => '{{ns:project}}:RequestCategories'
+	'requesttopic-requestcategories-page' => '{{ns:project}}:RequestCategories',
 	'requesttopic-requested-topic-removed' => 'Topic removed from Requested List',
 	'requesttopic-send-this-request' => 'Send this request to a friend',
 	'requesttopic-submit' => 'Submit',

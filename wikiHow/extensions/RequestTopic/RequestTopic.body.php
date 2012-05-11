@@ -15,7 +15,7 @@ class RequestTopic extends SpecialPage {
 		$categoryNamespaceName = $wgContLang->getNsText( NS_CATEGORY );
 		// Is the article brand new?
 		$t = $article->getTitle();
-		if ( $t->getNamespace() == NS_MAIN ) {
+		if ( $t instanceof Title && $t->getNamespace() == NS_MAIN ) {
 			$answeredCategoryName = wfMessage( 'requesttopic-answered-category' )->inContentLanguage()->plain();
 			$dbr = wfGetDB( DB_SLAVE );
 			$r = Title::makeTitle( NS_ARTICLE_REQUEST, $t->getText() );
@@ -122,8 +122,12 @@ class RequestTopic extends SpecialPage {
 	function getCategoryOptions( $default = '' ) {
 		global $wgUser;
 
+		$msg = wfMessage( 'requesttopic-requestcategories-page' )->inContentLanguage()->plain();
 		// only do this for logged in users
-		$t = Title::newFromDBKey( wfMessage( 'requesttopic-requestcategories-page' )->inContentLanguage()->plain() );
+		$t = Title::newFromText( $msg );
+		if ( !$t ) {
+			return '';
+		}
 		$r = Revision::newFromTitle( $t );
 		if ( !$r ) {
 			return '';
@@ -151,7 +155,7 @@ class RequestTopic extends SpecialPage {
 	function getForm( $hidden = false ) {
 		global $wgOut, $wgUser, $wgScriptPath, $wgLang;
 
-		$topic =  $details = $override = $name = $email = $category = '';
+		$topic = $details = $override = $name = $email = $category = '';
 
 		if ( isset( $_POST['topic'] ) ) {
 			$topic = htmlspecialchars( $_POST['topic'] );
@@ -313,6 +317,9 @@ class RequestTopic extends SpecialPage {
 		global $wgUser, $wgOut, $wgLang, $wgContLang, $wgRequest, $wgParser;
 		global $wgLanguageCode, $wgFilterCallback;
 
+		// Set the page title, robot policies, etc.
+		$this->setHeaders();
+
 		// Blocked users can't make any new requests, obviously
 		if ( $wgUser->isBlocked() ) {
 			$wgOut->blockedPage();
@@ -337,7 +344,7 @@ class RequestTopic extends SpecialPage {
 				return;
 			}
 
-			if ( !isset( $_POST['override'] ) && $wgLanguageCode == 'en' ) {
+			if ( !isset( $_POST['override'] ) && class_exists( 'LSearch' ) ) {
 				$l = new LSearch();
 				$titles = $l->googleSearchResultTitles( $topic, 0, 5 );
 				if ( sizeof( $titles ) > 0 ) {
@@ -362,7 +369,7 @@ class RequestTopic extends SpecialPage {
 						$count++;
 					}
 					$wgOut->addHTML( '</ul>' );
-					$wgOut->addWikiMsg( 'requesttopic-no-submit-existing-topic' ) );
+					$wgOut->addWikiMsg( 'requesttopic-no-submit-existing-topic' );
 					$this->getForm( true );
 					return;
 				}
@@ -403,16 +410,15 @@ class RequestTopic extends SpecialPage {
 				return;
 			}
 
-			// create a user
+			// create a temporary User object if the user wants to be notified
+			// via e-mail when their how-to has been written
 			$user = null;
-			if ( $wgUser->getID() == 0 ) {
-				if ( $wgRequest->getVal( 'email', null ) ) {
-					$user = User::createTemporaryUser(
-						$wgRequest->getVal( 'name' ),
-						$wgRequest->getVal( 'email' )
-					);
-					$wgUser = $user;
-				}
+			if ( $wgUser->getID() == 0 && $wgRequest->getVal( 'email', null ) ) {
+				$user = User::createTemporaryUser(
+					$wgRequest->getVal( 'name' ),
+					$wgRequest->getVal( 'email' )
+				);
+				$wgUser = $user;
 			}
 
 			if ( $title->getArticleID() <= 0 ) {
@@ -475,6 +481,9 @@ class ListRequestedTopics extends SpecialPage {
 	 */
 	public function execute( $par ) {
 		global $wgLang, $wgOut, $wgRequest, $wgScript, $wgUser;
+
+		// Set the page title, robot policies, etc.
+		$this->setHeaders();
 
 		$offset = $wgRequest->getInt( 'offset', 0 );
 		$numPerPage = 50;
