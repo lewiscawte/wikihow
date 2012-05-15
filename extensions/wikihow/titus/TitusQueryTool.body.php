@@ -9,22 +9,38 @@ class TitusQueryTool extends UnlistedSpecialPage {
 	}
 
 	function execute($par) {
-		global $wgOut, $wgUser, $wgRequest;
+		global $wgOut, $wgUser, $wgRequest, $isDevServer;
 		$user = $wgUser->getName();
 		$userGroups = $wgUser->getGroups();
-		if ($wgUser->isBlocked() || !in_array('staff', $userGroups)) {
+		if (!(IS_SPARE_HOST || $isDevServer) || $wgUser->isBlocked() || !in_array('staff', $userGroups)) {
 			$wgOut->setRobotpolicy('noindex,nofollow');
 			$wgOut->errorpage('nosuchspecialpage', 'nospecialpagetext');
 			return;
 		}
 
 		if ($wgRequest->wasPosted()) {
+			$this->configureDB();
 			$this->handleQuery();
 		} else {
 			$wgOut->addScript(HtmlSnips::makeUrlTags('js', array('download.jQuery.js'), 'extensions/wikihow/common', false));
 			$wgOut->addScript(HtmlSnips::makeUrlTags('js', array('jquery.sqlbuilder-0.06.js'), 'extensions/wikihow/titus', false));
 			$wgOut->setPageTitle('Dear Titus...');
 			$wgOut->addHtml($this->getToolHtml());
+		}
+	}
+
+	// Use the spare DB for the query tool to reduce load on production dbs
+	function configureDB() {
+		global $wgDBservers;
+
+		if (IS_SPARE_HOST) {
+			$wgDBservers[1] = array(
+				'host'     => WH_DATABASE_BACKUP,
+				'dbname'   => WH_DATABASE_NAME,
+				'user'     => WH_DATABASE_USER,
+				'password' => WH_DATABASE_PASSWORD,
+				'load'     => 1
+			);
 		}
 	}
 
@@ -42,13 +58,13 @@ class TitusQueryTool extends UnlistedSpecialPage {
 	function getTitusFields() {
 		$data = array();
 		$dbr = wfGetDB(DB_SLAVE);
-		$res = $dbr->query("SELECT * FROM ams_page LIMIT 1");
+		$res = $dbr->query("SELECT * FROM titus LIMIT 1");
 		$n = mysql_num_fields($res->result);
 		for( $i = 0; $i < $n; $i++ ) {
 			$meta = mysql_fetch_field( $res->result, $i );
 			$field =  new MySQLField($meta);
 			$data[] = array(
-				'field' => 'ams_page.' . $field->name(), 
+				'field' => 'titus.' . $field->name(), 
 				'name' => $field->name(), 
 				'id'  => $i, 
 				'ftype' => $field->type(),
@@ -82,7 +98,7 @@ class TitusQueryTool extends UnlistedSpecialPage {
 
 		$sql = urldecode($wgRequest->getVal('sql'));
 		if (sizeof($ids)) {
-			$pageCondition = "ams_page_id IN (" . implode(",", $ids) . ")";
+			$pageCondition = "ti_page_id IN (" . implode(",", $ids) . ")";
 			if (stripos($sql, "WHERE ")) {
 				$sql = preg_replace("@WHERE (.+)$@", "WHERE (\\1) AND $pageCondition", $sql);
 			} else {
@@ -95,8 +111,8 @@ class TitusQueryTool extends UnlistedSpecialPage {
 	function outputRow(&$row, $delimiter = "\t") {
 		$data = get_object_vars($row);
 		// Stupid hack because people can't make a url from a title
-		if($data['ams_page_title']) {
-			$data['ams_page_title'] = 'http://www.wikihow.com/' . $data['ams_page_title'];
+		if($data['ti_page_title']) {
+			$data['ti_page_title'] = 'http://www.wikihow.com/' . $data['ti_page_title'];
 		}
 		return implode($delimiter, array_values($data)) . "\n";
 	}

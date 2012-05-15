@@ -13,8 +13,7 @@ class RobotPolicy {
 			|| self::hasBadTemplate() 
 			|| self::isShortUnNABbedArticle()
 			|| self::isAccuracyPatrolArticle()
-			|| self::isInaccurate()
-			|| self::isInDeindexList())
+			|| self::isInaccurate())
 		{
 			$wgOut->setRobotPolicy(self::POLICY_NOINDEX_FOLLOW);
 		} elseif (self::isProdButNotWWWHost()
@@ -226,29 +225,15 @@ class RobotPolicy {
 		return $result;
 	}
 	
+	/**
+	 *
+	 * Not in use currently.
+	 * 
+	 */
 	private static function isInDeindexList() {
 		global $wgTitle, $wgMemc;
 		
-		$exceptionList = array("Check-an-Alternator",
-							"Check-a-Start-Capacitor",
-							"Cast-a-Love-Spell",
-							"Use-Sound-for-Therapy",
-							"Dress-Like-a-California-Girl",
-							"Create-a-Non-Member-Strength-Pure-on-RuneScape",
-							"Overcome-Anxiety-Naturally-With-Foods",
-							"Make-a-'Virtual-PC'-on-Your-USB-Device",
-							"Fix-Stuck-Bicycle-Brakes",
-							"Make-a-Cigarette-Alternative-from-Less-Harmful-Substances",
-							"Apply-Different-Types-of-Bandages",
-							"Make-a-Vaporizer-from-Household-Supplies",
-							"Get-Rid-of--Foot-Fungus",
-							"Whiten-Your-Teeth-Without-Spending-a-Lot-of-Money",
-							"Treat-Dry,-Rough-&-Wavy-Hair",
-							"Punch-With-Speed",
-							"Train-Your-Hamster-to-Come-when-You-Call",
-							"Check-a-Car-Battery",
-							"Cure-an-Ailment-with-Homemade-Master-Tonic",
-							"Use-a-Toyota-Prius-As-a-Backup-Generator");
+		$exceptionList = array();
 		
 		$result = false;
 		

@@ -257,7 +257,7 @@ function createEmail(&$editedStats, &$createdStats, &$nabStats, &$patrolStats, &
 		$email .= "</ol>";
 	}
 	
-	$to = new MailAddress("bebeth@wikihow.com");
+	$to = new MailAddress("reports@wikihow.com");
 	$from = new MailAddress("reports@wikihow.com");
 	$subject = "Editor Stats";
 	$content_type = "text/html; charset={$wgOutputEncoding}";

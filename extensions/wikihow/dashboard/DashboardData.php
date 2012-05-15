@@ -4,10 +4,11 @@ if (!defined('MEDIAWIKI')) die();
 
 class DashboardData {
 
-	private $widgets = array();
-	private $userid = 0;
-	private $dbh = null;
-	private $userCachekey = null;
+	private $widgets = array(),
+		$userid = 0,
+		$dbh = null,
+		$userCachekey = null,
+		$fetchOnFirstCallOnly = false;
 
 	const GLOBAL_STATS_CACHEKEY = 'cd-stats'; // this is updated constantly
 	const GLOBAL_STATS_EXPIRES = 300; // 5 minutes ttl in case of bad updates
@@ -51,6 +52,15 @@ class DashboardData {
 	}
 
 	/**
+	 * Set this to make it so that we fetch stats once from the master DB
+	 * then never again. It's used to "fake" stats when we're doing DB
+	 * maintenance.
+	 */
+	public function fetchOnFirstCallOnly() {
+		$this->fetchOnFirstCallOnly = true;
+	}
+
+	/**
 	 * Return the list of instantiated widgets.
 	 */
 	public function getWidgets() {
@@ -80,7 +90,8 @@ class DashboardData {
 	 */
 	private function dbHandle() {
 		if (!$this->dbh) {
-			$this->dbh = wfGetDB(DB_SLAVE);
+			$db_select = $this->fetchOnFirstCallOnly ? DB_MASTER : DB_SLAVE;
+			$this->dbh = wfGetDB($db_select);
 		}
 		return $this->dbh;
 	}
@@ -94,23 +105,31 @@ class DashboardData {
 	 */
 	public function compileStatsData() {
 		global $wgMemc, $wgWidgetShortCodes;
-		$success = true;
+		static $firstStats = null;
 
-		$dbr = $this->dbHandle();
+		if (!$this->fetchOnFirstCallOnly || !$firstStats) {
+			$dbr = $this->dbHandle();
 
-		$widgetStats = array();
-		$widgets = $this->widgets;
-		foreach ($widgets as $name => $widget) {
-			$code = @$wgWidgetShortCodes[$name];
-			$idx = $code ? $code : $name . '-add-to-wgWidgetShortCodes';
-			try {
-				$widgetStats[$idx] = $widget->compileStatsData($dbr);
-			} catch(Exception $e) {
-				$widgetStats[$idx] = array('error' => "error getting $name widget data");
-				$success = false;
+			$success = true;
+			$widgetStats = array();
+			$widgets = $this->widgets;
+			foreach ($widgets as $name => $widget) {
+				$code = @$wgWidgetShortCodes[$name];
+				$idx = $code ? $code : $name . '-add-to-wgWidgetShortCodes';
+				try {
+					$widgetStats[$idx] = $widget->compileStatsData($dbr);
+				} catch(Exception $e) {
+					$widgetStats[$idx] = array('error' => "error getting $name widget data");
+					$success = false;
+				}
 			}
+			$stats = array('widgets' => $widgetStats);
+			if (!$firstStats) $firstStats = $stats;
+		} else {
+			$stats = $firstStats;
+			//print "populating fake stats\n";
 		}
-		$stats = array('widgets' => $widgetStats);
+
 		$wgMemc->set(wfMemcKey(self::GLOBAL_STATS_CACHEKEY), $stats, self::GLOBAL_STATS_EXPIRES);
 
 		return $success;

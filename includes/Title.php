@@ -2729,9 +2729,10 @@ class Title {
 		$res = $dbr->query($sql, __METHOD__);
 
 		if ($dbr->numRows($res) > 0) {
-			while ( $row = $dbr->fetchObject ($res) )
+			while ( $row = $dbr->fetchObject ($res) ) {
 				$key = $wgContLang->getNSText(NS_CATEGORY) . ':' . $row->cl_to;
 				$data[$key] = $this->getFullText();
+			}
 			$dbr->freeResult($res);
 		} else {
 			$data = array();

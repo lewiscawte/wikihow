@@ -219,6 +219,8 @@ class MobileBasicArticleBuilder extends MobileHtmlBuilder {
 			$title = Title::newFromURL($firstImage, NS_IMAGE);
 			if ($title) {
 				$introImage = RepoGroup::singleton()->findFile($title);
+			}
+			if ($introImage) {
 				$thumb = $introImage->getThumbnail(290, 194);
 				$width = $thumb->getWidth();
 				$height = $thumb->getHeight();

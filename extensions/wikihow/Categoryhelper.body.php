@@ -335,7 +335,7 @@ print_r($bottomlevel);
 	 *
 	 **/
 	function getCategoryOptionsForm2($default, $cats = null) {
-		global $wgUser, $wgMaxCategories, $wgRequest;
+		global $wgUser, $wgMaxCategories, $wgRequest, $wgTitle;
 		
 		if (!$wgUser->isLoggedIn())
 			return "";
@@ -351,7 +351,9 @@ print_r($bottomlevel);
 			$fakeparent[Title::makeTitle(NS_CATEGORY, $default)->getFullText()] = array();
 			$tree = Categoryhelper::modifiedParentCategoryTree($fakeparent);
 		} else {
-			$tree = WikiHow::getCurrentParentCategoryTree();
+			//don't use caching for this
+			//$tree = WikiHow::getCurrentParentCategoryTree();
+			$tree = $wgTitle->getParentCategoryTree();
 		}
 		if (!$tree) $tree = array();
 		$toplevel = array();

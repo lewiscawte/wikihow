@@ -166,7 +166,16 @@ class WikiPhotoProcess {
 	 */
 	private static function dbSetArticleProcessed($articleID, $creator, $error, $url, $numImages, $numSteps) {
 		$dbw = self::getDB('write');
-		$sql = 'REPLACE INTO wikiphoto_article_status SET article_id=' . $dbw->addQuotes($articleID) . ', processed=' . $dbw->addQuotes(wfTimestampNow(TS_MW)) . ', retry=0, error=' . $dbw->addQuotes($error) . ', url=' . $dbw->addQuotes($url) . ', images=' . $dbw->addQuotes($numImages) . ', creator=' . $dbw->addQuotes($creator) . ', steps=' . $dbw->addQuotes($numSteps) . ', needs_retry=0';
+		$sql = 'REPLACE INTO wikiphoto_article_status SET 
+			article_id=' . $dbw->addQuotes($articleID) . ', 
+			processed=' . $dbw->addQuotes(wfTimestampNow(TS_MW)) . ', 
+			retry=0, 
+			error=' . $dbw->addQuotes($error) . ', 
+			url=' . $dbw->addQuotes($url) . ', 
+			images=' . $dbw->addQuotes($numImages) . ', 
+			creator=' . $dbw->addQuotes($creator) . ', 
+			steps=' . $dbw->addQuotes($numSteps) . ', 
+			needs_retry=0';
 		$dbw->query($sql, __METHOD__);
 	}
 
@@ -771,6 +780,10 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 			}
 			else { // no zip or image files uploaded -- ignore
 				continue;
+			}
+
+			if ($id == '354106') {
+				$err = 'Reuben says this one cant be processed!';
 			}
 
 			if (!$err) {

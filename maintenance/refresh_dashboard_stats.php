@@ -1,10 +1,17 @@
 <?
+//
+// Refresh the stats in the community dashboard page in memcache every
+// REFRESH_SECONDS seconds
+//
 
 require_once("commandLine.inc");
 
 global $IP;
 require_once("$IP/extensions/wikihow/dashboard/CommunityDashboard.php");
 require_once("$IP/extensions/wikihow/dashboard/CommunityDashboard.body.php");
+
+global $wgDebugLogFile;
+$wgDebugLogFile = '';
 
 class RefreshDashboardStats {
 
@@ -28,13 +35,22 @@ class RefreshDashboardStats {
 		file_put_contents(self::BASE_DIR . self::LOG_FILE, $date . " " . $str . "\n", FILE_APPEND);
 	}
 
-	public static function dataCompileLoop() {
+	public static function dataCompileLoop($opts) {
 		$origToken = self::getToken();
 
 		$numErrors = 0;
 		$stopMsg = '';
 
 		$data = new DashboardData();
+
+		// The dashboard is very susceptible to going down when we're doing
+		// maintenance on our spare server. Using this flag is a way to hold 
+		// the stats steady by reading them once from the master DB and not again
+		// until the daemon is restarted.
+		$fakeStats = isset($opts['f']) || isset($opts['fake-stats']);
+		if ($fakeStats) {
+			$data->fetchOnFirstCallOnly();
+		}
 
 		$staticData = $data->loadStaticGlobalOpts();
 		$baselines = (array)json_decode($staticData['cdo_baselines_json']);
@@ -83,5 +99,6 @@ class RefreshDashboardStats {
 
 }
 
-RefreshDashboardStats::dataCompileLoop();
+$opts = getopt('f', array('fake-stats'));
+RefreshDashboardStats::dataCompileLoop($opts);
 

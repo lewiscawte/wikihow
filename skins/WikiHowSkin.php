@@ -465,7 +465,7 @@ class SkinWikihowskin extends SkinTemplate {
 		$return = '';
 		if ($wgTitle->getNamespace() == NS_MAIN && $wgTitle->getFullText() == wfMsg('mainpage')) {
 			$return = wfMsg('mainpage_meta_description');
-		} else if ($wgTitle->getNamespace() == NS_MAIN) {
+		} elseif ($wgTitle->getNamespace() == NS_MAIN) {
 			$desc = '';
 			if (!$this->titleTest) {
 				$this->titleTest = TitleTests::newFromTitle($wgTitle);
@@ -486,7 +486,7 @@ class SkinWikihowskin extends SkinTemplate {
 			} else {
 				$return = htmlspecialchars($desc);
 			}
-		} else if ($wgTitle->getNamespace() == NS_CATEGORY) {
+		} elseif ($wgTitle->getNamespace() == NS_CATEGORY) {
 			// get keywords
 			$subcats = $this->getMetaSubcategories(3);
 			$keywords = implode(", ", $subcats);
@@ -494,7 +494,7 @@ class SkinWikihowskin extends SkinTemplate {
 				$return = wfMsg('category_meta_description', $wgTitle->getText(), $keywords);
 			else
 				$return = wfMsg('subcategory_meta_description', $wgTitle->getText(), $keywords);
-		} else if ($wgTitle->getNamespace() == NS_SPECIAL && $wgTitle->getText() == "Popularpages") {
+		} elseif ($wgTitle->getNamespace() == NS_SPECIAL && $wgTitle->getText() == "Popularpages") {
 			$return = wfMsg('popularpages_meta_description');
 		}
 		return $return;
@@ -507,15 +507,15 @@ class SkinWikihowskin extends SkinTemplate {
 		$return = "";
 		if ($wgTitle->getNamespace() == NS_MAIN && $wgTitle->getFullText() == wfMsg('mainpage')) {
 			$return = wfMsg('mainpage_meta_keywords');
-		} else if ($wgTitle->getNamespace() == NS_MAIN ) {
+		} elseif ($wgTitle->getNamespace() == NS_MAIN ) {
 			$return = wfMsg('article_meta_keywords', $wgTitle->getText() );
-		} else if ($wgTitle->getNamespace() == NS_CATEGORY) {
+		} elseif ($wgTitle->getNamespace() == NS_CATEGORY) {
 			$subcats = $this->getMetaSubcategories(10);
 			$return = implode(", ", $subcats);
 			if (trim($return == "")) {
 				$return = wfMsg('category_meta_keywords_default', $wgTitle->getText() );
 			}
-		} else if ($wgTitle->getNamespace() == NS_SPECIAL && $wgTitle->getText() == "Popularpages"){
+		} elseif ($wgTitle->getNamespace() == NS_SPECIAL && $wgTitle->getText() == "Popularpages"){
 			return wfMsg('popularpages_meta_keywords');
 		}
 		return $return;
@@ -1548,7 +1548,7 @@ class SkinWikihowskin extends SkinTemplate {
 		return true;
 	}
 
-	function suppressH1Tag () {
+	function suppressH1Tag() {
 		global $wgTitle, $wgLang;
 		$titleText = $wgTitle->getFullText();
 
@@ -1560,11 +1560,12 @@ class SkinWikihowskin extends SkinTemplate {
 		return false;
 	}
 
-	function generateBulletLink ($title, $msg, $options = null) {
+	function generateBulletLink($title, $msg, $options = null) {
 		global $wgUser;
 		$sk = $wgUser->getSkin();
 		return "<li>" . $sk->makeLinkObj($title, wfMsg($msg), $options) . "</li>";
 	}
+
 }
 
 class WikiHowTemplate extends QuickTemplate {
@@ -1665,10 +1666,10 @@ class WikiHowTemplate extends QuickTemplate {
 			if ( preg_match('/^qnButton1=/', $item) ) {
 				list($key,$value) = split("=",$item);
 				array_push($tb1_ary, $value ) ;
-			} else if ( preg_match('/^qnButton2=/', $item) ) {
+			} elseif ( preg_match('/^qnButton2=/', $item) ) {
 				list($key,$value) = split("=",$item);
 				array_push($tb2_ary, $value ) ;
-			} else if ( preg_match('/^qnButton3=/', $item) ) {
+			} elseif ( preg_match('/^qnButton3=/', $item) ) {
 				list($key,$value) = split("=",$item);
 				array_push($tb3_ary, $value ) ;
 			}
@@ -1786,721 +1787,6 @@ class WikiHowTemplate extends QuickTemplate {
 		return $html;
 	}
 	
-	static $novideo_array = array(
-		'Make-Onigiri',
-		'Apply-False-Eyelashes',
-		'Choose-a-Secure-Password',
-		'Make-Martinis',
-		'Sell-Original-Artwork-for-Profit',
-		'Make-a-Spiral-Wire-Bead-Ring',
-		'Make-Iced-Tea',
-		'Build-a-Loft-Bed',
-		'Bump-Fire',
-		'Construct-a-Raised-Planting-Bed',
-		'Fold-a-Traditional-Origami-Swan',
-		'Paint-with-a-Compressed-Air-Sprayer',
-		'Have-a-Photo-Shoot-at-Home',
-		'Witness-the-Summer-Solstice',
-		'Make-Aloo-Chat',
-		'Grow-a-Moringa-Tree',
-		'Make-a-Balloon-Stress-Ball',
-		'Make-Brownies',
-		'Make-a-Cartesian-Diver-with-a-Ketchup-Packet',
-		"Pull-a-Horse's-Mane",
-		'Sharpen-a-Pencil-With-a-Knife',
-		'Teach-a-Child-Bilingual-Reading',
-		'Organize-Your-Dresser',
-		'Prevent-Excess-Gas',
-		'Add-Power-to-Your-Baseball-Swing',
-		'Seduce-an-Older-Woman',
-		'Get-Movies-on-Your-PSP',
-		'Make-Yema-Candy',
-		'Swim-Free-Style-Correctly',
-		'Remove-Your-Mustache-(for-Girls)',
-		'Haggle',
-		'Make-Rangoli',
-		'Get-Your-Ex-Back',
-		'Make-a-Manhattan',
-		'Create-an-Animated-Movie-(Using-Windows-Movie-Maker)',
-		'Convert-Between-Fahrenheit-and-Celsius',
-		'Make-Your-Hair-Wavy-Easily',
-		'Overcome-Feelings-of-Guilt',
-		'Press-a-Shirt',
-		'Grow-an-Herbal-Tea-Garden',
-		'Make-a-Fake-Belly-Button-Piercing',
-		'Make-Peppermint-Tea',
-		'Care-for-Gerbils',
-		'Make-a-"No-Kill"-Mouse-Trap',
-		'Shave-With-an-Electric-Shaver',
-		'Play-the-Didgeridoo',
-		'Build-a-Pirate-Bar',
-		'Blow-Dry-Hair-With-Natural-Waves',
-		'Bleach-Your-Hair-With-Hydrogen-Peroxide',
-		'Make-a-Scented-Candle-in-a-Glass',
-		'Make-an-Ice-Cream-Soda',
-		'Cover-a-Book',
-		'Play-Speed',
-		'Catch-a-Snake',
-		'Do-a-Roundhouse-Kick',
-		'Play-Urban-Golf',
-		'Animate-With-Pivot-Stickfigure-Animator',
-		'Make-a-Good-Confession-in-the-Catholic-Church',
-		'Buy-a-Good-Used-Camera-Lens',
-		'Win-a-Pie-Eating-Contest',
-		'Convince-Anyone-of-Anything',
-		'Care-for-a-Red-Eyed-Tree-Frog',
-		'Become-a-Pro-Wrestler',
-		'Intimidate-Opponents',
-		'Grill-Fish',
-		'Make-a-Trading-Card-Game',
-		'Make-a-Living-Wall',
-		'Impress-People-with-a-Quote',
-		'Take-Care-of-a-Hedgehog',
-		'Get-Your-Boyfriend-to-Hang-Out-With-You',
-		'Shop-Well-for-Clothes-in-a-Thrift-Store',
-		'Tie-a-Rethreaded-Figure-of-8-Climbing-Knot',
-		'Make-Turkey-Soup',
-		'Make-a-Homemade-Burrito',
-		'Analyze-Poetry',
-		'Make-Frozen-Hot-Chocolate',
-		'Make-Felt',
-		'Make-Candy-Sushi',
-		'Look-Busy-at-Work-Without-Really-Working',
-		'Use-Gparted',
-		'Make-Sushi-Rice',
-		'Do-a-Burnout',
-		'Ship-a-Car',
-		'Make-a-Lot-of-Bells-(Money)-in-Animal-Crossing:-Wild-World',
-		'Prevent-Bed-Bugs',
-		'Treat-Poison-Ivy-and-Poison-Oak',
-		'Make-a-Fake-Wall-You-Can-Crash-Through',
-		'Apply-Eyeliner-(Men)',
-		'Make-a-Red-Pasta-Sauce',
-		'Configure-Conky',
-		'Improve-Your-Poker-Playing-Skills',
-		'Brush-Teeth-Without-Toothpaste',
-		'Teach-Your-Dog-to-Heel',
-		'Free-Pour',
-		'Apply-Makeup-(for-Teen-Girls)',
-		'Start-up-a-Nitro-RC-Vehicle',
-		'Avoid-the-Pow-Block-in-Mario-Kart-Wii',
-		'Play-the-Flute',
-		'Frontside-180-on-a-Snowboard',
-		'Make-Paper-Plate-Jellyfish',
-		'Throw-a-Sweet-Sixteen-Party',
-		'Upgrade-an-Airsoft-AEG',
-		'Design-a-Website',
-		'Make-a-Rubber-Band-Guitar',
-		'Choose-a-Bicycle',
-		'Be-Creative',
-		'Make-a-Machinima',
-		'Win-in-Dodgeball',
-		'Become-an-Excellent-Student',
-		'Make-a-Strawberry-Banana-Smoothie',
-		'Reuse-Empty-Pill-Bottles',
-		'Make-an-Eiffel-Tower-Cake',
-		'Get-More-Testosterone',
-		'Get-Rid-of-the-Smell-of-Vomit-in-a-Carpet',
-		'Fix-Grand-Am-Turn-Signals',
-		'Create-a-Realistic-Fiction-Character',
-		'Start-a-Charity',
-		'Apply-Self-Tanner',
-		'Get-Rid-of-Chapped-Lips-Without-Lip-Balm',
-		'Do-Abdominal-Breathing',
-		'Survive-Job-Layoffs',
-		'Find-a-Low-Airfare',
-		'Ride-a-Motorcycle',
-		'Make-Slime-Without-Borax',
-		'Get-Colored-Contacts-to-Change-Your-Eye-Color',
-		'Cook-Without-a-Food-Processor',
-		'Make-Rabbit-Fricassee',
-		'Draw-a-Realistic-Dog',
-		'Clean-a-House',
-		'Teach-a-Dog-to-Smile',
-		'Make-a-Haunted-House-in-Your-Front-Yard',
-		'Make-Your-Relationship-Work',
-		'Bring-out-Natural-Red-and-Blond-Highlights',
-		'Make-a-Toy-Parachute',
-		'Create-a-Marie-Antoinette-Costume',
-		'Sew-in-a-Zipper',
-		'Speak-Simple-German',
-		'Kiss-With-Braces',
-		'Change-a-Lock',
-		'Make-Mango-Shakes',
-		'Play-Dungeons-and-Dragons',
-		'Overcome-Failure',
-		'Inflate-Bike-Tires',
-		'Curl-Hair-with-a-Curling-Iron',
-		'Convince-People-to-Go-Skinny-Dipping',
-		'Make-Your-Own-Deodorant-Spray',
-		'Clone-a-Partition',
-		'Make-a-Baby-Guinness',
-		'Make-a-Laceâ€“Up-"Corset"-Tâ€“Shirt',
-		'Make-Old-Fashioned-Hard-Candy',
-		'Look-Pretty-in-Glasses',
-		'Look-Good-Naked-(Girls-Version)',
-		'Stop-Swearing',
-		'Cut-a-Mango',
-		'Look-Like-Hannah-Montana',
-		'Shell-Pecans',
-		'Stop-Eye-Twitching',
-		'Use-a-Wood-Lathe',
-		'Use-an-Abacus',
-		'Bake-Chocolate-Chip-Cookie-Dough-Cheesecake',
-		'Calculate-the-Volume-of-a-Cone',
-		'Look-Like-Selena-Gomez',
-		'Travel-with-a-Cat',
-		'Chop-Onions-Without-Tears',
-		'Emulate-a-Remote-Linux-Desktop-from-Microsoft-Windows',
-		'Choose-a-Camera-Shutter-Speed',
-		'Build-a-Big-Chest',
-		'Get-99-Magic-in-Runescape',
-		'Deal-With-an-Annoying-Manager',
-		'Create-a-Family-in-Sims',
-		'Kill-Your-Sim-in-the-Sims-2',
-		'Scrunch-Hair',
-		'Clean-the-Steam-Iron-and-Its-Base-Plate',
-		'Create-a-Photo-Slideshow-with-PowerPoint',
-		'Make-Pasta-Sauce',
-		'Make-a-Gravity-Bong-in-10-Minutes',
-		'Make-Money-As-a-Teen-by-Working-for-Yourself',
-		'Create-a-Classic-Wardrobe',
-		'Make-Scrambled-Eggs',
-		'Fold-Bath-Towels-for-Quick-Hanging-at-Home',
-		'Bake-a-Winter-Squash',
-		'Use-the-Google-Earth-Flight-Simulator',
-		'Do-a-Handstand-and-Stay-Up',
-		'Clean-Silver',
-		'Stretch-for-Ballet',
-		'Choose-Your-Prom-Dress',
-		'Make-Glowing-Bottles-for-a-Blacklight',
-		'Dress-Cool',
-		'Stick-to-Your-Diet-During-the-Holidays',
-		'Flip-a-House',
-		'Make-a-Cootie-Catcher',
-		'Push-Start-a-Car',
-		'Cast-a-Love-Spell',
-		'Make-Spanakopita',
-		'Choose-Knitting-Yarn',
-		'Use-a-Gophone-Plan-With-an-iPhone',
-		'Choose-a-Sewing-Machine',
-		'Create-Your-Acting-Resume',
-		'Know-if-You-are-Pregnant',
-		'Make-Friends-in-Middle-School',
-		'Buff-Your-Nails',
-		'Make-Pin-Straight-Hair',
-		'Flirt-With-a-Girl-on-Facebook',
-		'Get-a-Good-Work-out-with-Punching-Bag',
-		'Make-Balloon-Animals',
-		'Play-Egyptian-Rat-Screw',
-		'Slalom-Ski-(Water-Ski-on-One-Ski)',
-		'Make-Kettle-Corn',
-		'Apply-Rainbow-Eyeshadow',
-		'Make--a-Slurpee',
-		'Revise-for-Your-GCSEs',
-		'Adjust-a-Front-Bicycle-Derailleur',
-		'Do-the-Cat-Daddy',
-		'Repaint-a-Chair',
-		'Remove-a-Sticker-from-Plastic',
-		'Make-Soft-Serve-Ice-Cream',
-		'Make-a-Rain-Stick',
-		'Make-Lemonade',
-		'Lose-Weight-in-Less-Than-7-Days',
-		'Speak-Basic-French',
-		'Care-for-Guppies',
-		'Find-out-Your-IP-Address',
-		'Clean-Your-Computer-System',
-		'Do-Really-Good-Pushups',
-		'Start-Living-Frugally',
-		'Afford-an-Expensive-Guitar',
-		'Make-Fried-Pickles',
-		'Tell-a-Guy-You-Love-Him',
-		'Avoid-Mosquito-Bites',
-		'Multiply-Square-Roots',
-		'Make-Cotton-Candy',
-		'Remove-and-Prevent-Split-Ends',
-		'Build-a-Fast-Shelter-in-the-Wilderness',
-		'Audition-For-a-Musical',
-		'Cook-Deep-Fried-Beer',
-		'Use-a-Trangia-Camping-Stove',
-		'Disassemble-a-Wireless-Xbox-360-Controller-for-Painting',
-		'Overcome-Sadness',
-		'Be-a-Fast-Runner',
-		'Eat-Sushi',
-		'Spread-a-Sense-of-Humour',
-		'Curl-Hair-with-Straighteners',
-		'Make-Money-on-Nintendogs',
-		'Get-Rid-of-Pigeons',
-		'Treat-Menopause-Symptoms',
-		'Register-Friends-on-Your-Wii',
-		'Improve-Your-Email-Etiquette',
-		'Fight-Fair-in-Relationships',
-		'Make-a-Duct-Tape-Cell-Phone-Case',
-		'Cure-Scabies',
-		'Knit-the-Purl-Stitch',
-		'Use-the-Law-of-Attraction',
-		'Use-a-Semicolon',
-		'Make-Cheap-Vodka-Taste-Better',
-		'Save-the-Environment-at-Home',
-		'Use-a-Meat-Thermometer',
-		'Memorize-a-List-in-Order',
-		'Hack-on-Dragonfable',
-		'Get-a-Cat-out-of-a-Tree',
-		'Write-a-Good-Guitar-Solo',
-		'Make-a-Crystal-Radio',
-		'Fold-an-Origami-Star-(Shuriken)',
-		'Hack-Windows',
-		'Make-a-Pisco-Sour',
-		'Throw-a-Dropball',
-		'Learn-All-About-Polymer-Clay',
-		'Wash-Dishes',
-		"Draw-an-Anime-Girl's-Face",
-		'Skimboard',
-		'Choose-Olive-Oil',
-		'Give-a-Performance-Review-of-an-Employee',
-		'Make-Chili-Con-Carne',
-		'Stir-Fry',
-		'Have-Fun-at-a-Sleepover-(for-Teen-Girls)',
-		'Do-a-Round-off-Back-Handspring-Back-Tuck-on-the-Floor',
-		'Understand-Cuts-of-Beef',
-		'Instantly-Freeze-a-Beer-or-Other-Bottled-Drink',
-		'Make-Denim-Cut-off-Shorts',
-		'Deal-With-the-Discomfort-when-Meeting-an-Ex-Lover',
-		'Create-an-Origami-Puppy-Finger-Puppet',
-		'Make-Weapons-out-of-Sticks',
-		'Make-Apple-Chips',
-		'Pan-Sear-a-Steak',
-		'Have-a-God-Centered-Dating-Relationship',
-		'Be-a-Metal-Chick',
-		'Get-Rid-of-Dandruff-(Natural-Methods)',
-		'Play-the-Saw',
-		'Arc-Weld',
-		'Make-Lotion',
-		'Cope-with-Loss-and-Pain',
-		'Make-a-Didgeridoo-out-of-PVC-Pipe',
-		'Find-the-Degree-of-a-Polynomial',
-		'Make-an-Airsoft-Smoke-Grenade',
-		'Play-Paper-Football',
-		'Create-a-Community-on-Orkut',
-		'Change-a-Duvet-Cover',
-		'Draw-a-Template-Manga-Head',
-		'Jailbreak-an-Ipod-Touch-1.1.5-or-Lower',
-		"Dress-to-Meet-Your-Boyfriend's-Parents",
-		'Get-Rid-of-Chapped-Lips',
-		"Get-the-Biggoron's-Sword-in-the-Legend-of-Zelda,-Ocarina-of-Time",
-		'Get-on-a-Reality-TV-Show',
-		'Make-Tortilla-de-Patatas',
-		'Open-Two-Beer-Bottles-With-Each-Other',
-		'Say-Most-Common-Words-in-Urdu',
-		'Breakdance',
-		'Prevent-Herpes',
-		'Quit-Chewing-Tobacco',
-		'Install-Plastic-Lawn-Edging',
-		'Tame-a-Rat',
-		'Overcome-Laziness',
-		'Draw-an-Anime-Face',
-		'Make-Coffee',
-		'Set-up-a-Marine-Reef-Aquarium',
-		'Increase-Your-Fertility',
-		'Rescue-an-Avalanche-Victim',
-		'Build-a-Cajon',
-		'Have-Fun-While-Studying',
-		'Change-a-Bicycle-Brake-Cable',
-		'Make-a-Choker',
-		'Create-Pivot-Tables-in-Excel',
-		'Eat-a-Rambutan',
-		'Calibrate-Your-Sprinklers',
-		'Fold-a-Towel-Elephant',
-		'Get-the-Most-Benefit-from-Laser-Hair-Removal',
-		'Make-Elephant-Toothpaste',
-		'Dance-Emo',
-		'Wear-Leg-Warmers',
-		'Make-Skinny-Jeans',
-		'Fix-Your-iPod-Jack',
-		'Bake-Potatoes',
-		'Resign-from-a-Job',
-		'Learn-American-Sign-Language',
-		'Do-a-Back-Bend',
-		'Make-a-Fake-Wound',
-		'Pump-Gas',
-		'Reupholster-a-Dining-Chair-Seat',
-		'Pig-Squeal-(Bree)',
-		'Configure-CD-and-DVD-Autoplay-in-Windows-XP',
-		'Be-a-Teenage-Hipster(Girls)',
-		'Discipline-Yourself',
-		'Organize-Receipts',
-		'Make-Chinese-Dumplings',
-		'Develop-Persuasive-Speech-Topics',
-		'Find-Out-if-Your-Ex-Still-Likes-You',
-		'Go-Clubbing',
-		'Catch-Trout',
-		'Be-a-Corpse-Bride-for-Halloween',
-		'Make-a-Vodka-and-Tonic',
-		'Differentiate-Pressed-from-Cut-Glass',
-		'Run-Faster',
-		'Have-a-Zen-Attitude',
-		'Call-a-Mobile-Phone-Overseas',
-		'Make-Mochi',
-		'Create-a-Simple-Web-Page-With-HTML',
-		'Make-Pesto',
-		'Keep-a-Pet-Praying-Mantis-Without-a-Cage',
-		'Save-Money-on-Auto-Insurance',
-		'Make-Limeade',
-		'Limit-Your-Mistakes-During-a-Job-Interview',
-		'Care-for-an-Autistic-Child',
-		'Use-Dowsing-or-Divining-Rods',
-		'Bring-Out-the-Natural-Curl-in-Your-Hair',
-		'Embed-YouTube-Flash-Videos-in-Your-PowerPoint-Presentations',
-		'Take-Care-of-a-Lip--Piercing',
-		'Speak-Mandarin-Chinese-in-a-Day',
-		'Make-a-Gothic-Fairy-Costume',
-		'Bellydance-Like-Shakira',
-		'Get-Rid-of-a-Mosquito-Bite',
-		'Play-RuneScape',
-		'Roll-a-Burrito',
-		'Overcome-a-Chocolate-Addiction',
-		'Decline-an-Invitation-to-Dinner-or-Other-Social-Event',
-		'Hack-Minesweeper',
-		'Salute-Like-a-Soldier',
-		'Look-Taller',
-		'Hardcore-Dance',
-		'Build-a-Cornhole-Game',
-		'Deal-With-Difficult-Relatives',
-		"Do-Your-Hair-Like-Alice-Cullen's-Hair",
-		'Make-a-Magic-Staff',
-		'Choose-an-Electric-Guitar',
-		'Apply-Hair-Wax',
-		'Make-Ice-Cream-with-Snow',
-		'Make-Popcorn-on-the-Stove',
-		'Stretch-a-Canvas',
-		'Write-a-Horror-Story',
-		'Make-Chicken-Soup',
-		'Deal-with-a-Bipolar-Family-Member',
-		'Make-an-Egg-Wash',
-		'Join-Up-With-a-Horse',
-		'Create-Programs-on-a-Ti-83-Graphing-Calculator',
-		'Repair-Your-Credit',
-		'Act-Like-Sasuke',
-		'Cut-Your-Own-Bangs',
-		'Change-Windows-XP-Home-to-Windows-XP-Professional',
-		'Play-Quarters',
-		'Get-Over-a-Guy',
-		'Shock-Your-Swimming-Pool',
-		'Say-Common-Words-in-Bengali',
-		'Take-Better-Photographs',
-		'Study-for-an-Approaching-Exam',
-		'Teach-Your-Dog-Tricks',
-		'Cure-a-Fever-at-Home',
-		'Calculate-Overhead',
-		'Pick-out-an-Outfit',
-		'React-to-a-Gift-You-Do-Not-Like',
-		'Make-a-Button-in-Flash-Cs4',
-		'Get-Relaxed-Before-Bed',
-		'Be-a-Popular-Girl',
-		'Delete-Video-from-an-iPod',
-		'Ask-a-Guy-to-Homecoming',
-		'Bleach-Hair-Blonde',
-		'Walk-in-High-Heels',
-		'Install-a-DRIcore-Subfloor-in-Your-Basement',
-		'Be-a-Good-Boss',
-		'Save-a-Friendship',
-		'Use-a-Neti-Pot',
-		'Throw-a-Cut-Fastball',
-		'Make-Your-Own-Clove-Cigarettes/Kretek',
-		'Care-for-a-Neglected-Dog',
-		'Tell-the-Difference-Between-a-King-Snake-and-a-Coral-Snake',
-		'Survive-a-Dirty-Bomb-(Radiological-Dispersion-Device)',
-		'Sing-Like-a-Professional',
-		'Serve-a-Tennis-Ball',
-		'Care-for-an-American-Toad',
-		'Handle-College-Rejection-Letters',
-		'Grow-out-Bangs',
-		'Buy-Cheap-Airline-Tickets',
-		'Serve-a-Volleyball-Overhand',
-		'Cut-Good-Layered-Bangs',
-		'Make-a-Thanksgiving-Centerpiece',
-		'Make-Soy-Yogurt',
-		'Use-These-and-Those',
-		'Persuade-People-with-Subconscious-Techniques',
-		'Become-a-Star-Wars-Fan',
-		'Block-Someone-in-Facebook-Chat',
-		'Organize-Your-Desktop',
-		'Identify-if-You-Are-in-an-Abusive-Relationship',
-		'Organize-Your-School-Supplies',
-		'Recycle',
-		'Create-a-Paper-Bag-Book-Cover',
-		'Be-Romantic',
-		'Have-a-Long-Passionate-Kiss-With-Your-Girlfriend/Boyfriend',
-		'Get-a-Haircut-You-Will-Like',
-		'Tie-a-Prusik-Knot',
-		'PurÃ©e-Carrots',
-		'Crack-Your-Neck',
-		'Make-Worm-Castings-Tea',
-		'Start-a-Relationship',
-		'Create-an-iPhone-Alarm-That-Will-Vibrate-Without-Ringing',
-		'Locate-a-Book-in-a-Library',
-		'Catch-a-Crayfish',
-		'Kayak',
-		'Delete-Friends-on-MySpace',
-		'Make-Green-Beer',
-		'Have-a-Balanced-Lifestyle',
-		'Write-a-Limerick',
-		'Calculate-the-Circumference-of-a-Circle',
-		'Apply-Eyeshadow-That-Lasts',
-		'Snowboard',
-		'Make-a-Google-Account',
-		'Build-Wooden-Bookshelves',
-		'Prepare-for-a-Behavioral-Interview',
-		'Build-a-Sandbox',
-		'Change-Your-Desktop-Background-in-Windows',
-		'Get-a-Car-Rental-Discount-Code',
-		'Peel-a-Pomelo',
-		'Make-a-DMG-File-on-a-Mac',
-		'Play-the-Cello',
-		'Separate-an-Image-from-Its-Background-(Photoshop)',
-		'Do-Envelope-Budgeting',
-		'Make-a-Baggy-T-Shirt-Fitted',
-		'Infuse-Vodka-with-Flavor',
-		'Restore-Factory-Settings-in-Microsoft-Word',
-		'Make-a-Messy-Bun',
-		'Foundation-Piece-a-Quilt-Block',
-		"Opt-out-of-Facebook's-Open-Graph-Personalization'",
-		'Move-from-Windows-to-Linux',
-		'Exfoliate-Lips',
-		'Store-Fresh-Basil',
-		'Bridle-a-Horse',
-		'Meditate-for-Beginners',
-		'Buy-a-New-Car-Through-Fleet-Sales',
-		'Say-Greetings-and-Goodbyes-in-Spanish',
-		'Open-a-Bottle-of-Wine',
-		'Pick-Up-a-Girl-in-a-Club',
-		'Make-Homemade-Onion-Rings',
-		'Create-a-Provisioning-Profile-for-iPhone',
-		'Make-Non-Slip-Socks',
-		'Draw-in-8-Bit',
-		'Cool-Your-Cat-Down-in-the-Summer',
-		'Learn-Morse-Code',
-		'Eat-Chocolate',
-		'Treat-Your-Sick-Hamster',
-		'Buy-a-New-Car',
-		'Make-Cheese-at-Home',
-		'Deal-With-a-Moody-Boss',
-		'Get-Rid-of-Mold-Smell-in-Front-Loader-Washing-Machine',
-		'Understand-Offside-in-Soccer-(Football)',
-		'Make-Garlic-Bread',
-		'Make-Potato-Pancakes',
-		'Prevent-Identity-Theft',
-		'Set-up-a-Fireworks-Show',
-		'Practice-Mindfulness-(Buddhism)',
-		'Call-CQ-on-Amateur-Radio',
-		'Pack-Your-Carry-on-Bag',
-		'Make-a-Temporary-Tattoo-with-Nail-Polish',
-		'Overcome-Stage-Fright',
-		'Defend-Yourself-in-an-Extreme-Street-Fight',
-		'Grind',
-		'Make-Cornbread',
-		'Play-Risk',
-		'Make-a-Baked-Cheesecake',
-		'Be-a-Sixties-Girl',
-		'Prepare-and-Use-Strawberries',
-		'Write-a-Novel',
-		'Save-Electricity',
-		'Make-a-Punching-Bag',
-		"Tie-a-Quick-Release-Knot-(Highwayman's-Hitch)",
-		'Read-Faces',
-		'Make-Tater-Tot-Hotdish',
-		'Enjoy-a-Beer-Festival',
-		'Grow-Medical-Marijuana',
-		'Go-Through-Airport-Security-Smoothly',
-		"Know-if-You-Like-Someone-or-if-You're-Just-Lonely",
-		'Make-Delicious-Pretzel-Rolo-Cookies',
-		'Make-Friends-in-College',
-		'Create-a-Google-Map-With-Excel-Data-and-Fusion-Tables',
-		'Free-up-Hard-Disk-Space-on-Windows-Vista',
-		'Get-a-Song-Out-of-Your-Head',
-		'Get-Rid-of-Acne-if-You-Have-Fair-Skin',
-		'Accessorize',
-		'Make-a-Yarn-Octopus',
-		'Cook-Like-a-Roman',
-		'Recover-from-Back-to-Work-Blues',
-		'Teach-Kids-About-Money',
-		'Sharpen-a-Chainsaw',
-		'Give-a-Small-Dog-a-Bath',
-		'Grow-Strawberries',
-		'Care-for-a-Pet-Rat',
-		'Paint-Fire',
-		'Influence-Your-Dreams',
-		'Do-a-Scratch-Spin',
-		'Make-Fish-Curry',
-		'Get-Rid-of-an-Inferiority-Complex',
-		'Plan-Your-Wedding',
-		'Get-Rid-of-Toe-Fungus',
-		'Get-Rid-of-Poison-Ivy-Plants',
-		'Make-Fake-Rocks-for-Your-Pond',
-		'Make-Khasta-Kachori',
-		'Build-a-Small-Rocket',
-		'Make-a-Doggie-Birthday-Cake',
-		'Make-a-Motorcycle-out-of-Old-Watches',
-		'Get-to-El-Nath-in-Maplestory',
-		'Make-a-Hot-Soothing-Lemon-Drink',
-		'Look-Like-a-Zombie',
-		'Delegate',
-		'Make-a-Lesson-Plan',
-		'Change-the-Oil-in-Your-Car',
-		'Make-Home-Made-Fly-Trap',
-		'Write-a-Critical-Essay',
-		'Lock-iPad-Screen-Orientation',
-		'Balance-a-Soccer-Ball-on-Your-Foot',
-		'Propose-to-a-Woman',
-		'Get-Your-Ex-Boyfriend-Back-with-Your-Looks',
-		'Ask-Out-a-Girl-at-School',
-		'Avoid-Becoming-a-Weeaboo',
-		'Keep-a-Career-Log',
-		'Change-your-IP-Address-(Windows)',
-		'Conceal-the-Common-Signs-of-Aging',
-		'Make-a-Kaleidoscope',
-		'Take-Derivatives-in-Calculus',
-		'Remove-Sweat-Stains-With-Aspirin',
-		'Use-an-Epipen',
-		'Enjoy-a-Museum',
-		'Solve-Two-Step-Algebraic-Equations',
-		'Act-Like-an-Anime-or-Manga-Character',
-		'Remember-Things-You-Study-Better',
-		'Subtract-Binary-Numbers',
-		'Plant-a-Herb-Pot',
-		'Shave-Chest-Hair',
-		'Play-as-Luigi-in-New-Super-Mario-Bros.-DS',
-		'Send-Files-to-a-Cell/Mobile-Phone-Using-Bluetooth-Technology',
-		'Beat-Anxiety-About-Speaking',
-		'Order-Coffee',
-		'Put-a-Fancy-Edge-on-a-Pie-Crust',
-		'Use-the-Slope-Intercept-Form-(in-Algebra)',
-		'Dive-Off-a-Cliff',
-		'Create-an-RSS-Feed',
-		'Drastically-Reduce-the-Cost-to-Heat-Your-Swimming-Pool',
-		'Make-a-Tangram',
-		'Do-The-Box-(Front)-Splits',
-		'Write-a-Eulogy',
-		'Draw-a-Whale',
-		'Build-Your-Personal-Brand',
-		'Make-a-Three-Pendulum-Rotary-Harmonograph',
-		'Do-the-Michael-Jackson-Side-Slide',
-		'Change-The-Brake-Pads-in-Your-Car',
-		'Predict-the-Weather-Without-a-Forecast',
-		'Hit-a-Normal-Pitch-Shot',
-		'Freeze-Cauliflower',
-		'Dress-in-a-Kimono',
-		'Be-a-Hippie',
-		'Become-an-Atheist',
-		'Make-an-Origami-Bunny',
-		'Install-a-Flat-Panel-TV-on-a-Wall-With-No-Wires-Showing',
-		'Clean-Your-Room-Fast',
-		'Choose-a-Portable-Air-Compressor',
-		'Make-a-California-Roll',
-		'Create-a-Simple-Program-in-C++',
-		'Shoot-a-Basketball',
-		'Use-a-Circular-Saw',
-		'BBQ-or-Grill-a-Whole-Fish-Without-Burning',
-		'Follow-the-Curly-Girl-Method-for-Curly-Hair',
-		'Keep-a-Man-Interested',
-		'Do-Facebook-Nails',
-		'Create-Animated-GIFs-Using-Photoshop-CS3',
-		'Make-Risotto',
-		'Format-a-Hard-Drive',
-		'Make-a-Ninja-Mask',
-		'Become-a-Voice-Actor/Voiceover-Artist',
-		'Cook-Grasshoppers',
-		'Select-Shoes-to-Wear-with-an-Outfit',
-		'Kickflip-on-a-Tech-Deck',
-		'Give-a-Subcutaneous-Injection',
-		'Do-the-Chicken-Dance',
-		'Travel-With-Children-on-Long-Trips',
-		'Add-a-Layer-Mask-in-Photoshop',
-		'Become-a-US-Citizen',
-		'Accessorize-With-Jewelry',
-		'Stay-Friends-with-Your-Ex',
-		'Make-Your-Own-Vinegar',
-		'Kill-Time-During-a-Long-Layover-in-San-Juan,-Puerto-Rico',
-		'Escape-a-Stranded-Elevator',
-		'Make-a-Cloak',
-		'Make-Asparagus-Wrapped-in-Bacon',
-		'Make-a-Paper-Boat',
-		'Pack-a-Suit-Into-a-Suitcase',
-		'Book-a-Hotel-Room',
-		'Reuse-Old-Wine-Corks',
-		'Tell-if-an-Egg-is-Bad',
-		'Wave-Your-Hair-With-a-Straight-Iron',
-		'Look-Like-Agyness-Deyn',
-		'Treat-a-Wound',
-		'Get-a-Job',
-		'Dress-for-a-First-Date',
-		'Circular-Breathe',
-		'Shift-in-a-Drag-Race',
-		'Bridge-an-Amplifier',
-		'Spin-a-Basketball-on-Your-Finger',
-		'Play-Disk-Golf',
-		"Plan-the-Perfect-Valentine's-Day-for-Your-Husband",
-		'Play-Softball',
-		'Survive-the-First-Month-of-New-Motherhood',
-		'Deal-With-and-Recover-From-Complete-Knee-Replacement-Surgery',
-		'Clean-Chocolate-from-a-Carpet',
-		'Sterilize-Water-With-Sunlight',
-		'Care-for-a-Christmas-Tree',
-		'Play-Hopscotch',
-		'Make-a-Cat-Scratching-Post',
-		'Learn-Japanese',
-		'Make-a-Cigarette-Disappear',
-		'Handle-Long-Layovers-at-an-Airport',
-		'Develop-Healthy-Eating-Habits',
-		'Cut-a-Cigar',
-		'Find-Your-WEP-Code',
-		'Count-to-10-in-Korean',
-		'Spot-a-Wall-Flip',
-		'Make-a-Simple-Remedy-for-Sore-Throat',
-		'Throw-a-Super-Bowl-Party',
-		'Make-Mint-Tea',
-		'Make-Banana-Pudding',
-		'Make-Cookie-Cutters-from-Regular-Aluminum-Foil',
-		'Make-a-Cute-Duct-Tape-Bracelet',
-		'Start-a-Personal-Development-Plan',
-		'Self-Publish-a-Book',
-		'French-Knit',
-		'Light-a-Pumpkin-for-Halloween',
-		'Preheat-an-Oven',
-		'Blanch-Asparagus',
-		'Be-Like-Cassie-from-Skins',
-		'Make-a-Dutch-Braid',
-		'Set-a-Mousetrap',
-		'Make-a-3D-Cube',
-		'Set-up-Port-Forwarding-on-a-Router',
-		'Make-Cocoa-Lip-Balm',
-		'Look-Good-in-a-School-Uniform-(Girls)',
-		'Reuse-Styrofoam',
-		"Deal-With-a-Boyfriend-Who-Has-Asperger's-Syndrome",
-		'Personalize-Your-Locker',
-		'Find-the-Least-Common-Multiple-of-Two-Numbers',
-		'Change-Xbox-Live-Gamertag',
-		'Get-Started-with-IRC-(Internet-Relay-Chat)',
-		'Call-in-Sick',
-		'Get-Your-Song-on-the-Radio',
-		"Get-the-Perfect-Valentine's-Gift-for-Your-Boyfriend",
-		'Dance-at-High-School-Dances',
-		'Draw-a-Puppy',
-		'Get-to-Sleep-on-Christmas-Eve'
-	);
-
-	static $NoVideo = false;
-
-	public function checkForNoVideo() {
-		global $wgTitle, $wgUser, $wgRequest;
-		if ($wgTitle->getNamespace() == NS_MAIN &&
-			in_array($wgTitle->getDBkey(),self::$novideo_array) &&
-			$wgRequest->getVal('oldid') == '' &&
-			($wgRequest->getVal('action') == '' || $wgRequest->getVal('action') == 'view')) {
-				self::$NoVideo = true;
-		}
-	}
-	
 	/**
 		
 	 * Insert ad codes into the body of the article
@@ -2577,7 +1863,7 @@ class WikiHowTemplate extends QuickTemplate {
 							$body = "<div class='article_inner editable'>" . $content . "<div class='ad_noimage " . $class . "'>" . wikihowAds::getAdUnitPlaceholder('intro') . "</div>" . substr($parts[$i], $anchorPos) ."</div>\n";
 						}
 					}
-					else if($anchorPos == 0 && $ads){
+					elseif($anchorPos == 0 && $ads){
 						$body = "<div class='article_inner editable'>{$parts[$i]}" . wikihowAds::getAdUnitPlaceholder('intro') . "</div>\n";
 					}
 					else
@@ -2594,12 +1880,7 @@ class WikiHowTemplate extends QuickTemplate {
 					$rev = isset($reverse_msgs[$h2]) ? $reverse_msgs[$h2] : "";
 				}
 				
-				if ($rev == "video" && self::$NoVideo) {
-					//nothing
-				}
-				else {
-					$body .= $parts[$i];
-				}
+				$body .= $parts[$i];
 				
 				$i++;
 				if ($rev == "steps") {
@@ -2615,9 +1896,7 @@ class WikiHowTemplate extends QuickTemplate {
 						$recipe_tag = "'";
 					}
 					$body .= "\n<div id=\"steps\" class='editable{$recipe_tag}>{$parts[$i]}</div>\n";
-				} else if ($rev == "video" && self::$NoVideo) {
-					//nothing
-				} else if ($rev != "") {
+				} elseif ($rev != "") {
 					$body .= "\n<div id=\"{$rev}\" class='article_inner editable'>{$parts[$i]}</div>\n";
 				} else {
 					$body .= "\n<div class='article_inner editable'>{$parts[$i]}</div>\n";
@@ -2711,7 +1990,7 @@ class WikiHowTemplate extends QuickTemplate {
 										$p .= $x;
 										if ($x == "<span class='caption'>")
 											$incaption = true;
-										else if ($x == "</span>" && $incaption)
+										elseif ($x == "</span>" && $incaption)
 											$incaption = false;
 										continue;
 									}
@@ -2744,7 +2023,7 @@ class WikiHowTemplate extends QuickTemplate {
 									$donefirst = true;
 								}
 
-							} else if ($current_tag == "ol") {
+							} elseif ($current_tag == "ol") {
 								//$p = '<li><div class="step_num">'. $current_li++ . '</div>';
 							}
 							break;
@@ -2771,17 +2050,17 @@ class WikiHowTemplate extends QuickTemplate {
 				if ($lp == "</ol>" ) {
 					$level++;
 					$gotit= false;
-				}else if($lp == "</ul>" ){
+				} elseif ($lp == "</ul>") {
 					$level++;
-				} else if (strpos($lp, "<li") !== false && $level == 1 && !$gotit) {
+				} elseif (strpos($lp, "<li") !== false && $level == 1 && !$gotit) {
 					/// last OL step list fucker
 					$p = preg_replace("@<li[^>]*>@i", '<li class="steps_li final_li">', $p);
 					$gotit = true;
-				} else if (strpos($lp, "<ul") !== false ){
+				} elseif (strpos($lp, "<ul") !== false) {
 					$level--;
-				} else if (strpos($lp, "<ol") !== false ) {
+				} elseif (strpos($lp, "<ol") !== false) {
 					$level--;
-				} else if ($lp == "</li>" && !$donelast) {
+				} elseif ($lp == "</li>" && !$donelast) {
 					// ads after the last step
 					if ($ads){
 						if(substr($body, $j) == ""){
@@ -2810,19 +2089,19 @@ class WikiHowTemplate extends QuickTemplate {
 						$preptime = 'PT10M';
 						$cooktime = 'PT20M';
 					}
-					else if ($dbkey == 'Make-Gluten-Free-Cheesy-Spinach-Quesadillas') {
+					elseif ($dbkey == 'Make-Gluten-Free-Cheesy-Spinach-Quesadillas') {
 						$preptime = 'PT5M';
 						$cooktime = 'PT8M';
 					}
-					else if ($dbkey == 'Make-Gluten-Free-Apple-Buckwheat-Cereal') {
+					elseif ($dbkey == 'Make-Gluten-Free-Apple-Buckwheat-Cereal') {
 						$preptime = 'PT5M';
 						$cooktime = 'PT10M';
 					}
-					else if ($dbkey == 'Make-Gluten-Free-Pancakes') {
+					elseif ($dbkey == 'Make-Gluten-Free-Pancakes') {
 						$preptime = 'PT5M';
 						$cooktime = 'PT10M';
 					}
-					else if ($dbkey == 'Make-Gluten-Free-Peanut-Butter-Cookies') {
+					elseif ($dbkey == 'Make-Gluten-Free-Peanut-Butter-Cookies') {
 						$preptime = 'PT10M';
 						$cooktime = 'PT8M';
 					}
@@ -2869,7 +2148,7 @@ class WikiHowTemplate extends QuickTemplate {
 						$newsection = "<div id='video'><center>{$section}</center></div>";
 						$body = str_replace($section, $newsection, $body);
 						continue;
-					} else if ($s == "tips") {
+					} elseif ($s == "tips") {
 						//tip ad is now at the bottom of the tips section
 						//need to account for the possibility of no sections below this and therefor
 						//no anchor tag
@@ -2898,14 +2177,15 @@ class WikiHowTemplate extends QuickTemplate {
 	}
 
 	function logTopCat() {
-		global $wgTitle, $wgUser;
+		global $wgTitle, $wgUser, $wgReadOnly;
+		if ($wgReadOnly) return;
 		$sk = $wgUser->getSkin();
 		$cat = $sk->getTopCategory();
-		if (!$cat)
-			return;
+		if (!$cat) return;
 		$dbw = wfGetDB(DB_MASTER);
-		$sql = "INSERT LOW_PRIORITY INTO cat_views (cv_user, cv_cat, cv_views) values ({$wgUser->getID()}, "
-			. $dbw->addQuotes($cat) . ", 1) ON DUPLICATE KEY UPDATE cv_views=cv_views +1";
+		$sql = "INSERT LOW_PRIORITY INTO cat_views (cv_user, cv_cat, cv_views) 
+					VALUES ({$wgUser->getID()}, " . $dbw->addQuotes($cat) . ", 1)
+					ON DUPLICATE KEY UPDATE cv_views=cv_views+1";
 		$dbw->query($sql, __METHOD__);
 	}
 
@@ -3070,6 +2350,10 @@ class WikiHowTemplate extends QuickTemplate {
 		) {
 			$isMainPage = true;
 		}
+
+		// determine whether or not the user is logged in
+		$isLoggedIn = $wgUser->getID() > 0;
+
 		$sk = $wgUser->getSkin();
 		$cp = Title::newFromText("CreatePage", NS_SPECIAL);
 
@@ -3082,7 +2366,6 @@ class WikiHowTemplate extends QuickTemplate {
 		
 		//adding recipe microdata tags?
 		self::checkForRecipeMicrodata();
-		self::checkForNoVideo();
 		
 		$isWikiHow = false;
 		if ($wgArticle != null && $wgTitle->getNamespace() == NS_MAIN)  {
@@ -3131,7 +2414,7 @@ class WikiHowTemplate extends QuickTemplate {
 			}
 		}
 
-		if ($wgTitle->getFullText() == wfMsg('mainpage'))
+		if ($isMainPage)
 			$title = 'wikiHow - '.wfMsg('main_title');
 
 		if ($wgTitle->getNamespace() == NS_CATEGORY) {
@@ -3205,6 +2488,7 @@ class WikiHowTemplate extends QuickTemplate {
 			$wgRequest->getVal('action') != 'edit' &&
 			$wgRequest->getVal('action') != 'protect' &&
 			$wgRequest->getVal('action') != 'history' &&
+			$wgRequest->getVal('action') != 'submit' &&
 			$wgRequest->getVal('action') != 'delete')
 		{
 			$name = $wgTitle->getDBKey();
@@ -3229,7 +2513,7 @@ class WikiHowTemplate extends QuickTemplate {
 			&& ! $isDiffPage
 			//&& $wgTitle->getPrefixedURL() != "Main-Page"
 			) {
-		}  else if ($wgTitle->getFullText() == $wgLang->getNsText(NS_SPECIAL).":Search"
+		}  elseif ($wgTitle->getFullText() == $wgLang->getNsText(NS_SPECIAL).":Search"
 				|| $wgTitle->getFullText() == $wgLang->getNsText(NS_SPECIAL).":LSearch") {
 			$show_related = false;
 		}  else {
@@ -3267,8 +2551,8 @@ class WikiHowTemplate extends QuickTemplate {
 				$rad_links = "";
 			}
 			$show_related = false;
-		} else if ( ! $isDiffPage
-				&& $wgTitle->getFullText() != wfMsg('mainpage')
+		} elseif ( ! $isDiffPage
+				&& ! $isMainPage 
 				&& ! $isPrintable
 				&& $wgUser->getId() == 0 )  {
 
@@ -3288,7 +2572,7 @@ class WikiHowTemplate extends QuickTemplate {
 				$rad_links = $sk->getRADLinks($use_chikita_sky);
                 $ads = "{$rad_links}$ads";
                 //$ads .= "<br/><br/>{$rad_links}";
-		} else if ($wgTitle->getFullText() == wfMsg('mainpage') && $action == "view") {
+		} elseif ($isMainPage && $action == "view") {
 		      $show_related = false;
 		} else {
 			//$s .= "<td>\n";
@@ -3386,20 +2670,20 @@ class WikiHowTemplate extends QuickTemplate {
 		// For articles only
 		$wlhlink = "";
 		$statslink = "";
-		if ($wgTitle->getNamespace() != NS_SPECIAL && $wgTitle->getFullText() != wfMsg('mainpage') && $wgTitle->getNamespace() != NS_IMAGE)
+		if ($wgTitle->getNamespace() != NS_SPECIAL && !$isMainPage && $wgTitle->getNamespace() != NS_IMAGE)
  			$wlhlink = "<li> <a href='" . Title::makeTitle(NS_SPECIAL, "Whatlinkshere")->getLocalUrl() . "/" . $wgTitle->getPrefixedURL() . "'>" . wfMsg('whatlinkshere') . "</a></li>";
 
-		if ($wgTitle->getNamespace() == NS_MAIN && $wgTitle->getFullText() != wfMsg('mainpage') && $wgLanguageCode == 'en')
+		if ($wgTitle->getNamespace() == NS_MAIN && !$isMainPage && $wgLanguageCode == 'en')
 			$statslink = "<li> " . $sk->makeLinkObj(SpecialPage::getTitleFor("Articlestats", $wgTitle->getText()), wfMsg('articlestats')) . "</li>";
 		$mralink = "";
-		if ($wgTitle->getNamespace() == NS_MAIN && $wgTitle->getFullText() != wfMsg('mainpage')
+		if ($wgTitle->getNamespace() == NS_MAIN && !$isMainPage
 		 && $wgTitle->userCanEdit() && $wgLanguageCode == 'en')
 			$mralink = "<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "RelatedArticle"), wfMsg('manage_related_articles'), "target=" . $wgTitle->getPrefixedURL()) . "</li>";
 
-		if ($wgTitle->getNamespace() == NS_MAIN && $wgTitle->getFullText() != wfMsg('mainpage') && $wgTitle->userCanEdit())
+		if ($wgTitle->getNamespace() == NS_MAIN && !$isMainPage && $wgTitle->userCanEdit())
 
 			$links[] = array (Title::makeTitle(NS_SPECIAL, "Recentchangeslinked")->getFullURL() . "/" . $wgTitle->getPrefixedURL(), wfMsg('recentchangeslinked') );
-		if ($wgTitle->getNamespace() == NS_MAIN && $wgTitle->getFullText() != wfMsg('mainpage')
+		if ($wgTitle->getNamespace() == NS_MAIN && !$isMainPage
 		 && $wgTitle->userCanEdit() && $wgLanguageCode == 'en') {
 				$editlink = "<li>" . " <a href='" . $wgTitle->escapeLocalURL($sk->editUrlOptions()) . "'>" . wfMsg('edit-this-article') . "</a>" . "</li>";
 		 }
@@ -3429,8 +2713,8 @@ class WikiHowTemplate extends QuickTemplate {
 		$freephotoslink = "";
 		$uploadlink = $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Upload"), wfMsg('upload'));
         $videolink = "";
-        if ($wgTitle->getNamespace() == NS_MAIN && $wgUser->getID() > 0
-          && $wgTitle->userCanEdit() && $wgTitle->getText() != wfMsg('mainpage'))  {
+        if ($wgTitle->getNamespace() == NS_MAIN && $isLoggedIn
+          && $wgTitle->userCanEdit() && !$isMainPage)  {
 	        $videolink = "<li id='gatVideoImport' > " . $sk->makeLinkObj( SpecialPage::getTitleFor( 'Importvideo', $wgTitle->getText() ), wfMsg('importvideo')) . "</li>";
        }
 		$freephotoslink = $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "ImportFreeImages"), wfMsg('imageimport'));
@@ -3599,13 +2883,13 @@ class WikiHowTemplate extends QuickTemplate {
 				
 		// munge the steps HTML to get the numbers working
 		if ($wgTitle->getNamespace() == NS_MAIN
-			&& $wgTitle->getText() != wfMsg('mainpage')
+			&& !$isMainPage
 			&& ($action=='view' || $action == 'purge')
 		) {
 			// on view. for preview, you have to munge the steps of the previewHTML manually
 			$body = $this->data['bodytext'];
 			$this->data['bodytext'] = self::mungeSteps($body);
-		} else if ($wgUser->getID() == 0 && MWNamespace::isTalk($wgTitle->getNamespace()) && ($action=='view' || $action == 'purge')) {
+		} elseif ($wgUser->getID() == 0 && MWNamespace::isTalk($wgTitle->getNamespace()) && ($action=='view' || $action == 'purge')) {
 			// insert ads into talk page
 			$body = $this->data['bodytext'];
 			$tag = '<div id="discussion_entry">|<div class="de">';
@@ -3686,8 +2970,8 @@ class WikiHowTemplate extends QuickTemplate {
 					{$splink}
 				</ul>";
 
-		if ($wgTitle->getNamespace() == NS_MAIN && $wgUser->getID() > 0
-          && $wgTitle->userCanEdit() && $wgTitle->getText() != wfMsg('mainpage'))  {
+		if ($wgTitle->getNamespace() == NS_MAIN && $isLoggedIn
+          && $wgTitle->userCanEdit() && !$isMainPage)  {
 			$navigation .= "<h3>
 			<a href=\"#\" onclick=\"return sidenav_toggle('editing_list',this);\" id='href_editing_list'>" . wfMsg('navlist_expand') . "</a>
 			<span onclick=\"return sidenav_toggle('editing_list',this);\" style=\"cursor:pointer;\"> " . wfMsg('editing_tools') . "</span></h3>
@@ -3764,29 +3048,6 @@ class WikiHowTemplate extends QuickTemplate {
 	}
 
 	//XX TALK/DISCUSSION SUBMENU
-//XXVU ADD REMOVE ADD... sheesh.  REMOVE THIS BEFORE LAUNCH
-/*
-	$subtalklinks = "";
-	if ($wgTitle->isTalkPage()) {
-		$subeditselected = '';
-		$subhistoryselected = '';
-		$subtalkselected = '';
-		if ($action == 'edit') {
-			$subeditselected = "class='selected'";
-		} else if ($action == 'history') {
-			$subhistoryselected = "class='selected'";
-		} else {
-			$subtalkselected = "class='selected'";
-		}
-
-		$subtalklinks = "\n<table id='discuss_icons'><tr>
-			<td><a href='".$wgTitle->getFullURL()."' {$subtalkselected} >Discuss</a></td>
-			<td><a href='".$wgTitle->escapeLocalURL($sk->editUrlOptions())."' id='discuss_edit' {$subeditselected} >Edit</a></td>
-			<td><a href='".$wgTitle->getLocalURL( 'action=history' )."' id='discuss_history' {$subhistoryselected} >History</a></td>
-			</tr></table>\n";
-	}
-
-*/
 	// add article_inner if it's not already there, CSS needs it
 	if (strpos( $this->data['bodytext'], "article_inner" ) === false
 		&& wfRunHooks('WrapBodyWithArticleInner', array()))
@@ -3818,23 +3079,21 @@ class WikiHowTemplate extends QuickTemplate {
 		$this->data['bodytext'] = ""; // ignore whatever is in there
 	}
 
-	// determine whether or not to show RCWidget
-	$profilebox_condition = false;
-	if ($wgUser->getID() > 0) {
+	$profileBoxIsUser = false;
+	if ($isLoggedIn) {
 		$name = $wgTitle->getDBKey();
 		$pbu = User::newFromName($name);
 		if (isset($pbu)) {
-			if (($wgTitle->getNamespace() == NS_USER) &&
-				($wgUser->getID() == $pbu->getID()) ) {
-				$profilebox_condition = true;
+			if ($wgTitle->getNamespace() == NS_USER &&
+				$wgUser->getID() == $pbu->getID() )
+			{
+				$profileBoxIsUser = true;
 			}
 		}
 	}
 
-	$isLoggedIn = $wgUser->getID() > 0;
-
  	$showSpotlightRotate =
-		$wgTitle->getPrefixedURL() == wfMsg('mainpage') &&
+		$isMainPage &&
 		$wgLanguageCode == 'en';
 
 	$showBreadCrumbs = self::showBreadCrumbs();
@@ -3842,8 +3101,9 @@ class WikiHowTemplate extends QuickTemplate {
 
     $showRCWidget =
 		class_exists('RCWidget') &&
-		!$profilebox_condition &&
-		($wgUser->getID() == 0 || $wgUser->getOption('recent_changes_widget_show') != '0' ) &&
+		!$profileBoxIsUser &&
+		(!$isLoggedIn || $wgUser->getOption('recent_changes_widget_show') != '0' ) &&
+		($isLoggedIn || $isMainPage) &&
 		$wgTitle->getPrefixedText() != 'Special:Avatar' &&
 		$wgTitle->getPrefixedText() != 'Special:ProfileBox' &&
 		$wgTitle->getPrefixedText() != 'Special:IntroImageAdder' &&
@@ -3855,7 +3115,7 @@ class WikiHowTemplate extends QuickTemplate {
 		class_exists('Slider') &&
 		$wgTitle->exists() &&
 		$wgTitle->getNamespace() == NS_MAIN &&
-		$wgTitle->getFullText() != wfMsg('mainpage') &&
+		$isMainPage &&
 		$wgRequest->getVal('oldid') == '' &&
 		$wgRequest->getVal('create-new-article') == '' &&
 		($wgRequest->getVal('action') == '' || $wgRequest->getVal('action') == 'view');
@@ -3916,7 +3176,7 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 		class_exists('GallerySlide') &&
 		$wgTitle->getNamespace() == NS_MAIN &&
 		in_array($wgTitle->getDBkey(),$slideshow_array) &&
-		$wgTitle->getFullText() != wfMsg('mainpage') &&
+		$isMainPage &&
 		$wgRequest->getVal('oldid') == '' &&
 		($wgRequest->getVal('action') == '' || $wgRequest->getVal('action') == 'view');*/
 	$showSlideShow = false;
@@ -3925,7 +3185,7 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 	$showFBBar =
 		$wgTitle->getNamespace() == NS_MAIN &&
 		$wgTitle->exists() &&
-		$wgTitle->getFullText() != wfMsg('mainpage') &&
+		$isMainPage &&
 		$wgRequest->getVal('oldid') == '' &&
 		($wgRequest->getVal('action') == '' || $wgRequest->getVal('action') == 'view') &&
 		!in_array($wgTitle->getDBkey(), self::$fbIgnore);
@@ -4266,7 +3526,7 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 
 	<? if ($isMainPage) {
 		//DO NOTHING
-	} else if ((self::isSpecialBackground() ||
+	} elseif ((self::isSpecialBackground() ||
 		$wgTitle->getNamespace() == NS_USER ||
 		$wgTitle->getNamespace() == NS_PROJECT ||
 		$wgTitle->getNamespace() == NS_CATEGORY ||
@@ -4293,9 +3553,9 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 		<?php
 			if($wgUser->getID() == 0 && !$isMainPage && $action != 'edit' && $wgTitle->getText() != 'Userlogin' && $wgTitle->getNamespace() == NS_MAIN){
 				//comment out next line to turn off HHM ad
-				if(wikihowAds::isMtv() && ($wgLanguageCode =='en'))
+				if (wikihowAds::isMtv() && ($wgLanguageCode =='en'))
 					echo wikihowAds::getMtv();
-				else if( wikihowAds::isHHM() && ($wgLanguageCode =='en'))
+				elseif ( wikihowAds::isHHM() && ($wgLanguageCode =='en'))
 					echo wikihowAds::getHhmAd();
 				else
 					echo wikihowAds::getAdUnitPlaceholder(4);
@@ -4379,11 +3639,7 @@ EOHTML;
 	<div class="sidebox_shell">
         <div class='sidebar_top'></div>
         <div id="side_featured_articles" class="sidebox">
-			<?php if ($wgTitle->getNamespace() == NS_MAIN && $wgTitle->getText() == wfMsg('mainpage'))
-					echo $sk->getFeaturedArticlesBox(15, 100);
-				else
-					echo $sk->getFeaturedArticlesBox(4, 4);
-				?>
+				<?= $sk->getFeaturedArticlesBox(4, 4) ?>
         </div>
         <div class='sidebar_bottom_fold'></div>
 	</div>
@@ -4502,7 +3758,7 @@ if (($action == 'diff' ) && ($wgLanguageCode =='en')) {
 if ($showSliderWidget) {
 	echo Slider::getBox();
 	echo '<div id="slideshowdetect"></div>';
-	//if ($wgTitle->getFullText() == wfMsg('mainpage')) {
+	//if ($isMainPage) {
 	//	echo '<div id="slideshowdetect_mainpage"></div>';
 	//}
 }
@@ -4601,7 +3857,7 @@ if (class_exists('CTALinks') && trim(wfMsgForContent('cta_feature')) == "on") {
 }
 ?>
 <!-- LOAD EVENT LISTENERS -->
-<?php if ($wgTitle->getPrefixedURL() == wfMsg('mainpage') && $wgLanguageCode == 'en') { ?>
+<?php if ($isMainPage && $wgLanguageCode == 'en') { ?>
 <script type="text/javascript">
 if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 	jQuery(window).load(initSA);

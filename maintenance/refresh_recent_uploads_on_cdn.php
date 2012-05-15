@@ -41,8 +41,9 @@ foreach ($files as $f=>$v) {
 		$args .= preg_replace("@/var/www/images_en@", "/images", $err);
 	}
 }
-$cmd = wfEscapeShellArg("/usr/local/wikihow/cache_flush.pl") . 
-	" --user '".WH_CDN_USERNAME."' --pass ".WH_CDN_PASSWORD." -s ".WH_CDN_SITEID." -t paths --paths " .  "\"$args\"";
+$cmd = wfEscapeShellArg("/usr/local/bin/php") . 
+	' ' . wfEscapeShellArg('/var/www/html/wiki/maintenance/cdn_flush.php') .
+	" --user='".WH_CDN_USERNAME."' --password='".WH_CDN_PASSWORD."' --location=\"$args\"";
 echo "executing: $cmd\n";
 $err = wfShellExec( $cmd, $retval );
 echo $err;

@@ -267,6 +267,8 @@ class SimpleCaptcha {
 		$title = $editPage->mArticle->getTitle();
 
 		global $wgUser;
+		if($title->getNamespace() == NS_USER && $this->addsURLs($editPage, $newtext, $section, $merged))
+			return true;
 		if( $wgUser->isAllowed( 'skipcaptcha' ) ) {
 			wfDebug( "ConfirmEdit: user group allows skipping captcha\n" );
 			return false;
@@ -371,6 +373,41 @@ class SimpleCaptcha {
 			}
 		}
 
+		return false;
+	}
+	
+	function addsURLs(&$editPage, $newtext, $section, $merged) {
+		$title = $editPage->mArticle->getTitle();
+		
+		// Only check edits that add URLs
+		if ( $merged ) {
+			// Get links from the database
+			$oldLinks = $this->getLinksFromTracker( $title );
+			// Share a parse operation with Article::doEdit()
+			$editInfo = $editPage->mArticle->prepareTextForEdit( $newtext );
+			$newLinks = array_keys( $editInfo->output->getExternalLinks() );
+		} else {
+			// Get link changes in the slowest way known to man
+			$oldtext = $this->loadText( $editPage, $section );
+			$oldLinks = $this->findLinks( $editPage, $oldtext );
+			$newLinks = $this->findLinks( $editPage, $newtext );
+		}
+
+		$unknownLinks = array_filter( $newLinks, array( &$this, 'filterLink' ) );
+		$addedLinks = array_diff( $unknownLinks, $oldLinks );
+		$numLinks = count( $addedLinks );
+
+		if( $numLinks > 0 ) {
+			global $wgUser;
+			$this->trigger = sprintf( "%dx url trigger by '%s' at [[%s]]: %s",
+				$numLinks,
+				$wgUser->getName(),
+				$title->getPrefixedText(),
+				implode( ", ", $addedLinks ) );
+			$this->action = 'addurl';
+			return true;
+		}
+		
 		return false;
 	}
 
