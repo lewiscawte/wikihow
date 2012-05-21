@@ -1,10 +1,11 @@
 <?php
 /**
- * Refresh Dashboard statistics
+ * Refresh the stats in the community dashboard page in memcache every
+ * REFRESH_SECONDS seconds
  *
  * @file
  * @ingroup Maintenance
- * @version 2012-04-09
+ * @version 2012-05-14
  */
 
 /**
@@ -27,6 +28,11 @@ class RefreshDashboardStats extends Maintenance {
 	public function __construct() {
 		parent::__construct();
 		$this->mDescription = 'Refresh Dashboard statistics';
+		$this->addOption(
+			'fake-stats',
+			'Hold stats steady by reading them once from the master DB and not again until the daemon is restarted',
+			false, false, 'f'
+		);
 	}
 
 	private static function getToken() {
@@ -53,6 +59,15 @@ class RefreshDashboardStats extends Maintenance {
 		$stopMsg = '';
 
 		$data = new DashboardData();
+
+		// The dashboard is very susceptible to going down when we're doing
+		// maintenance on our spare server. Using this flag is a way to hold
+		// the stats steady by reading them once from the master DB and not
+		// again until the daemon is restarted.
+		$fakeStats = $this->getOption( 'fake-stats' );
+		if ( $fakeStats ) {
+			$data->fetchOnFirstCallOnly();
+		}
 
 		$staticData = $data->loadStaticGlobalOpts();
 		$baselines = (array)json_decode( $staticData['cdo_baselines_json'] );

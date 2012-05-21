@@ -1,4 +1,7 @@
 <?php
+//
+// Test the memcache machines from the app servers. This is run from the ts script.
+//
 
 require_once('commandLine.inc');
 
@@ -11,9 +14,10 @@ function microtime_float() {
 if ( isset($argv[0]) ) {
 	$wgMemCachedServers = array( $argv[0] );
 
-	// 100 is default; can be specified through 2nd param
-	$iterations = isset($argv[1]) ? $argv[1] : 100;
 }
+
+// 100 is default; can be specified through 2nd param
+$iterations = isset($argv[1]) ? $argv[1] : 100;
 
 if (count($wgMemCachedServers) <= 0) {
 	die("No servers to test!\n");
@@ -48,8 +52,12 @@ foreach ($wgMemCachedServers as $server) {
 			$get++;
 		}
 	}
-	$exectime = microtime_float() - $time_start;
+	$exectime = sprintf("%dms", round(1000 * (microtime_float() - $time_start)));
 
-	print "set: $set  incr: $incr  get: $get  time: $exectime\n";
+	$err = '';
+	if ($set != $iterations) $err .= 'error: ' . $set . ' SET ops completed ';
+	if ($incr != $iterations) $err .= 'error: ' . $incr . ' INCR ops completed ';
+	if ($get != $iterations) $err .= 'error: ' . $get . ' GET ops completed ';
+	print "time: $exectime $err\n";
 }
 

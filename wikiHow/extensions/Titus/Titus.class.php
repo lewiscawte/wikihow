@@ -7,6 +7,7 @@ class TitusDB {
 	var $dbw;
 	var $dbr;
 	var $debugOutput;
+	var $dataBatch = array();
 
 	function __construct($debugOutput = false) {
 		$this->dbw = wfGetDB(DB_MASTER);
@@ -24,10 +25,14 @@ class TitusDB {
 		$lowDate = wfTimestamp(TS_MW, strtotime('-1 day', strtotime(date('Ymd', time()))));
 		$highDate = wfTimestamp(TS_MW, strtotime(date('Ymd', time())));
 		$res = $dbr->select('daily_edits', 'de_page_id', array("de_timestamp >= '$lowDate'", "de_timestamp < '$highDate'"), __METHOD__);
+		$pageIds = array();
 		while ($row = $dbr->fetchObject($res)) {
 			$pageIds[] = $row->de_page_id;
 		}
-		$this->calcStatsForPageIds($statsToCalc, $pageIds);
+		$pageChunks = array_chunk($pageIds, 1000);
+		foreach ($pageChunks as $chunk) {
+			$this->calcStatsForPageIds($statsToCalc, $chunk);
+		}
 	}
 
 	/*
@@ -46,12 +51,18 @@ class TitusDB {
 			array('page_id', 'page_title', 'page_counter', 'page_is_featured', 'page_catinfo', 'page_len'), 
 			array('page_namespace' => 0, 'page_is_redirect' => 0, 
 				"page_id IN ($pageIds)"), 
-			__METHOD__, 
-			$limit);
+			__METHOD__);
 
 		while ($row = $dbr->fetchObject($res)) {
-			$this->calcPageStats($statsToCalc, $row);
+			$fields = $this->calcPageStats($statsToCalc, $row);
+
+			if (!empty($fields)) {
+				//$this->storeRecord($fields);
+				$this->batchStoreRecord($fields);
+			}
 		}
+		// flush out current batch
+		$this->flushDataBatch();
 	}
 
 	/*
@@ -68,8 +79,16 @@ class TitusDB {
 			$limit);
 
 		while ($row = $dbr->fetchObject($res)) {
-			$this->calcPageStats($statsToCalc, $row);
+			$fields = $this->calcPageStats($statsToCalc, $row);
+
+			if (!empty($fields)) {
+				//$this->storeRecord($fields);
+				$this->batchStoreRecord($fields);
+			}
 		}
+
+		// flush out current batch
+		$this->flushDataBatch();
 	}
 
 	/*
@@ -79,9 +98,13 @@ class TitusDB {
 	public function calcPageStats(&$statsToCalc, &$row) {
 		$dbw = $this->dbw;
 		$dbr = $this->dbr;
-		$fields = array();
+
 		$t = Title::newFromId($row->page_id); 
-		$r = Revision::loadFromPageId($dbw, $row->page_id);
+		$goodRevision = GoodRevision::newFromTitle($t, $row->page_id);
+		$revId = $goodRevision->latestGood();
+		$r = $revId > 0 ? Revision::loadFromId($dbr, $revId) : Revision::loadFromPageId($dbr, $row->page_id);
+
+		$fields = array();
 		if ($r && $t && $t->exists()) {
 			foreach ($statsToCalc as $stat => $isOn) {
 				if ($isOn) {
@@ -90,11 +113,8 @@ class TitusDB {
 					$fields = array_merge($fields, $statCalculator->calc($dbr, $r, $t, $row));
 				}
 			}
-
-			if (!empty($fields)) {
-				$this->storeRecord($fields);
-			}
 		}
+		return $fields;
 	}
 
 	/*
@@ -113,8 +133,60 @@ class TitusDB {
 		if ($this->debugOutput) {
 			var_dump($data);
 		}
-		$sql = "INSERT INTO ams_page ($fields) VALUES ($values) ON DUPLICATE KEY UPDATE $set";
+		$sql = "INSERT INTO titus ($fields) VALUES ($values) ON DUPLICATE KEY UPDATE $set";
 		$dbw->query($sql);
+	}
+
+	/*
+	* Stores records in batches sized as specified by the $batchSize parameter
+	* NOTE:  This method buffers the data and only stores data once $batchSize threshold has been 
+	* met.  To immediately store the bufffered data call flushDataBatch()
+	*/
+	public function batchStoreRecord($data, $batchSize = 1000) {
+		$this->dataBatch[] = $data;
+		if (sizeof($this->dataBatch) == $batchSize) {
+			$this->flushDataBatch();
+		}
+	}
+
+	/*
+	* Stores multiple records of data.  IMPORTANT:  All data records must constain identical fields of data to  data to insert
+	*/
+	public function storeRecords(&$dataBatch) {
+		if (!sizeof($dataBatch)) {
+			return;
+		}
+
+		$dbw = $this->dbw;
+		$fields = join(",", array_keys($dataBatch[0]));
+		$set = array();
+		foreach ($dataBatch[0] as $col => $val) {
+			$set[] = "$col = VALUES($col)";
+		}
+		$set = join(",", $set);
+
+		$values = array();
+		foreach ($this->dataBatch as $data) {
+			$values[] = "('" . join("','", array_values($data)) . "')";
+		}
+		$values = implode(",", $values);
+
+		$sql = "INSERT INTO titus ($fields) VALUES $values ON DUPLICATE KEY UPDATE $set";
+		if ($this->debugOutput) {
+			var_dump($this->dataBatch);
+		}
+		$dbw->query($sql);
+	}
+
+	/*
+	* Store records currently queued in $this->dataBatch
+	*/
+	private function flushDataBatch() {
+		// Flush out remaining records to database
+		if (sizeof($this->dataBatch)) {
+			$this->storeRecords($this->dataBatch);
+			$this->dataBatch = array();
+		}
 	}
 }
 
@@ -135,20 +207,33 @@ class TitusConfig {
 			"PageId" => 1,
 			"Timestamp" => 1,
 			"Stu" => 1,
+			"StuPv" => 1,
 		);
 		return $stats;
+	}
+
+	public static function getNightlyStats() {
+		return self::getStuStats();
 	}
 
 	/*
 	* Get config for stats that we want to calculate on a nightly basis
 	*/
-	public static function getNightlyStats() {
+	public static function getDailyEditStats() {
 		$stats = self::getAllStats();
 		// Social stats are slow to calc, so remove them from the calcs
-		unset($stats['Social']);
-		// RobotPolicy is also a little slow, but we should probably leave it on because it's so important
+		$stats['Social'] = 0;
+
+		// Stu stats don't make sense to calculate on a page edit.  This should be done nightly via
+		// across all pages
+		$stats['Stu'] = 0;
+		$stats['StuPv'] = 0;
+
+
+		// RobotPolicy is also a bit slow, but we should probably leave it on because it's so important
 		// to make sure everything is indexing properly
 		//unset($stats['RobotPolicy']);
+
 		return $stats;
 	}
 
@@ -163,6 +248,7 @@ class TitusConfig {
 			"ByteSize" => 1,
 			"Accuracy" => 1,
 			"Stu" => 1,
+			"StuPv" => 1,
 			"Intl" => 1,	
 			"Video" => 1,
 			"FirstEdit" => 1,
@@ -177,10 +263,10 @@ class TitusConfig {
 			"Featured" => 1,
 			"RobotPolicy" => 1,
 			"RisingStar" => 1,
-			"BadTemplate" => 1,
+			"Templates" => 1,
 			"RushData" => 1,
 			"Social" => 1,
-			"StepPhotos" => 0,	// Deprecated
+			"StepPhotos" => 1,
 			);
 
 		return $stats;
@@ -191,6 +277,8 @@ class TitusConfig {
 * Abstract class representing a stat to be calculated by TitusDB
 */
 abstract class TitusStat {
+	// Abstract function that returns calculated stats.  IMPORTANT: All status must be returned with a 
+	// default value or batch insertion of records will break
 	abstract function calc(&$dbr, &$r, &$t, &$pageRow);
 }
 
@@ -200,16 +288,10 @@ abstract class TitusStat {
 class TSIntl extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
 		$txt = $r->getText();
-		$fields = array();
-		if (false !== stripos($txt, "[[es:")) {
-			$fields["ams_lang_es"] = 1;
-		}
-		if (false !== stripos($txt, "[[de:")) {
-			$fields["ams_lang_de"] = 1;
-		}
-		if (false !== stripos($txt, "[[pt:")) {
-			$fields["ams_lang_pt"] = 1;
-		}
+		$fields['ti_lang_es'] = false !== stripos($txt, "[[es:") ? 1 : 0;
+		$fields['ti_lang_de'] = false !== stripos($txt, "[[de:") ? 1 : 0;
+		$fields['ti_lang_pt'] = false !== stripos($txt, "[[pt:") ? 1 : 0;
+
 		return $fields;
 	}
 }
@@ -220,17 +302,17 @@ class TSIntl extends TitusStat {
 class TSTopLevelCat extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
 		global $wgCategoryNames;
-		$fields = array();
+		$topCat = "";
 		$catMask = $pageRow->page_catinfo; 
 		if ($catMask) {
 			foreach ($wgCategoryNames as $bit => $cat) {
 				if ($bit & $catMask) {
-					$fields["ams_top_cat"] = $dbr->strencode($cat);
+					$topCat = $dbr->strencode($cat);
 					break;
 				}
 			}
 		}
-		return $fields;
+		return array('ti_top_cat' => $topCat);
 	}
 }
 
@@ -241,11 +323,11 @@ class TSParentCat extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
 		global $wgContLang; 
 		$text = $r->getText();
-		$fields = array();
+		$parentCat = "";
 		if(preg_match("/\[\[" . $wgContLang->getNSText(NS_CATEGORY) . ":([^\]]*)\]\]/im", $text, $matches)) {
-			$fields["ams_parent_cat"] = $dbr->strencode(trim($matches[1]));
+			$parentCat = $dbr->strencode(trim($matches[1]));
 		}
-		return $fields;
+		return array('ti_parent_cat' => $parentCat);
 	}
 }
 
@@ -254,7 +336,7 @@ class TSParentCat extends TitusStat {
 */
 class TSViews extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_views" => $pageRow->page_counter);
+		return array("ti_views" => $pageRow->page_counter);
 	}
 }
 
@@ -263,7 +345,7 @@ class TSViews extends TitusStat {
 */
 class TSTitle extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_page_title" => $dbr->strencode($pageRow->page_title));
+		return array("ti_page_title" => $dbr->strencode($pageRow->page_title));
 	}
 }
 
@@ -272,7 +354,7 @@ class TSTitle extends TitusStat {
 */
 class TSPageId extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_page_id" => $dbr->strencode($pageRow->page_id));
+		return array("ti_page_id" => $dbr->strencode($pageRow->page_id));
 	}
 }
 
@@ -282,7 +364,7 @@ class TSPageId extends TitusStat {
 */
 class TSByteSize extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_bytes" => $pageRow->page_len);
+		return array("ti_bytes" => $pageRow->page_len);
 	}
 }
 
@@ -291,7 +373,7 @@ class TSByteSize extends TitusStat {
 */
 class TSFirstEdit extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_first_edit" => 
+		return array("ti_first_edit" => 
 			$dbr->selectField('firstedit', array('fe_timestamp'), array('fe_page' => $pageRow->page_id)));
 	}
 }
@@ -301,7 +383,7 @@ class TSFirstEdit extends TitusStat {
 */
 class TSNumEdits extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_num_edits" => 
+		return array("ti_num_edits" => 
 			$dbr->selectField('revision', array('count(*)'), array('rev_page' => $pageRow->page_id)));
 	}
 }
@@ -324,7 +406,7 @@ class TSFellowEdit extends TitusStat {
 		if ($lastEdit === false) {
 			$lastEdit = 0;
 		}
-		return array("ams_last_fellow_edit" => $lastEdit);
+		return array("ti_last_fellow_edit" => $lastEdit);
 	}
 }
 
@@ -333,7 +415,7 @@ class TSFellowEdit extends TitusStat {
 */
 class TSLastEdit extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_last_edit" => 
+		return array("ti_last_edit" => 
 			$dbr->selectField('revision', 
 				array('rev_timestamp'), 
 				array('rev_page' => $pageRow->page_id), 
@@ -349,7 +431,7 @@ class TSLastEdit extends TitusStat {
 class TSAltMethods extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
 		$altMethods = intVal(preg_match_all("@^===@m", $r->getText(), $matches));
-		return array("ams_alt_methods" => $altMethods);
+		return array("ti_alt_methods" => $altMethods);
 	}
 }
 
@@ -359,7 +441,7 @@ class TSAltMethods extends TitusStat {
 class TSVideo extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
 		$video = strpos($r->getText(), "{{Video") ? 1 : 0;
-		return array("ams_video" => $video);
+		return array("ti_video" => $video);
 	}
 }
 
@@ -368,21 +450,30 @@ class TSVideo extends TitusStat {
 */
 class TSFeatured extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_featured" => $pageRow->page_is_featured);
+		return array("ti_featured" => $pageRow->page_is_featured);
 	}
 }
 
 /*
 *  Whether the article has a bad template
 */
-class TSBadTemplate extends TitusStat {
+class TSTemplates extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		$count = $dbr->selectField('templatelinks', 
-			array('count(*)'), 
-			array('tl_from' => $pageRow->page_id, "tl_title IN ('Speedy', 'Stub', 'Copyvio','Copyviobot','Copyedit','Cleanup')"), 
-			__METHOD__);
-		$badTemp = $count > 0 ? 1 : 0;
-		return array("ams_bad_template" => $badTemp);
+		$txt = $r->getText();
+
+		$badTemplates = array('Speedy', 'Stub', 'Copyvio','Copyviobot','Copyedit','Cleanup');
+		$badTemplates = implode("|", $badTemplates); 
+		$hasBadTemp = preg_match("@{{($badTemplates{0,1000})@mi", $txt) == 1 ? 1 : 0;
+
+		$templates = array();
+		$articleTemplates = implode("|", explode("\n", trim(wfMsg('titus_templates'))));
+		if (preg_match_all("@{{($articleTemplates{0,1000})@mi", $txt, $matches)) {
+			$templates = $matches[1];
+		}
+		
+		$templates = sizeof($templates) ? $dbr->strencode(implode(",", $templates)) : '';
+
+		return array("ti_bad_template" => intVal($hasBadTemp), 'ti_templates' => $templates);
 	}
 }
 
@@ -397,7 +488,7 @@ class TSNumSteps extends TitusStat {
 		if ($text) {
 			$num_steps = preg_match_all('/^#[^*]/im', $text, $matches);
 		}
-		return array("ams_num_steps" => intVal($num_steps));
+		return array("ti_num_steps" => intVal($num_steps));
 	}
 }
 
@@ -411,7 +502,7 @@ class TSNumTips extends TitusStat {
 		if ($text) {
 			$num_tips = preg_match_all('/^\*[^\*]/im', $text, $matches);
 		}
-		return array("ams_num_tips" => intVal($num_tips));
+		return array("ti_num_tips" => intVal($num_tips));
 	}
 }
 
@@ -426,10 +517,13 @@ class TSNumWarnings extends TitusStat {
 		if ($text) {
 			$num_warnings = preg_match_all('/^\*[^\*]/im', $text, $matches);
 		}
-		return array("ams_num_warnings" => intVal($num_warnings));
+		return array("ti_num_warnings" => intVal($num_warnings));
 	}
 }
 
+/*
+* Determines whether more than half of the steps in the articles have photos
+*/
 class TSStepPhotos extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
 		$text = Wikitext::getStepsSection($r->getText(), true);
@@ -440,7 +534,7 @@ class TSStepPhotos extends TitusStat {
 			$num_step_photos = preg_match_all('/\[\[Image:/im', $text, $matches);
 			$stepPhotos = $num_step_photos > ($num_steps / 2) ? 1 : 0;
 		} 
-		return array("ams_photos" => intVal($stepPhotos));
+		return array("ti_photos" => intVal($stepPhotos));
 	}
 }
 
@@ -464,13 +558,14 @@ class TSAccuracy extends TitusStat {
 		$accurate = intVal($row->C);
 		$row = $dbr->fetchObject($res);
 		$total = intVal($row->C);
-		$stats['ams_accuracy_percentage'] = $this->percent($accurate, $total); 
-		$stats['ams_accuracy_total'] = $total; 
+		$stats['ti_accuracy_percentage'] = $this->percent($accurate, $total); 
+		$stats['ti_accuracy_total'] = $total; 
 
 		$row = $dbr->fetchObject($res);
 		$lastReset = $row->C;
+		$stats['ti_accuracy_last_reset'] = wfTimestamp(TS_MS, 0);
 		if(!is_null($lastReset) && '0000-00-00 00:00:00' != $lastReset) { 
-			$stats['ams_accuracy_last_reset'] = wfTimestamp(TS_MW, strtotime($row->C));
+			$stats['ti_accuracy_last_reset'] = wfTimestamp(TS_MW, strtotime($row->C));
 		}
 
 		return $stats;
@@ -487,7 +582,7 @@ class TSAccuracy extends TitusStat {
 */
 class TSTimestamp extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_timestamp" => wfTimestamp(TS_MW));
+		return array("ti_timestamp" => wfTimestamp(TS_MW));
 	}
 }
 
@@ -496,7 +591,7 @@ class TSTimestamp extends TitusStat {
 */
 class TSRisingStar extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ams_risingstar" => 
+		return array("ti_risingstar" => 
 			$dbr->selectField('pagelist', array('count(*)'), array('pl_page' => $pageRow->page_id, 'pl_list' => 'risingstar')));
 	}
 }
@@ -510,9 +605,9 @@ class TSPhotos extends TitusStat {
 		$numPhotos = preg_match_all('/\[\[Image:/im', $r->getText(), $matches);
 		$numWikiPhotos = intVal($dbr->selectField('wikiphoto_article_status', array('images'), array('article_id' => $pageRow->page_id)));
 		$stats = $this->getIntroPhotoStats($r);
-		$stats['ams_num_wikiphotos'] = $numWikiPhotos;
-		$stats['ams_enlarged_wikiphoto'] = intVal($this->hasEnlargedWikiPhotos($r));
-		$stats['ams_num_community_photos'] = $numPhotos - $numWikiPhotos;
+		$stats['ti_num_wikiphotos'] = $numWikiPhotos;
+		$stats['ti_enlarged_wikiphoto'] = intVal($this->hasEnlargedWikiPhotos($r));
+		$stats['ti_num_community_photos'] = $numPhotos - $numWikiPhotos;
 		return $stats;
 	}
 
@@ -529,9 +624,9 @@ class TSPhotos extends TitusStat {
 
 	private function getIntroPhotoStats(&$r) {
 		$text = Wikitext::getIntro($r->getText());
-		$stats['ams_intro_photo'] = intVal(preg_match('/\[\[Image:/im', $text));
+		$stats['ti_intro_photo'] = intVal(preg_match('/\[\[Image:/im', $text));
 		// Photo is enlarged if it is great than 500px (and less than 9999px)
-		$stats['ams_enlarged_intro_photo'] = intVal(preg_match('/\|[5-9][\d]{2,3}px\]\]/im', $text));
+		$stats['ti_enlarged_intro_photo'] = intVal(preg_match('/\|[5-9][\d]{2,3}px\]\]/im', $text));
 		return $stats;
 	}
 
@@ -542,7 +637,8 @@ class TSPhotos extends TitusStat {
 */
 class TSStu extends TitusStat {
     public function calc(&$dbr, &$r, &$t, &$pageRow) {
-        $stats = array();
+        $stats = array('ti_stu_10s_percentage_mobile' => 0, 'ti_stu_views_mobile' => 0, 
+			'ti_stu_10s_percentage_www' => 0, 'ti_stu_3min_percentage_www' => 0, 'ti_stu_views_www' => 0);
 		$domains = array('bt' => 'www', 'mb' => 'mobile');
 		foreach ($domains as $domain => $label) {
 			$query = $this->makeQuery(&$t, $domain);
@@ -555,7 +651,7 @@ class TSStu extends TitusStat {
         return $stats;
     }
 
-    private function makeQuery(&$t, $domain = 'bt') {
+    protected function makeQuery(&$t, $domain = 'bt') {
         return array(
             'select' => '*',
             'from' => $domain,
@@ -569,15 +665,55 @@ class TSStu extends TitusStat {
         foreach ($data as $page => $datum) {
             AdminBounceTests::computePercentagesForCSV($datum, '');
             if (isset($datum['0-10s'])) {
-                $stats['ams_stu_10s_percentage_' . $label] = $datum['0-10s'];
+                $stats['ti_stu_10s_percentage_' . $label] = $datum['0-10s'];
             }
 
             if ($label != 'mobile' && isset($datum['3+m'])) {
-                $stats['ams_stu_3min_percentage_' . $label] = $datum['3+m'];
+                $stats['ti_stu_3min_percentage_' . $label] = $datum['3+m'];
             }
 
             if (isset($datum['__'])) {
-                $stats['ams_stu_views_' . $label] = $datum['__'];
+                $stats['ti_stu_views_' . $label] = $datum['__'];
+            }
+            break; // should only be one record
+        }
+        return $stats;
+    }
+}
+
+/*
+* Stu data (pv) for article
+*/
+class TSStuPv extends TSStu {
+    public function calc(&$dbr, &$r, &$t, &$pageRow) {
+        $stats = array('ti_stu_pv' => 0);
+		
+		$query = $this->makeQuery(&$t, 'pv');
+		$ret = AdminBounceTests::doBounceQuery($query);
+		if (!$ret['err'] && $ret['results']) {
+			AdminBounceTests::cleanBounceData($ret['results']);
+			$stats = array_merge($stats, $this->extractStats($ret['results']));
+		}
+		
+		$deleteQuery = $this->makeResetQuery($t, 'pv');
+		AdminBounceTests::doBounceQuery($deleteQuery);
+		
+        return $stats;
+    }
+	
+	private function makeResetQuery(&$t, $domain = 'pv') {
+		return array(
+            'delete' => '*',
+            'from' => $domain,
+            'pages' => array($t->getDBkey()),
+        );
+	}
+
+    private function extractStats(&$data) {
+        $stats = array();
+        foreach ($data as $page => $datum) {
+            if (isset($datum['__'])) {
+                $stats['ti_stu_pv'] = $datum['__'];
             }
             break; // should only be one record
         }
@@ -590,13 +726,13 @@ class TSStu extends TitusStat {
 */
 class TSRobotPolicy extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		$stats = array();
+		$stats = array('ti_robot_policy' => '');
 		// Request the html  a few times just in case the request is bad
 		$i = 0;
 		do {
 			$html = $this->curlUrl('http://www.wikihow.com' . $t->getLocalUrl());
 			if(preg_match('@<meta name="robots" content="([^"]+)"@', $html, $matches)) {
-				$stats['ams_robot_policy'] = $matches[1];
+				$stats['ti_robot_policy'] = $matches[1];
 			}
 		} while ($html == '' && ++$i < 5);
 		return $stats;
@@ -607,6 +743,8 @@ class TSRobotPolicy extends TitusStat {
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 2);
         $contents = curl_exec($ch);
         if (curl_errno($ch)) {
             echo "curl error {$url}: " . curl_error($ch) . "\n";
@@ -623,15 +761,16 @@ class TSRobotPolicy extends TitusStat {
 class TSRushData extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
 		$aid = $pageRow->page_id;
-		$stats = array();
+		$stats = array('ti_rush_topic_rank' => 0, 'ti_rush_cpc' => 0, 'ti_rush_query' => '');
+
 		$sql = "select * from rush_data ra inner join 
 			(select rush_page_id, max(rush_volume) as max_vol from rush_data where rush_page_id = $aid group by rush_page_id) rb on  
 			ra.rush_page_id = rb.rush_page_id and ra.rush_volume = rb.max_vol and ra.rush_page_id = $aid LIMIT 1";
 		$res = $dbr->query($sql);
 		if ($row = $dbr->fetchObject($res)) {
-			$stats['ams_rush_topic_rank'] = $row->rush_position;
-			$stats['ams_rush_cpc'] = $row->rush_cpc;
-			$stats['ams_rush_query'] = $row->rush_query;
+			$stats['ti_rush_topic_rank'] = $row->rush_position;
+			$stats['ti_rush_cpc'] = $row->rush_cpc;
+			$stats['ti_rush_query'] = $row->rush_query;
 		}
 		return $stats;
 	}
@@ -644,9 +783,9 @@ class TSSocial extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
 		$url = 'http://www.wikihow.com' . $t->getLocalUrl();
 		$stats = array();
-		$stats['ams_tweets'] = $this->getTweets($url);
-		$stats['ams_likes'] = $this->getLikes($url);
-		$stats['ams_plusones'] = $this->getPlusOnes($url);
+		$stats['ti_tweets'] = $this->getTweets($url);
+		$stats['ti_likes'] = $this->getLikes($url);
+		$stats['ti_plusones'] = $this->getPlusOnes($url);
 		return $stats;
 	}
 	

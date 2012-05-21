@@ -18,7 +18,6 @@
 		<div id='spch-content'></div>
 		<div id='spch-summary'></div>
 		<div id='spch-buttons'></div>
-		<?php if($addWords): ?>
 		<div id="spch-words">
 			<h3 style="color: #4A3C31">Add word to whitelist</h3>
 			<p>Select the words you want to add to the whitelist.</p>
@@ -28,7 +27,6 @@
 			<a href="#" class="button white_button_100 spch-add">Add words</a>
 			<div class="spch-message"></div>
 		</div>
-		<? endif; ?>
 	</div>
 	<div id='spch-id'></div>
 	<div class='spch-waiting'><img src='<?= wfGetPad('/extensions/wikihow/rotate.gif') ?>' alt='' /></div>
