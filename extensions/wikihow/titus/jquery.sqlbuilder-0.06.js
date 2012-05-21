@@ -364,7 +364,7 @@ $.fn.extend({
 
 	function addnewsqlcolumn(){
 
-		var sql_text = opts.columntitle+"<br>";
+		var sql_text = opts.columntitle+" <a id='page_title' href='#'>[add ti_page_title]</a><br>";
         //add predefined columns here too...
         //...
 

@@ -1304,17 +1304,15 @@ WH.isPageScrolledToWarningsORArticleInfo = function () {
 	
 	if ($(elem1).length) {
 		the_elem = elem1;
-	}
-	else {
+	} else {
 		the_elem = elem2;
 	}
 	
     var docViewTop = $(window).scrollTop();
     var docViewBottom = docViewTop + $(window).height();
 
-    var elemTop = $(the_elem).offset().top;
-	
-	return (elemTop <= docViewBottom);
+	var offset = $(the_elem).offset();
+	return offset ? offset.top <= docViewBottom : false;
 };
 
 WH.isPageScrolledToFollowTable = function () {
@@ -1323,9 +1321,8 @@ WH.isPageScrolledToFollowTable = function () {
     var docViewTop = $(window).scrollTop();
     var docViewBottom = docViewTop + $(window).height();
 
-    var elemTop = $(the_elem).offset().top;
-	
-	return (elemTop <= docViewBottom);
+	var offset = $(the_elem).offset();
+	return offset ? offset.top <= docViewBottom : false;
 };
 
 

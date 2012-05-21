@@ -1166,7 +1166,7 @@ Event.observe(window, 'load', pbInitForm);
 				return $over . $difference . " " . ($difference>1?$periods[1]:$period[1]);
 			}
 			else{
-				$difference = round($difference/4.35);
+				$difference = floor($difference/4.35);
 				if($difference < 12){ //this year (months)
 					return $over . $difference . " " . ($difference>1?$periods[2]:$period[2]);
 				}

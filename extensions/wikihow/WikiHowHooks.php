@@ -172,6 +172,27 @@ function wfUpdatePageFeaturedFurtherEditing($article, $user, $text, $summary, $f
 	}
 	return true;
 }
+
+$wgHooks['ArticleSaveComplete'][] = array('wfDeleteParentCategoryKey');
+
+/*
+* Delete the memcache key that stores the parent category breadcrumbs so that they will update
+* on wikitext category changes
+*/
+function wfDeleteParentCategoryKey($article, $user, $text, $summary, $flags) {
+	global $wgMemc;
+
+	if ($article) {
+		$t = $article->getTitle();
+		if (!$t || $t->getNamespace() != NS_MAIN) {
+			return true;
+		}
+		$key = wfMemcKey('parentcattree', $t->getArticleId());
+		$wgMemc->delete($key);
+	}
+	return true;
+}
+
 $wgHooks['ArticleSaveComplete'][] = array('wfUpdatePageFeaturedFurtherEditing');
 
 function wfSetPage404IfNotExists() {

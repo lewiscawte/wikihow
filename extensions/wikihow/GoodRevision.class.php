@@ -188,14 +188,18 @@ class GoodRevision {
 	 * Grab the last good patrol
 	 * - return true if the last edit on the article was patrolled
 	 */
-	public static function patrolledGood($t) {		
-		//get the last revision
-		$a = new Article($t);
+	public static function patrolledGood($title) {		
+		// start with basic check to make sure we're dealing
+		// with a real article
+		if (!$title) return false;
+
+		// get the last revision
+		$a = new Article($title);
 		$a->loadLastEdit();
 		$last_rev = $a->mLastRevision;
 		
-		//get the last good revision
-		$goodRev = self::newFromTitle($t);
+		// get the last good revision
+		$goodRev = self::newFromTitle($title);
 		$last_good_rev = $goodRev->latestGood();
 		
 		return $last_rev->mId == $last_good_rev;

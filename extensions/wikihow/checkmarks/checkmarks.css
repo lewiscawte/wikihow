@@ -7,8 +7,8 @@
 }
 
 .chk_praise {
-	margin: 5px 5px 5px 0;
-	padding: 10px;
+	margin: 5px 0 5px 0;
+	padding: 5px 5px 5px 0;
 	background:#FFFFCC;
 	display: none;
 }
@@ -24,15 +24,16 @@
 }
 
 .chk_img_final {
-	width: 70px;
-	height: 60px;
+	width: 50px;
+	height: 40px;
+	margin: 0 0 0 -45px;
 	vertical-align: middle;
-	display: none;
 }
 
 .chk_msg {
 	display: inline-block;
-	width: 150px;
+	width: 175px;
+	vertical-align: middle;
 }
 
 .step_checkbox {

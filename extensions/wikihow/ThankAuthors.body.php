@@ -38,6 +38,11 @@ class ThankAuthors extends UnlistedSpecialPage {
 			$wgOut->addHTML(<<<EOHTML
 				<script type='text/javascript'>
 					function submitThanks () {
+						var message = $('#details').val();
+						if(message == "") {
+							alert("Please enter a message.");
+							return false;
+						}
 						var url = '{$me->getFullURL()}?token=' + $('#token')[0].value + '&target=' + $('#target')[0].value + '&details=' + $('#details')[0].value;
 						var form = $('#thanks_form');
 						form.html("{$thanks_msg}");

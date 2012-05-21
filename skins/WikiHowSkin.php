@@ -1786,6 +1786,31 @@ class WikiHowTemplate extends QuickTemplate {
 		}
 		return $html;
 	}
+
+	static $novideo_array = array(
+		'Change-a-Watch-Battery',
+		'Clean-Gold-Jewelry',
+		'Clean-Your-Retainer',
+		'Cope-with-a-Stomach-Flu',
+		'Draw-Human-Faces',
+		'Make-Chocolate-Dipped-Strawberries',
+		'Make-Your-Skin-Glow-in-Minutes',
+		'Relieve-Constipation-Quickly-and-Naturally',
+		'Treat-Razor-Burn',
+		'Wash-a-Car-by-Hand'
+	);
+	
+	static $NoVideo = false;
+
+	public function checkForNoVideo() {
+		global $wgTitle, $wgUser, $wgRequest;
+		if ($wgTitle->getNamespace() == NS_MAIN &&
+			in_array($wgTitle->getDBkey(),self::$novideo_array) &&
+			$wgRequest->getVal('oldid') == '' &&
+			($wgRequest->getVal('action') == '' || $wgRequest->getVal('action') == 'view')) {
+				self::$NoVideo = true;
+		}
+	}
 	
 	/**
 		
@@ -1880,7 +1905,13 @@ class WikiHowTemplate extends QuickTemplate {
 					$rev = isset($reverse_msgs[$h2]) ? $reverse_msgs[$h2] : "";
 				}
 				
-				$body .= $parts[$i];
+				//$body .= $parts[$i];
+				if ($rev == "video" && self::$NoVideo) {
+					   //nothing
+				}
+				else {
+					   $body .= $parts[$i];
+				}
 				
 				$i++;
 				if ($rev == "steps") {
@@ -1896,6 +1927,8 @@ class WikiHowTemplate extends QuickTemplate {
 						$recipe_tag = "'";
 					}
 					$body .= "\n<div id=\"steps\" class='editable{$recipe_tag}>{$parts[$i]}</div>\n";
+				} else if ($rev == "video" && self::$NoVideo) {
+					   //nothing
 				} elseif ($rev != "") {
 					$body .= "\n<div id=\"{$rev}\" class='article_inner editable'>{$parts[$i]}</div>\n";
 				} else {
@@ -2366,6 +2399,7 @@ class WikiHowTemplate extends QuickTemplate {
 		
 		//adding recipe microdata tags?
 		self::checkForRecipeMicrodata();
+		self::checkForNoVideo();
 		
 		$isWikiHow = false;
 		if ($wgArticle != null && $wgTitle->getNamespace() == NS_MAIN)  {
@@ -3115,11 +3149,11 @@ class WikiHowTemplate extends QuickTemplate {
 		class_exists('Slider') &&
 		$wgTitle->exists() &&
 		$wgTitle->getNamespace() == NS_MAIN &&
-		$isMainPage &&
+		!$isMainPage &&
 		$wgRequest->getVal('oldid') == '' &&
 		$wgRequest->getVal('create-new-article') == '' &&
 		($wgRequest->getVal('action') == '' || $wgRequest->getVal('action') == 'view');
-				
+
 /*		
 $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 ,'Drive-Manual'

@@ -29,7 +29,7 @@ class ImportvideoHowcast extends Importvideo {
             // IMPORTING THE VIDEO NOW
             $id = $wgRequest->getVal('video_id');
 			$desc = $wgRequest->getVal('desc');
-            $url = "http://www.howcast.com/videos/{$id}.xml?api_key={$wgHowcastAPIKey}";
+            $url = "http://api.howcast.com/videos/{$id}.xml?api_key={$wgHowcastAPIKey}";
             $results = $this->getResults($url);
             if ($results == null) {
                 $wgOut->addHTML(wfMsg("importvideo_error_geting_results"));
@@ -80,7 +80,7 @@ class ImportvideoHowcast extends Importvideo {
 		if ($query == '') $query = $tar_es; 
 		else $query = urlencode($query);
 		
-		$url = "http://www.howcast.com/search.xml?q={$query}&view=video&api_key={$wgHowcastAPIKey}";
+		$url = "http://api.howcast.com/search.xml?q={$query}&view=video&api_key={$wgHowcastAPIKey}";
         $results = $this->getResults($url);
         $this->parseResults($results);
         if ($results == null) {

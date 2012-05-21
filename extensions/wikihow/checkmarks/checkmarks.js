@@ -63,6 +63,9 @@ jQuery.extend(WH, (function($) {
 		
 		function getMessageHtml(msg, lastStep) {
 			var div = $('#chk_praise_content').clone();
+			if (lastStep) {
+				msg = msg + " How about <a href='" + messages.nextUrl + "'> another</a>?";
+			}
 			$(div).find('.chk_msg').html(msg);
 			if (!lastStep) {
 				$(div).find('.chk_img_final').hide();
@@ -82,10 +85,12 @@ jQuery.extend(WH, (function($) {
 				var li = $(this).parents('li');
 				if ($(this).hasClass('step_checked')) {
 					$(this).removeClass('step_checked');
-					li.children('.step_content').removeClass('txt_strike');
+					//li.children('.step_content').removeClass('txt_strike');
+					li.children('.step_content').fadeTo('slow', 1);
 				}
 				else {
-					li.children('.step_content').addClass('txt_strike');
+					//li.children('.step_content').addClass('txt_strike');
+					li.children('.step_content').fadeTo('slow', 0.3);
 					if (!li.children('.chk_praise').length) {
 						li.append(generateMessage(li));
 						li.children('.chk_praise').slideDown('slow');

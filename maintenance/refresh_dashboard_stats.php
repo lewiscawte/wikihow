@@ -4,6 +4,9 @@
 // REFRESH_SECONDS seconds
 //
 
+// use the spare DB for community dashboard stats since the process is expensive and
+// not mission critical
+define('WH_USE_BACKUP_DB', true);
 require_once("commandLine.inc");
 
 global $IP;

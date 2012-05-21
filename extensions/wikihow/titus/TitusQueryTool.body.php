@@ -97,6 +97,9 @@ class TitusQueryTool extends UnlistedSpecialPage {
 		}
 
 		$sql = urldecode($wgRequest->getVal('sql'));
+		if (empty($sql)) {
+			$sql = "SELECT * FROM titus";
+		}
 		if (sizeof($ids)) {
 			$pageCondition = "ti_page_id IN (" . implode(",", $ids) . ")";
 			if (stripos($sql, "WHERE ")) {

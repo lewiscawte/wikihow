@@ -431,7 +431,7 @@ class EditPageWrapper extends EditPage {
 
 		// MODIFIED FOR POPUP
 		$categoryHTML = "";
-		if ($wgUser->getID() > 0 &&( $wgLanguageCode=='en' || $wgLanguageCode== 'fr' || $wgLanguageCode=='es' || $wgLanguageCode == 'nl' || $wgLanguageCode== 'he' )) {
+		if ($wgUser->getID() > 0) {
 			$ctitle = $this->mTitle->getText();
 			$css = HtmlSnips::makeUrlTags('css', array('categoriespopup.css'), 'extensions/wikihow', false);
 			$editCatHtml = $wgLanguageCode == 'en' ? 
