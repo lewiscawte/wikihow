@@ -5,6 +5,7 @@ jQuery.extend(WH, (function($) {
 	function CheckMarks() {
 		var messages = [];
 		var numSteps = null;
+		var randomizer = '/Special:Randomizer';
 
 		function parseJSON() {
 			if (typeof(JSON) == 'object') {            
@@ -64,7 +65,7 @@ jQuery.extend(WH, (function($) {
 		function getMessageHtml(msg, lastStep) {
 			var div = $('#chk_praise_content').clone();
 			if (lastStep) {
-				msg = msg + " How about <a href='" + messages.nextUrl + "'> another</a>?";
+				msg = msg + " How about <a href='" + randomizer + "'> another</a>?";
 			}
 			$(div).find('.chk_msg').html(msg);
 			if (!lastStep) {

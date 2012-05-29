@@ -44,7 +44,7 @@ class WikiPhotoProcess {
 	const IMAGES_DIR = '/usr/local/pfn/images';
 	const AWS_BUCKET = 'wikiphoto';
 	const AWS_BACKUP_BUCKET = 'wikiphoto-backup';
-	const STAGING_DIR  = '/usr/local/wikihow/wikiphoto';
+	const DEFAULT_STAGING_DIR = '/usr/local/wikihow/wikiphoto';
 	const IMAGE_PORTRAIT_WIDTH = '220px';
 	const IMAGE_LANDSCAPE_WIDTH = '300px';
 
@@ -52,7 +52,11 @@ class WikiPhotoProcess {
 		$stepsMsg,
 		$imageExts = array('png', 'jpg'),
 		$excludeUsers = array('old', 'backup'),
-		$enlargePhotoUsers = array();
+		$enlargePhotoUsers = array(),
+		$stagingDir = '',
+		$excludeArticles = array(
+			57203, 1251223, 354106,
+		);
 
 	/**
 	 * Generate a string of random characters
@@ -372,7 +376,7 @@ class WikiPhotoProcess {
 		// the above and below wikitext intact
 		list($text, $url, $title) = self::getArticleDetails($articleID);
 		if (!$text || !$title) $err = 'Could not find article ID ' . $articleID;
-if ($articleID == 1251223) $err = 'Reuben forced skipping this article because there was an error processing it';
+
 		if (!$err) {
 			list($text, $steps, $stepsToken) = self::cutStepsSection($text);
 			if (!$stepsToken) {
@@ -782,8 +786,8 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 				continue;
 			}
 
-			if ($id == '354106') {
-				$err = 'Reuben says this one cant be processed!';
+			if (!$err && in_array($id, self::$excludeArticles)) {
+				$err = 'Forced skipping this article because there was an repeated error when processing it';
 			}
 
 			if (!$err) {
@@ -820,7 +824,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 	 */
 	private static function pullFiles($id, &$s3, $prefix, &$files) {
 		$err = '';
-		$dir = self::STAGING_DIR . '/' . $id . '-' . mt_rand();
+		$dir = self::$stagingDir . '/' . $id . '-' . mt_rand();
 		$ret = mkdir($dir);
 		if (!$ret) {
 			$err = 'unable to create dir: ' . $dir;
@@ -881,7 +885,7 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 	 * Remove tmp directory.
 	 */
 	private static function safeCleanupDir($dir) {
-		$staging_dir = self::STAGING_DIR;
+		$staging_dir = self::$stagingDir;
 		if ($dir && $staging_dir && strpos($dir, $staging_dir) === 0) {
 			system("rm -rf $dir");
 		}
@@ -968,9 +972,15 @@ if ($articleID == 1251223) $err = 'Reuben forced skipping this article because t
 	 * Entry point for main processing loop
 	 */
 	public static function main() {
-		$opts = getopt('bc', array('backup', 'cleanup'));
+		$opts = getopt('bcd:e:', array('backup', 'cleanup', 'staging-dir:', 'exclude-article-id:'));
 		$doBackup = isset($opts['b']) || isset($opts['backup']);
 		$doCleanup = isset($opts['c']) || isset($opts['cleanup']);
+
+		self::$stagingDir = @$opts['d'] || @$opts['staging-dir'];
+		if (empty(self::$stagingDir)) self::$stagingDir = self::DEFAULT_STAGING_DIR;
+
+		$skipID = @$opts['e'] || @$opts['exclude-article-id'];
+		if ($skipID) self::$excludeArticles[] = $skipID;
 
 		if ($_ENV['USER'] != 'apache') {
 			print "script must be run as part of wikiphoto-process-images-hourly.sh\n";

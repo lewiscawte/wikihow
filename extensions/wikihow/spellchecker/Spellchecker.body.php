@@ -177,10 +177,10 @@ class Spellchecker extends UnlistedSpecialPage {
 			$articleId = $title->getArticleID();
 		}
 		else if ($skippedIds) {
-			$articleId = $dbr->selectField('spellchecker', 'sc_page', array('sc_errors' => 1, 'sc_dirty' => 0, "sc_checkout < '{$expired}'", "sc_page NOT IN ('" . implode("','", $skippedIds) . "')"), __METHOD__, array("limit" => 1, "ORDER BY" => "RAND()"));
+			$articleId = $dbr->selectField('spellchecker', 'sc_page', array('sc_exempt' => 0, 'sc_errors' => 1, 'sc_dirty' => 0, "sc_checkout < '{$expired}'", "sc_page NOT IN ('" . implode("','", $skippedIds) . "')"), __METHOD__, array("limit" => 1, "ORDER BY" => "RAND()"));
 		}
 		else
-			$articleId = $dbr->selectField('spellchecker', 'sc_page', array('sc_errors' => 1, 'sc_dirty' => 0, "sc_checkout < '{$expired}'"), __METHOD__, array("limit" => 1, "ORDER BY" => "RAND()"));
+			$articleId = $dbr->selectField('spellchecker', 'sc_page', array('sc_exempt' => 0, 'sc_errors' => 1, 'sc_dirty' => 0, "sc_checkout < '{$expired}'"), __METHOD__, array("limit" => 1, "ORDER BY" => "RAND()"));
 
 		if ($articleId) {
 			$sql = "SELECT * from `spellchecker_page` JOIN `spellchecker_word` ON sp_word = sw_id WHERE sp_page = {$articleId}"; 
@@ -363,8 +363,8 @@ class Spellchecker extends UnlistedSpecialPage {
 	static function markAsDirty($id) {
 		$dbw = wfGetDB(DB_MASTER);
 		
-		$sql = "INSERT INTO spellchecker (sc_page, sc_timestamp, sc_dirty, sc_errors) VALUES (" . 
-					$id . ", " . wfTimestampNow() . ", 1, 0) ON DUPLICATE KEY UPDATE sc_dirty = '1', sc_timestamp = " . wfTimestampNow();
+		$sql = "INSERT INTO spellchecker (sc_page, sc_timestamp, sc_dirty, sc_errors, sc_exempt) VALUES (" . 
+					$id . ", " . wfTimestampNow() . ", 1, 0, 0) ON DUPLICATE KEY UPDATE sc_dirty = '1', sc_timestamp = " . wfTimestampNow();
 		$dbw->query($sql, __METHOD__);
 	}
 	
@@ -440,6 +440,71 @@ class Spellcheckerwhitelist extends UnlistedSpecialPage {
 		
 		$wgOut->setHTMLTitle(wfMsg('spch-whitelist'));
 		$wgOut->setPageTitle(wfMsg('spch-whitelist'));
+	}
+}
+
+class SpellcheckerArticleWhitelist extends UnlistedSpecialPage {
+
+	function __construct() {
+		UnlistedSpecialPage::UnlistedSpecialPage('SpellcheckerArticleWhitelist');
+	}
+
+	function execute($par) {
+		global $IP, $wgOut, $wgUser, $wgMemc, $wgRequest;
+		
+		if($wgUser->getID() == 0 || !($wgUser->isSysop() || in_array( 'newarticlepatrol', $wgUser->getRights() ))) {
+			$wgOut->setRobotpolicy( 'noindex,nofollow' );
+			$wgOut->errorpage( 'nosuchspecialpage', 'nospecialpagetext' );
+			return;
+		}
+		
+		wfLoadExtensionMessages("Spellchecker");
+		
+		$this->skipTool = new ToolSkip("spellchecker", "spellchecker", "sc_checkout", "sc_checkout_user", "sc_page");
+
+		$message = "";
+		if ( $wgRequest->wasPosted() ) {
+			$articleUrl = $wgRequest->getVal('articleName');
+			$title = Title::newFromURL($articleUrl);
+			
+			if($title && $title->getArticleID() > 0) {
+				if($this->addArticleToWhitelist($title))
+					$message = $title->getText() . " was added to the article whitelist.";
+				else
+					$message = $articleUrl . " could not be added to the article whitelist.";
+			}
+			else
+				$message = $articleUrl . " could not be added to the article whitelist.";
+		}
+		
+		$tmpl = new EasyTemplate( dirname(__FILE__) );
+		
+		$tmpl->set_vars(array('message' => $message));
+
+		$wgOut->addHTML($tmpl->execute('ArticleWhitelist.tmpl.php'));
+				
+		$dbr = wfGetDB(DB_SLAVE);
+		$res = $dbr->select("spellchecker", "sc_page", array("sc_exempt" => 1));
+		
+		$wgOut->addHTML("<ol>");
+		while($row = $dbr->fetchObject($res)) {
+			$title = Title::newFromID($row->sc_page);
+			
+			if($title)
+				$wgOut->addHTML("<li><a href='" . $title->getFullURL() . "'>" . $title->getText() . "</a></li>");
+		}
+		$wgOut->addHTML("</ol>");
+		
+		$wgOut->setHTMLTitle(wfMsg('spch-articlewhitelist'));
+		$wgOut->setPageTitle(wfMsg('spch-articlewhitelist'));
+	}
+
+	function addArticleToWhitelist($title) {
+		$dbw = wfGetDB(DB_MASTER);
+		
+		$sql = "INSERT INTO spellchecker (sc_page, sc_timestamp, sc_dirty, sc_errors, sc_exempt) VALUES (" . 
+					$title->getArticleID() . ", " . wfTimestampNow() . ", 1, 0, 1) ON DUPLICATE KEY UPDATE sc_exempt = '1', sc_timestamp = " . wfTimestampNow();
+		return $dbw->query($sql);
 	}
 }
 

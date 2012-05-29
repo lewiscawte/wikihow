@@ -1,6 +1,13 @@
-<?
-  $username="Reuben"; // fill this in!
-  $password="xwhx"; // fill this in!
+<?php
+//
+// This script allows you to take Mediawiki messages from one wiki (the dev 
+// version of our wiki, for example), and copy them to another wiki (the
+// production wiki). Fill in the $username and $password variables below
+// with your credentials in the two wikis.
+//
+
+$username=""; // fill this in!
+$password=""; // fill this in!
 
 require_once('commandLine.inc');
 require('SxWiki.php');

@@ -210,9 +210,15 @@ class AdminConfigEditor extends UnlistedSpecialPage {
 		<br/>
 		<select id='config-key'>
 			<option value=''>--</option>
-			<? foreach ($configs as $config): ?>
+		<? if ($bURL) { ?>
+			<option value="wikihow-watermark-article-list">wikihow-watermark-article-list</option>
+			<option value="wikiphoto-article-exclude-list">wikiphoto-article-exclude-list</option>
+		<? } else {
+			foreach ($configs as $config): ?>
 				<option value='<?= $config ?>'><?= $config ?></option>
-			<? endforeach; ?>
+			<? endforeach; 
+			}
+		?>
 		</select><br/>
 		<br/>
 		<?if ($bURL) echo '<b>Add new:</b>';?>

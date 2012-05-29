@@ -179,6 +179,13 @@ class MobileArticleBuilder extends MobileBasicArticleBuilder {
 		if ($wgLanguageCode == 'en') {
 			$this->addCheckMarkFeatureHtml($vars);
 		}
+		
+		$vars['isTestArticle'] = $this->isTestArticle();
+	}
+
+	protected function isTestArticle() {
+		//return in_array($this->t->getDBKey(), $testArticles) !== false ? true : false;
+		return false;
 	}
 
 	protected function addCSSLibs() {

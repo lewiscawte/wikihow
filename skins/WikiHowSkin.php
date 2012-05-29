@@ -3584,6 +3584,17 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 				<?= Randomizer::getReason($wgTitle) ?>
 			<? endif; ?>
 		</div><!--end top_links-->
+		<?php if(!$isMainPage && $wgUser->getID() > 0 && in_array('staff', $wgUser->getGroups()) && $wgTitle->getNamespace() == NS_MAIN): ?>
+				<div class="sidebox_shell">
+					<div class='sidebar_top'></div>
+					<div class="sidebox" style="padding-top:10px">
+						<?php if(class_exists("Pageview"))
+							echo "<span style='font-weight:bold'>" . Pageview::get30day($wgTitle->getArticleID()) . "</span> views in the last 30 days";
+						?>
+					</div>
+					<div class='sidebar_bottom_fold'></div>
+				</div>
+		<?php endif; ?>
 		<?php
 			if($wgUser->getID() == 0 && !$isMainPage && $action != 'edit' && $wgTitle->getText() != 'Userlogin' && $wgTitle->getNamespace() == NS_MAIN){
 				//comment out next line to turn off HHM ad

@@ -20,7 +20,7 @@ $(document).ready(function() {
 
     $('.fetch').click(function(){
 		var sql = $('.sqlbuild').getSQBClause('all');
-		if (!sql.length) {
+		if (!sql.length && (!sql.length && (!$('#urls').val().length && $('#filter_urls').is(':checked')))) {
 			var answer = confirm("WARNING: You have not given me any conditions to filter this report.  Repeated intensive queries make me angry and cause me to destroy temples in holy lands. \n\n Click the OK button if this is really what you want.");
 			if (!answer) {
 				return false;
@@ -79,8 +79,8 @@ $(document).ready(function() {
 <div class="sqlbuild"></div>
 </div>
 <div style="margin-top: 10px">
-		<input type="radio" name="page-filter" value="all"> Across All Pages
-		<input type="radio" name="page-filter" value="urls" checked="checked"> Given the following URLs
+		<input id="filter_all" type="radio" name="page-filter" value="all"> Across All Pages
+		<input id="filter_urls" type="radio" name="page-filter" value="urls" checked="checked"> Given the following URLs
 </div>
 <textarea class="urls" rows="500" name="urls" id="urls"></textarea>
 <div style="margin-top: 10px">

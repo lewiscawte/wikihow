@@ -207,7 +207,7 @@ class TitusConfig {
 			"PageId" => 1,
 			"Timestamp" => 1,
 			"Stu" => 1,
-			"StuPv" => 1,
+			"PageViews" => 1,
 		);
 		return $stats;
 	}
@@ -227,7 +227,7 @@ class TitusConfig {
 		// Stu stats don't make sense to calculate on a page edit.  This should be done nightly via
 		// across all pages
 		$stats['Stu'] = 0;
-		$stats['StuPv'] = 0;
+		$stats['PageViews'] = 0;
 
 
 		// RobotPolicy is also a bit slow, but we should probably leave it on because it's so important
@@ -248,7 +248,7 @@ class TitusConfig {
 			"ByteSize" => 1,
 			"Accuracy" => 1,
 			"Stu" => 1,
-			"StuPv" => 1,
+			"PageViews" => 1,
 			"Intl" => 1,	
 			"Video" => 1,
 			"FirstEdit" => 1,
@@ -267,6 +267,16 @@ class TitusConfig {
 			"RushData" => 1,
 			"Social" => 1,
 			"StepPhotos" => 1,
+			);
+
+		return $stats;
+	}
+
+	public static function getBasicStats() {
+		$stats = array (
+			"PageId" => 1,
+			"Timestamp" => 1,
+			"Title" => 1,
 			);
 
 		return $stats;
@@ -373,8 +383,13 @@ class TSByteSize extends TitusStat {
 */
 class TSFirstEdit extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ti_first_edit" => 
-			$dbr->selectField('firstedit', array('fe_timestamp'), array('fe_page' => $pageRow->page_id)));
+		$stats = array("ti_first_edit" => "", "ti_first_edit_author" => "");
+		$res = $dbr->select('firstedit', array('fe_timestamp', 'fe_user_text'), array('fe_page' => $pageRow->page_id), __METHOD__);
+		if ($row = $dbr->fetchObject($res)) {
+			$stats['ti_first_edit'] = $row->fe_timestamp;
+			$stats['ti_first_edit_author'] = $row->fe_user_text;
+		}
+		return $stats;
 	}
 }
 
@@ -684,9 +699,9 @@ class TSStu extends TitusStat {
 /*
 * Stu data (pv) for article
 */
-class TSStuPv extends TSStu {
+class TSPageViews extends TSStu {
     public function calc(&$dbr, &$r, &$t, &$pageRow) {
-        $stats = array('ti_stu_pv' => 0);
+        $stats = array('ti_daily_views' => 0, 'ti_30day_views' => 0);
 		
 		$query = $this->makeQuery(&$t, 'pv');
 		$ret = AdminBounceTests::doBounceQuery($query);
@@ -697,6 +712,8 @@ class TSStuPv extends TSStu {
 		
 		$deleteQuery = $this->makeResetQuery($t, 'pv');
 		AdminBounceTests::doBounceQuery($deleteQuery);
+		
+		$stats['ti_30day_views'] = intVal($dbr->selectField('pageview', array('pv_30day'), array('pv_page' => $pageRow->page_id)));
 		
         return $stats;
     }
@@ -713,7 +730,7 @@ class TSStuPv extends TSStu {
         $stats = array();
         foreach ($data as $page => $datum) {
             if (isset($datum['__'])) {
-                $stats['ti_stu_pv'] = $datum['__'];
+                $stats['ti_daily_views'] = $datum['__'];
             }
             break; // should only be one record
         }
@@ -822,3 +839,4 @@ class TSSocial extends TitusStat {
 		return intval($json[0]['result']['metadata']['globalCounts']['count']);
 	}
 }
+

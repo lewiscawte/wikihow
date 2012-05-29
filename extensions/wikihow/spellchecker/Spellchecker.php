@@ -10,9 +10,11 @@ $wgExtensionCredits['specialpage'][] = array(
 
 $wgSpecialPages['Spellchecker'] = 'Spellchecker';
 $wgSpecialPages['Spellcheckerwhitelist'] = 'Spellcheckerwhitelist';
+$wgSpecialPages['SpellcheckerArticleWhitelist'] = 'SpellcheckerArticleWhitelist';
 $wgAutoloadClasses['Spellchecker'] = dirname(__FILE__) . '/Spellchecker.body.php';
 $wgAutoloadClasses['wikiHowDictionary'] = dirname(__FILE__) . '/Spellchecker.body.php';
 $wgAutoloadClasses['Spellcheckerwhitelist'] = dirname(__FILE__) . '/Spellchecker.body.php';
+$wgAutoloadClasses['SpellcheckerArticleWhitelist'] = dirname(__FILE__) . '/Spellchecker.body.php';
 $wgExtensionMessagesFiles['Spellchecker'] = dirname(__FILE__) . '/Spellchecker.i18n.php';
 
 $wgLogTypes[] = 'spellcheck';

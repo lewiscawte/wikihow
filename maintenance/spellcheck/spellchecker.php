@@ -67,7 +67,7 @@ function checkDirtyArticles() {
 	
 	$dbr = wfGetDB(DB_SLAVE);
 	$dbw = wfGetDB(DB_MASTER);
-	$res = $dbr->select('spellchecker', 'sc_page', array('sc_dirty' => 1), __FUNCTION__);
+	$res = $dbr->select('spellchecker', 'sc_page', array('sc_dirty' => 1, 'sc_exempt' => 0), __FUNCTION__);
 	
 	$articles = array();
 	
@@ -141,8 +141,8 @@ function spellCheckArticle (&$dbw, $articleId, &$pspell, &$capsString) {
 			}
 		}
 		if ($foundErrors) {
-			$sql = "INSERT INTO spellchecker (sc_page, sc_timestamp, sc_dirty, sc_errors) VALUES (" . 
-					$articleId . ", " . wfTimestampNow() . ", 0, 1) ON DUPLICATE KEY UPDATE sc_dirty = '0', sc_errors = '1', sc_timestamp = " . wfTimestampNow();
+			$sql = "INSERT INTO spellchecker (sc_page, sc_timestamp, sc_dirty, sc_errors, sc_exempt) VALUES (" . 
+					$articleId . ", " . wfTimestampNow() . ", 0, 1, 0) ON DUPLICATE KEY UPDATE sc_dirty = '0', sc_errors = '1', sc_timestamp = " . wfTimestampNow();
 			$dbw->query($sql, __FUNCTION__);
 		}
 		else {
