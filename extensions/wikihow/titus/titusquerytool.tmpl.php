@@ -28,7 +28,7 @@ $(document).ready(function() {
 		}
 		var data = {
 			'sql' : sql,
-			'urls': $('.urls').val(),
+			'urls': decodeURIComponent($('.urls').val()),
 			'page-filter': $('input[name=page-filter]:checked').val(),
 			'csvtype' : $('input[name=csvtype]:checked').val()
 		};
@@ -75,6 +75,9 @@ $(document).ready(function() {
 </script>
 
 
+<p>
+Titus <a href="https://docs.google.com/a/wikihow.com/spreadsheet/ccc?key=0Ag-sQmdx8taXdC1BWWlFdFVBa3FJM09rZUZhemliZEE#gid=0">cheat sheet</a>
+</p>
 <div id=sqlreport>
 <div class="sqlbuild"></div>
 </div>

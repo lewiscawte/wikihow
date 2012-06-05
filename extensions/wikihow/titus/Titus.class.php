@@ -19,10 +19,10 @@ class TitusDB {
 	* This function calcs Titus stats for pages that have been most recently edited on wikiHow. 
 	* See DailyEdits.class.php for more details
 	*/
-	public function calcLatestEdits(&$statsToCalc) {
+	public function calcLatestEdits(&$statsToCalc, $lookBack = 1) {
 		$dbr = $this->dbr;		
 
-		$lowDate = wfTimestamp(TS_MW, strtotime('-1 day', strtotime(date('Ymd', time()))));
+		$lowDate = wfTimestamp(TS_MW, strtotime("-$lookBack day", strtotime(date('Ymd', time()))));
 		$highDate = wfTimestamp(TS_MW, strtotime(date('Ymd', time())));
 		$res = $dbr->select('daily_edits', 'de_page_id', array("de_timestamp >= '$lowDate'", "de_timestamp < '$highDate'"), __METHOD__);
 		$pageIds = array();
@@ -266,7 +266,6 @@ class TitusConfig {
 			"Templates" => 1,
 			"RushData" => 1,
 			"Social" => 1,
-			"StepPhotos" => 1,
 			);
 
 		return $stats;
@@ -298,11 +297,14 @@ abstract class TitusStat {
 class TSIntl extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
 		$txt = $r->getText();
-		$fields['ti_lang_es'] = false !== stripos($txt, "[[es:") ? 1 : 0;
-		$fields['ti_lang_de'] = false !== stripos($txt, "[[de:") ? 1 : 0;
-		$fields['ti_lang_pt'] = false !== stripos($txt, "[[pt:") ? 1 : 0;
+		$stats = array("ti_langs" => "");
+		$langs = implode("|", explode("\n", trim(wfMsg('titus_langs'))));
+		if (preg_match_all("@\[\[($langs):@", $txt, $matches)) {
+			$matches = $matches[1];
+			$stats["ti_langs"] = implode(",", $matches);
+		}
 
-		return $fields;
+		return $stats;
 	}
 }
 
@@ -337,7 +339,7 @@ class TSParentCat extends TitusStat {
 		if(preg_match("/\[\[" . $wgContLang->getNSText(NS_CATEGORY) . ":([^\]]*)\]\]/im", $text, $matches)) {
 			$parentCat = $dbr->strencode(trim($matches[1]));
 		}
-		return array('ti_parent_cat' => $parentCat);
+		return array('ti_cat' => $parentCat);
 	}
 }
 
@@ -383,11 +385,11 @@ class TSByteSize extends TitusStat {
 */
 class TSFirstEdit extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		$stats = array("ti_first_edit" => "", "ti_first_edit_author" => "");
+		$stats = array("ti_first_edit_timestamp" => "", "ti_first_edit_author" => "");
 		$res = $dbr->select('firstedit', array('fe_timestamp', 'fe_user_text'), array('fe_page' => $pageRow->page_id), __METHOD__);
 		if ($row = $dbr->fetchObject($res)) {
-			$stats['ti_first_edit'] = $row->fe_timestamp;
-			$stats['ti_first_edit_author'] = $row->fe_user_text;
+			$stats['ti_first_edit_timestamp'] = $row->fe_timestamp;
+			$stats['ti_first_edit_author'] = $dbr->strencode($row->fe_user_text);
 		}
 		return $stats;
 	}
@@ -430,7 +432,7 @@ class TSFellowEdit extends TitusStat {
 */
 class TSLastEdit extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		return array("ti_last_edit" => 
+		return array("ti_last_edit_timestamp" => 
 			$dbr->selectField('revision', 
 				array('rev_timestamp'), 
 				array('rev_page' => $pageRow->page_id), 
@@ -533,23 +535,6 @@ class TSNumWarnings extends TitusStat {
 			$num_warnings = preg_match_all('/^\*[^\*]/im', $text, $matches);
 		}
 		return array("ti_num_warnings" => intVal($num_warnings));
-	}
-}
-
-/*
-* Determines whether more than half of the steps in the articles have photos
-*/
-class TSStepPhotos extends TitusStat {
-	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		$text = Wikitext::getStepsSection($r->getText(), true);
-		$text = $text[0];
-		$stepPhotos = 0;
-		if ($text) {
-			$num_steps = preg_match_all('/^#[^*]/im', $text, $matches);
-			$num_step_photos = preg_match_all('/\[\[Image:/im', $text, $matches);
-			$stepPhotos = $num_step_photos > ($num_steps / 2) ? 1 : 0;
-		} 
-		return array("ti_photos" => intVal($stepPhotos));
 	}
 }
 

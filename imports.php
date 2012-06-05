@@ -187,4 +187,5 @@ require_once("$IP/extensions/wikihow/ToolSkip.class.php");
 require_once("$IP/extensions/wikihow/wikihowAds/wikihowAds.class.php");
 require_once("$IP/extensions/wikihow/WikihowShare.class.php");
 require_once("$IP/extensions/wikihow/AdminNoIntroImage.php");
-require_once("$IP/extensions/wikihow/Pageview.class.php");
+require_once("$IP/extensions/wikihow/Misc.php");
+require_once("$IP/extensions/wikihow/pagestats/Pagestats.class.php");

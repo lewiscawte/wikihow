@@ -628,6 +628,8 @@ class RCPatrolGuts extends UnlistedSpecialPage {
 				$response['testtime'] = $rcTest->isTestTime() ? 1 : 0;
 				$response['totpatrol'] = $rcTest->getTotalPatrols();
 				$response['adjpatrol'] = $rcTest->getAdjustedPatrolCount();
+				global $wgCookiePrefix;
+				$response['testcookie'] = $_COOKIE[$wgCookiePrefix . '_rct_a'];
 				*/
 			}
 			$t = $result['title'];
@@ -667,6 +669,11 @@ class RCTestStub {
 		if (class_exists('RCTest') && RCTest::isEnabled()) {
 			if ($rcTest && $rcTest->isTestTime()) {
 				$result = $rcTest->getResultParams();
+				
+				//okay, so let's blow away this cookie so that if 
+				//the test fails to load (RC Patrol bug) the user
+				//isn't cut off from another test
+				$rcTest->setTestActive(false);
 			}
 		}
 		return new DifferenceEngine($result['title'], $result['old'], $result['new']);

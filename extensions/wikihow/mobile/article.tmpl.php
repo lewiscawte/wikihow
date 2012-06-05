@@ -16,7 +16,7 @@
 			</div><!--end rounders-->
 		</div><!--end image-preview-->
 		<div id="article_top">
-			<? if ($thumb): ?>
+			<? if ($thumb && !$isTestArticle): ?>
 				<?
 					if ($deviceOpts['intro-image-format'] == 'conditional') {
 						$className = ($width <= $deviceOpts['screen-width'] / 2 ? 'vertical' : 'horizontal');
@@ -25,7 +25,7 @@
 					}
 				?>
 				<div id='intro_img' class="rounders grey <?= $className ?>" style="width:<?= $width ?>px; height:<?= $height ?>px;">
-					<? if (!$nonEng && !$isTestArticle) { ?>
+					<? if (!$nonEng) { ?>
 					<img src="<?= wfGetPad('/extensions/wikihow/mobile/images/' . wfMsg('mobile-howto-image-overlay')) ?>" alt="" class="home_label" />
 					<? } ?>
 					<?= $thumb->toHtml() ?>

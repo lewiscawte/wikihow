@@ -49,7 +49,7 @@ class RCTest {
 				$this->fetchUserInfo();
 			}
 			else {
-				return $this->getTotalPatrols();;
+				return $this->getTotalPatrols();
 			}
 
 		}
@@ -92,7 +92,7 @@ class RCTest {
 	private function addUser(&$user) {
 		$dbw = wfGetDB(DB_MASTER);
 		$basePatrolCount = $this->getBasePatrolCount();
-		$dbw->insert('rctest_users', array('ru_user_id' => $user->getId(), 'ru_user_name' => $user->getName(), 'ru_base_patrol_count' => $basePatrolCount, 'ru_next_test_patrol_count' => 2));
+		$dbw->insert('rctest_users', array('ru_user_id' => $user->getId(), 'ru_user_name' => $user->getName(), 'ru_base_patrol_count' => $basePatrolCount, 'ru_next_test_patrol_count' => 5));
 	}
 
 	public function getResultParams() {
@@ -142,7 +142,7 @@ class RCTest {
 		$dbr = wfGetDB(DB_SLAVE);
 		$sql = "SELECT * FROM rctest_quizzes WHERE rq_deleted = 0 AND rq_difficulty <= $difficulty ";
 		// Exclude any quizzes already taken
-		if (sizeof($userInfo['ru_quiz_ids'])) {
+		if (!empty($userInfo['ru_quiz_ids'])) {
 			$sql .= " AND rq_id NOT IN (" . $userInfo['ru_quiz_ids'] . ") ";
 		}
 		$sql .= " ORDER BY rq_difficulty LIMIT 1";
@@ -153,18 +153,36 @@ class RCTest {
 			$this->testInfo = get_object_vars($row);	
 			$this->setTestActive(true);
 		} else {
+			//do we need to clear tests out?
+			$takenTestIds = explode(",", $userInfo['ru_quiz_ids']);
+			
+			$sql = "SELECT COUNT(*) AS C FROM `rctest_quizzes` WHERE rq_difficulty = 1";
+			$res = $dbr->query($sql);
+			$row = $dbr->fetchObject($res);
+			
+			if (count($takenTestIds) == $row->C) {
+				//reached limit; reset scores
+				if ($this->resetTestScores()) {
+					//start again...
+					$this->fetchTestInfo();
+					return;
+				}
+			}
 			throw new Exception("Couldn't fetch Test: $sql");
 		}
 	}
 
 	private function getTestDifficulty() {
 		$nextTestPatrolCount = $this->getNextTestPatrolCount();
-		if ($nextTestPatrolCount > 250) {
-			$difficulty = 3;
+		
+		if ($nextTestPatrolCount >= 1000) {
+			$difficulty = 3; //hard
+		}
+		else if ($nextTestPatrolCount >= 500) {
+			$difficulty = 2; //medium
 		}
 		else {
-			$testDifficulties = array(2 => 1, 10 => 1, 20 => 2, 50 => 2, 100 => 3, 250 => 3);
-			$difficulty = $testDifficulties[$nextTestPatrolCount];
+			$difficulty = 1; //easy
 		}
 		return $difficulty;
 	}
@@ -172,12 +190,12 @@ class RCTest {
 	private function setNextTestPatrolCount() {
 		$userInfo = $this->getUserInfo();
 		$nextPatrolCount = $userInfo['ru_next_test_patrol_count'];
-		// Increment next patrol count by 250 after the 250 mark
-		if ($nextPatrolCount >= 250) {
-			$newNextPatrolCount = $nextPatrolCount - ($nextPatrolCount % 250) + 250;
+		// Increment next patrol count by 500 after the 1000 mark
+		if ($nextPatrolCount >= 1000) {
+			$newNextPatrolCount = $nextPatrolCount - ($nextPatrolCount % 500) + 500;
 		}
 		else {
-        	$testPatrolCounts = array (2, 10, 20, 50, 100, 250);
+			$testPatrolCounts = array (5, 25, 50, 100, 150, 200, 250, 500, 750, 1000);
 			for ($i = 0; $i < sizeof($testPatrolCounts); $i++) {
 				if ($nextPatrolCount >= $testPatrolCounts[$i] && $nextPatrolCount < $testPatrolCounts[$i + 1]) {
 					$newNextPatrolCount = $testPatrolCounts[$i + 1];
@@ -187,6 +205,10 @@ class RCTest {
 		}
 		if ($nextPatrolCount == $newNextPatrolCount) {
 			throw new Exception('rctest next test patrol count not updating properly');
+		}
+		if ($newNextPatrolCount == 0) {
+			//something went wrong; let's just hard-code it to 5
+			$newNextPatrolCount = 5;
 		}
 		$dbw = wfGetDB(DB_MASTER);
 		$userInfo['ru_next_test_patrol_count'] = $newNextPatrolCount;
@@ -201,7 +223,7 @@ class RCTest {
 	/*
 	* Sets a cookie that denotes whether a test is currently active/administered.  
 	*/
-	private function setTestActive($active) {
+	public function setTestActive($active) {
 		global $wgCookiePrefix, $wgCookiePath, $wgCookieDomain, $wgCookieSecure;
 		$expiration = $active ? 0 : time() - (3600 * 24);
 		$value = $active ? '1' : '';
@@ -212,7 +234,7 @@ class RCTest {
 	* Checks for the existence of a cookie which denotes that there's an active test
 	*/
 	private function isTestActive() {
-		global $wgCookiePrefix, $wgCookiePath, $wgCookieDomain, $wgCookieSecure;
+		global $wgCookiePrefix;
 		$active  = $_COOKIE[$wgCookiePrefix . '_rct_a'];
 		return !is_null($active);
 
@@ -238,7 +260,7 @@ class RCTest {
 
 	public function gradeTest($testId, $response) {
 		global $wgRequest;
-
+		
 		if ($wgRequest->getVal('rct_mode')) {
 			return $this->debugGradeTest($testId, $response);
 		}
@@ -253,13 +275,18 @@ class RCTest {
 		// Don't record a score for this test if the user skipped the patrol
 		if ($response != RCTestGrader::RESP_SKIP || $response != RCTestGrader::RESP_LINK) {
 			$this->recordScore($correct, $response);
+			
+			if (empty($correct)) {
+				$this->unpatrolbatch();
+			}
+			else {
+				// Update the patrol count necessary for the next test to be displayed
+				$this->setNextTestPatrolCount();
+			}
 		}
 
 		// Record that the user has taken the test
 		$this->setTaken($testInfo['rq_id']);
-
-		// Update the patrol count necessary for the next test to be displayed
-		$this->setNextTestPatrolCount();
 
 		// Turn off the active flag for the test
 		$this->setTestActive(false);
@@ -292,6 +319,48 @@ class RCTest {
 				'$timestamp'
 			)";
 		$dbw->query($sql);
+	}
+	
+	//failed test; unpatrol their last patrols
+	private function unpatrolbatch() {
+		global $wgUser, $wgCookiePrefix, $wgCookiePath, $wgCookieDomain, $wgCookieSecure;
+		
+		$userID = $wgUser->getId();
+		$dbr = wfGetDB(DB_SLAVE);
+
+		$startdate = $dbr->selectField(
+			'rctest_scores',
+			'rs_timestamp',
+			array('rs_user_id' => $userID, 'rs_correct' => 1),
+			__METHOD__,
+			array('ORDER BY rs_timestamp DESC'));
+		
+		if (empty($startdate)) $startdate = '2005-01-01 22:07:25';
+		
+		$start = wfTimestamp(TS_MW, $startdate);
+		$end = wfTimestampNow(TS_MW);
+		
+		$unpatrolled = Unpatrol::doTheUnpatrol($wgUser,$start,$end);
+		
+		if (!empty($unpatrolled)) {
+			//send talk page note
+			$from_user = User::newFromName('Patrol-Coach');
+			$comment = "Oops! It looks like you accidentally approved a bad edit in while patrolling 
+						recent changes just now. That's okay though; you're still learning. I undid 
+						a batch of your recent patrols, to play it safe and have those edits reviewed 
+						again. I just want to make sure no bad edits were accepted while you're still 
+						learning your way around RC patrol.\r\n
+						If you haven't already, read our article on [[Patrol Recent Changes on wikiHow|How to Patrol Recent Changes]] and 
+						give it another try! I'm happy to answer any questions you might have about 
+						patrolling. And remember, if you're not sure what to do, just press the \"skip\" 
+						button and you'll do fine :)\r\n
+						The Patrol Coach";
+			Misc::adminPostTalkMessage($wgUser,$from_user,$comment);
+			
+			//blow away their skip cookie so it doesn't cause issues
+			//$cookiename = $wgCookiePrefix."Rcskip";
+			//setcookie($cookiename, '', time() - 3600, $wgCookiePath, $wgCookieDomain, $wgCookieSecure);
+		}
 	}
 
 	private function setTaken($testId) {
@@ -356,7 +425,6 @@ class RCTest {
 	*/
 	public function isTestTime() {
 		global $wgRequest;
-		
 
 		// RCPatrol Test doesn't work for IE 7 and IE 6 beecause of use of negative margins in the css.
 		// Don't allow RC Test to show for users of these browsers.
@@ -390,7 +458,8 @@ class RCTest {
 		}
 
 		// If we're past the patrol count for the next test, it's test time
-		return $this->getAdjustedPatrolCount() > $this->getNextTestPatrolCount() ? true : false;
+		// (offset by one because we have to cue one prior)
+		return $this->getAdjustedPatrolCount() >= ($this->getNextTestPatrolCount() - 1) ? true : false;
 	}
 
 	private function isDebugTestTime() {
@@ -454,5 +523,21 @@ class RCTest {
 			$option = 1;
 		}
 		return !intVal($option);
+	}
+	
+	/*
+	 * So it comes to this...
+	 * All tests used up.  Gotta reset so we don't give an error message.
+	 * - returns boolean
+	 */
+	private function resetTestScores() {
+		$userInfo = $this->getUserInfo();
+		
+		$dbw = wfGetDB(DB_MASTER);
+		$res = $dbw->update('rctest_users', array('ru_quiz_ids' => ''), array('ru_user_id' => $userInfo['ru_user_id']));
+		
+		if ($res) $this->userInfo['ru_quiz_ids'] = '';
+		
+		return $res;
 	}
 }

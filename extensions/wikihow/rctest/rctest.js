@@ -117,8 +117,9 @@ jQuery.extend(RCTestObj, (function ($) {
 				// Add an event listener to the button that is added as a result of the /Special:RCTestGrader call
 				$('#rct_next_button').unbind('click').click(function(e) {
 					e.preventDefault();
-					skip(); // from rcpatrol.js
-					$('#rct_results').slideUp('fast');
+					//skip(); // from rcpatrol.js
+					//$('#rct_results').slideUp('fast');
+					window.location.reload();
 				});
 			});
 		}

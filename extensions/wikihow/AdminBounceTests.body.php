@@ -65,7 +65,7 @@ class AdminBounceTests extends UnlistedSpecialPage {
 	/**
 	 * Fetch the bounce stats for a bunch of articles
 	 */
-	private static function fetchStats(&$urls, $dataType,$domain='bt') {
+	private static function fetchStats(&$urls, $domain='bt') {
 		$pages = array();
 		foreach ($urls as &$url) {
 			$err = '';
@@ -83,11 +83,6 @@ class AdminBounceTests extends UnlistedSpecialPage {
 		$ret = self::doBounceQuery($query);
 		if (!$ret['err'] && $ret['results']) {
 			self::cleanBounceData($ret['results']);
-			if ('csv' == $dataType) {
-				// Merge them with the original query so ElizaJack can whip up some Excel nonsense
-				$results = self::mergeResults($pages, $ret['results']);
-				self::displayDataCSV($results);
-			}
 			$stats = self::computeAvgs($ret['results']);
 			$html = self::markupStats($stats,$domain);
 			return $html;
@@ -95,6 +90,56 @@ class AdminBounceTests extends UnlistedSpecialPage {
 			$err = $ret['err'] ? $ret['err'] : 'stats were not found for any pages you specified';
 			return "<i>ERROR: $err</i><br/>";
 		}
+	}
+
+	/**
+	 * Fetch the bounce stats for a bunch of articles
+	 */
+	private static function outputCSV(&$urls) {
+		$domains = array('bt'=>'www','mb'=>'mobile');
+		$pages = array();
+		foreach ($urls as &$url) {
+			$err = '';
+			if ($url['title']) {
+				$pages[] = $url['title']->getDBkey();
+			}
+		}
+
+		$queryResults = array();
+		foreach ($domains as $domain => $foo) {
+			$query = array(
+				'select' => '*',
+				'from' => $domain,
+				'pages' => $pages,
+			);
+			$queryResults[$domain] = self::doBounceQuery($query);
+		}
+
+		foreach ($queryResults as $ret) {
+			if ($ret['err'] || !$ret['results']) {
+				$err = $ret['err'] ? $ret['err'] : 'stats were not found for any pages you specified';
+				return "<i>ERROR: $err</i><br/>";
+			}
+		}
+
+		$retDesktop = $queryResults['bt'];
+		self::cleanBounceData($retDesktop['results']);
+		$retMobile = $queryResults['mb'];
+		self::cleanBounceData($retMobile['results']);
+
+		foreach ($retDesktop['results'] as $key => $val) {
+			$retDesktop['results'][$key]['mobile-0-10s'] = $retMobile['results'][$key]['0-10s'];
+			$retDesktop['results'][$key]['mobile__'] = $retMobile['results'][$key]['__'];
+		}
+
+		$ret = $retDesktop;
+		// Merge them with the original query so ElizaJack can whip up some Excel nonsense
+		$results = self::mergeResults($pages, $ret['results']);
+
+		self::displayDataCSV($results);
+		$stats = self::computeAvgs($ret['results']);
+		$html = self::markupStats($stats,$domain);
+		return $html;
 	}
 
 	private static function mergeResults(&$pages, &$results) {
@@ -295,7 +340,7 @@ EOHTML;
 	private static function displayDataCSV($data) {
 		header("Content-Type: text/csv");
 
-		$headers = array('__', '0-10s', '3+m');
+		$headers = array('__', '0-10s', '3+m', 'mobile-0-10s','mobile__');
 
 		print "page," . implode(",", $headers) . "\n";
 		foreach ($data as $page => $datum) {
@@ -317,6 +362,11 @@ EOHTML;
 
 		if ($data = $page['3+m']) {
 			$page['3+m'] = round(100 * (float)$data / $total, 2) . $pctSign;
+		}
+
+		$total = $page['mobile__'];
+		if ($data = $page['mobile-0-10s']) {
+			$page['mobile-0-10s'] = round(100 * (float)$data / $total, 2) . $pctSign;
 		}
 	}
 
@@ -407,8 +457,13 @@ EOHTML;
 				$html = self::resetStats($urls,substr($action,-2));
 			} else if ('fetch' == $action){
 				$html = '';
-				foreach (self::$domains as $domain=>$foo){
-					$html.= self::fetchStats($urls, $dataType,$domain);
+				if ($dataType == 'csv') {
+					self::outputCSV($urls);
+					return;
+				} else {
+					foreach (self::$domains as $domain=>$foo){
+						$html.= self::fetchStats($urls, $domain);
+					}
 				}
 			} else {
 				$html = 'ERROR: unknown action';

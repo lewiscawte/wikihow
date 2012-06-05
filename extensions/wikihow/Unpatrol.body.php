@@ -54,32 +54,59 @@ class Unpatrol extends UnlistedSpecialPage {
 				$wgOut->addHTML("<b>WHoa! There is no user with this name {$wgRequest->getVal('username', '')}, bailing.</b>");
 				return;
 			}
-		
-		    $dbw = wfGetDB(DB_MASTER);
-		    $options = array('log_user'=>$user->getID(), 'log_type'=>'patrol', "log_timestamp > '{$cutoff}'");
-		    if ($cutoff2)
-		        $options[] = "log_timestamp < '{$cutoff2}'";
-		
-		    $res = $dbw->select('logging', array('log_title', 'log_params'), $options);
-		
-		
-		    $oldids = array();
-		    while ($row = $dbw->fetchObject($res)) {
-		        #echo "{$row->log_title}\t". str_replace("\n", " ", $row->log_params) . "\n";
-		        $oldids[]= preg_replace("@\n.*@", "", $row->log_params);
-		    }
-			if (sizeof($oldids) > 0) {		
-		    	$count = $dbw->query("UPDATE recentchanges set rc_patrolled=0 where rc_this_oldid IN (" . implode(", ", $oldids) . ");");
-				wfRunHooks('Unpatrol', array(&$oldids));
-    			$wgOut->addHTML( "Unpatrolled " . sizeof($oldids) . " patrols by {$user->getName()}\n");
-
-				$log = new LogPage( 'unpatrol', false );
-				$msg = wfMsgHtml("unpatrol_log", sizeof($oldids), "[[User:" . $user->getName() . "]]", $wgLang->date($cutoff), $cutoff2==null?$wgLang->date(wfTimestampNow()):$wgLang->date($cutoff2));
-				$log->addEntry('unpatrol', $this->getTitle(), $msg);
-			} else {
-    			$wgOut->addHTML( "There were no patrolled edits to undo for this time frame.<br/>");
-			}	
+			
+			$unpatrolled = $this->doTheUnpatrol($user,$cutoff,$cutoff2);
+			
+			if ($unpatrolled > 0) {
+				$wgOut->addHTML("Unpatrolled " . $unpatrolled . " patrols by {$user->getName()}\n");
+			}
+			else {
+				$wgOut->addHTML("There were no patrolled edits to undo for this time frame.<br/>");
+			}
 		}		
 		return;	
+	}
+	
+	//does the unpatrolling
+	// - returns the count of unpatrolled articles
+	public static function doTheUnpatrol($user,$cutoff,$cutoff2) {
+		global $wgLang;
+		
+		$dbw = wfGetDB(DB_MASTER);
+		$options = array('log_user'=>$user->getID(), 'log_type'=>'patrol', "log_timestamp > '{$cutoff}'", 'log_deleted' => 0);
+		if ($cutoff2)
+			$options[] = "log_timestamp < '{$cutoff2}'";
+	
+		$res = $dbw->select('logging', array('log_title', 'log_params'), $options);
+	
+		$oldids = array();
+		while ($row = $dbw->fetchObject($res)) {
+			#echo "{$row->log_title}\t". str_replace("\n", " ", $row->log_params) . "\n";
+			$oldids[]= preg_replace("@\n.*@", "", $row->log_params);
+		}		
+		
+		$count = sizeof($oldids);
+		if ($count > 0) {
+			//set the patrols in recentchanges as not patrolled
+			$res = $dbw->query("UPDATE recentchanges set rc_patrolled=0 where rc_this_oldid IN (" . implode(", ", $oldids) . ");");
+			
+			wfRunHooks('Unpatrol', array(&$oldids));
+
+			if ($res) {
+				//set logs to deleted
+				$res = $dbw->update('logging', array('log_deleted' => 1), $options);
+				
+				//remove from QG
+				$del_res = $dbw->delete("qc", array("qc_rev_id IN (" . implode(", ", $oldids) . ")","qc_user" => $dbw->addQuotes($user->getID())));
+				
+				//log the change
+				$title = Title::newFromText('Special:Unpatrol');
+				$log = new LogPage( 'unpatrol', false );
+				$msg = wfMsgHtml("unpatrol_log", $count, "[[User:" . $user->getName() . "]]", $wgLang->date($cutoff), $cutoff2==null?$wgLang->date(wfTimestampNow()):$wgLang->date($cutoff2));
+				$log->addEntry('unpatrol', $title, $msg);
+			}
+		}
+		
+		return $count;
 	}
 }

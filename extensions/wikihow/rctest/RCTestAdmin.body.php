@@ -111,6 +111,7 @@ class RCTestAdmin extends UnlistedSpecialPage {
 			switch($row->rq_difficulty) {
 				case self::DIFFICULTY_EASY:
 					$scores[$uid]['correct_easy'] = $this->percent($row->correct, $row->total);
+					$scores[$uid]['failed_easy'] = $row->total - $row->correct;
 					break;
 				case self::DIFFICULTY_MEDIUM:
 					$scores[$uid]['correct_other'] = $this->percent($row->correct, $row->total);

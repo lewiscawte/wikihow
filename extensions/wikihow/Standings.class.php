@@ -594,6 +594,7 @@ class RCPatrolStandingsIndividual extends StandingsIndividual {
 		$opts = array();
 		$opts['log_user'] =$wgUser->getID();
 		$opts['log_type'] ='patrol';
+		$opts['log_deleted'] = 0;
 		if ($ts) {
 			$opts[]= "log_timestamp >'{$ts}'";
 		}

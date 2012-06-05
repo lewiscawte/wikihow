@@ -240,6 +240,13 @@ class AmazonDynamoDB extends CFRuntime
 			throw new DynamoDB_Exception('The DynamoDB class requires the "default_cache_config" configuration to be set in the config.inc.php file.');
 			// @codeCoverageIgnoreEnd
 		}
+		            
+		$this->refresh_sts_credentials_options = $options;
+		$this->refresh_sts_credentials();
+	}
+       
+    function refresh_sts_credentials() {
+        $options = $this->refresh_sts_credentials_options;              
 
 		// Configure cache
 		$this->set_cache_config($this->credentials->default_cache_config);

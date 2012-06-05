@@ -115,6 +115,11 @@ class dynamo {
 			echo "There are unprocessed items in this batch. Adding them back into a queue\n";
 			$this->handleUnprocessedItems($unprocessedItems, $requestType);
 		}
+		
+		if($response->body->message == "The security token included in the request is expired") {
+			echo "Resetting credentials, ";
+			$this->dynamodb->refresh_sts_credentials();
+		}
 
 		// Check for success...
 		if ($response->isOK())
@@ -123,7 +128,8 @@ class dynamo {
 		}
 			else
 		{
-			print_r($response);
+			print_r($response->body);
+			print_r($repsonse->body->message);
 		}
 	}
 	

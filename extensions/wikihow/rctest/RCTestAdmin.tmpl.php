@@ -25,6 +25,7 @@ $('a.rct_detail').live('click', function(e) {
 		<th>% Other </th>
 		<th>% Total </th>
 		<th>% Incorrect</th>
+		<th># Easy Fails</th>
 		<th>Total Tests</th>
 	</tr>
 	<? 
@@ -39,6 +40,7 @@ $('a.rct_detail').live('click', function(e) {
 			<td><?=$result['correct_other']?></td>
 			<td><?=$result['correct']?></td>
 			<td><?=$result['incorrect']?></td>
+			<td><?=$result['failed_easy']?></td>
 			<td><?=$result['total']?></td>
 		</tr>
 	<? endforeach; ?>

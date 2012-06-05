@@ -5,6 +5,11 @@ require_once("$IP/extensions/wikihow/titus/Titus.class.php");
 $maintenance = new TitusMaintenance();
 $maintenance->nightly();
 
+// To repair - run this call instead of nightly. This will recalc daily edits for the number of days lookback
+// that you specify.  NOTE: historical data for the lookback period will not be repaired, just the current day
+//$lookBack = 1;
+//$maintenance->repairTitus($lookBack);
+
 class TitusMaintenance {
 
 	/*
@@ -20,6 +25,15 @@ class TitusMaintenance {
 		$titus = new TitusDB(true);
 		$dailyEditStats = TitusConfig::getDailyEditStats();
 		$titus->calcLatestEdits($dailyEditStats);
+
+		$nightlyStats = TitusConfig::getNightlyStats();
+		$titus->calcStatsForAllPages($nightlyStats);
+	}
+
+	public function repairTitus($lookBack = 1) {
+		$titus = new TitusDB(true);
+		$dailyEditStats = TitusConfig::getDailyEditStats();
+		$titus->calcLatestEdits($dailyEditStats, $lookBack);
 
 		$nightlyStats = TitusConfig::getNightlyStats();
 		$titus->calcStatsForAllPages($nightlyStats);

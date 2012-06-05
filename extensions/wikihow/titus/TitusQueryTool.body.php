@@ -102,10 +102,11 @@ class TitusQueryTool extends UnlistedSpecialPage {
 		}
 		if (sizeof($ids)) {
 			$pageCondition = "ti_page_id IN (" . implode(",", $ids) . ")";
+			$orderBy = " ORDER BY FIELD(ti_page_id, " . implode(",", $ids) . ")";
 			if (stripos($sql, "WHERE ")) {
-				$sql = preg_replace("@WHERE (.+)$@", "WHERE (\\1) AND $pageCondition", $sql);
+				$sql = preg_replace("@WHERE (.+)$@", "WHERE (\\1) AND $pageCondition $orderBy", $sql);
 			} else {
-				$sql .= " WHERE $pageCondition";
+				$sql .= " WHERE $pageCondition $orderBy";
 			}
 		}
 		return $sql;

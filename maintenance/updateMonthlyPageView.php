@@ -47,9 +47,6 @@ foreach($articles as $articleData) {
 	$success = $dbw->update('pageview', array('pv_30day' => $count), array('pv_page' => $articleData->pv_page), __METHOD__);
 	
 	if($success) {
-		if(class_exists('Pageview')) {
-			Pageview::update30day($articleData->pv_page, $count);
-		}
 		
 		/*$title = Title::newFromID($articleData->pv_page);
 		if($title)

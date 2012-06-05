@@ -15,13 +15,15 @@ fi
 if [ "`hostname | grep -c 'wikihow.com$'`" = "0" ]; then
 	# on dev server
 	bucket_param="--bucket=images_dev"
+	src_dir="`dirname $0`"
 else
 	# production
 	bucket_param="--bucket=images"
+	src_dir="$wiki/maintenance"
 fi
 
 new_epoch=`date +'%s'`
 echo $new_epoch > $epoch_file
 
-php $wiki/maintenance/sync_images_to_rscf.php $epoch_param $bucket_param
+php $src_dir/sync_images_to_rscf.php $epoch_param $bucket_param
 
