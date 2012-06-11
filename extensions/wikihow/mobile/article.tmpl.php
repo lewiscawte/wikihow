@@ -37,7 +37,7 @@
 				<script type="text/javascript">
 				</script>
 			<? endif; ?>
-			<h1><?= ($thumb ? $title : wfMsg('howto', $title)) ?></h1>
+			<h1><?= ($thumb  && !$isTestArticle ? $title : wfMsg('howto', $title)) ?></h1>
 			<p><?= $intro ?></p>
 			<? if (@$deviceOpts['show-ads']): ?>
 			<div class="wh_ad">

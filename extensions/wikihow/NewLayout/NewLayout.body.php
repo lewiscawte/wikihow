@@ -4,7 +4,7 @@ if (!defined('MEDIAWIKI')) die();
 
 class NewLayout extends UnlistedSpecialPage {
 
-	const ARTICLE_LAYOUT = '02';
+	const ARTICLE_LAYOUT = '03';
 
 	public function __construct() {
 		UnlistedSpecialPage::UnlistedSpecialPage('NewLayout');
@@ -20,58 +20,33 @@ class NewLayout extends UnlistedSpecialPage {
 		
 		//our test articles, ladies and gentlemen...
 		$newlayout_array = array(
-			'Cheat-a-Polygraph-Test-(Lie-Detector)',
-			'Be-Cool',
-			'Become-a-CIA-Agent',
-			'Lose-Weight',
-			'Get-out-of-a-Cellular-Service-Contract',
-			'Get-Rid-of-a-Pimple',
-			'Be-a-Good-Girlfriend',
-			'Be-a-Hipster',
-			'Say-"I-Love-You"',
-			'Write-a-Script',
-			'Get-Rid-of-Scars-and-Cuts-Left-by-Acne',
-			'Have-Sex-During-Your-Period',
-			'Gauge-Your-Ears',
-			'Copy-Your-DVDs-With-Mac-OS-X',
-			'Make-a-Guy-Jealous',
-			'Tell-if-an-Egg-is-Bad',
-			'Take-Erotic-Photos-of-Yourself',
-			'Talk-to-a-Guy-You-Like',
-			'Tune-a-Guitar',
-			'Tell-a-Guy-You-Like-Him',
-			'Eat-Healthy',
-			'Improve-WiFi-Reception',
-			'Write-an-Essay',
-			'Have-Soft-Shiny-Hair-Inexpensively',
-			'Be-a-Ninja',
-			'Get-Bigger-Chest-Muscles-(Pecs)',
-			'Treat-a-Sunburn',
-			'Remove-Mildew-Smell-from-Towels',
-			'Print-from-Your-iPhone',
-			'Make-3D-Photos',
-			'Send-Pictures-from-Your-Cell-Phone-to-Your-Computer',
-			'See-in-the-Dark',
-			'Stop-Sweet-Cravings',
-			'Take-Action-to-Reduce-Global-Warming',
-			'Recharge-the-Air-Conditioner-in-a-Car',
-			'Make-a-Bong',
-			'Wear-a-Mini-Skirt',
-			'Make-a-Box-Styled-Gimp',
-			'Make-Yourself-Sneeze',
-			'Cook-Rice-in-a-Microwave',
-			'Make-a-Soda-Bottle-Volcano',
-			'Speed-Up-a-Slow-Windows-Computer-for-Free',
-			"Get-Rid-of-a-Wasp's-Nest",
-			'Be-a-Good-Listener',
-			'Paint-Your-Nails',
-			'Make-the-Chinese-Staircase-Bracelet',
-			'Win-at-Rock,-Paper,-Scissors',
-			'Make-Eyes-Look-Bigger',
-			'Play-Beer-Pong',
-			'Be-a-Singer',
-			'Build-with-Steel-Studs',
-			'Watch-Movies-and-TV-Online-for-Free'
+			'Lighten-Your-Skin',
+			'Make-Your-Own-Board-Game',
+			'Tell-if-a-Pineapple-Is-Ripe',
+			'Change-a-Word-Document-to-JPEG-Format',
+			'Make-Paper-Look-Old',
+			'Be-Popular',
+			'Flirt-Through-Text-Messages',
+			'Make-Scrambled-Eggs',
+			'Be-Yourself',
+			'Get-Over-a-Break-Up',
+			'Lucid-Dream',
+			'Pass-a-Drug-Test',
+			'Make-Your-Butt-Bigger',
+			'Make-Money-Fast',
+			'Get-Rid-of-Black-Circles-Under-Your-Eyes',
+			'Kiss',
+			'Permanently-Delete-a-Facebook-Account',
+			'Make-Your-Hair-Grow-Faster',
+			'Dye-Your-Hair-from-Brown-to-Blonde-Without-Bleach',
+			'Not-Get-Caught-Looking-at-Porn',
+			'Stay-Up-All-Night-Alone-(for-Kids)',
+			'Stay-Up-All-Night-Alone-%28for-Kids%29',
+			'Write-a-Movie-Review',
+			'Talk-to-Your-Crush-Even-Though-You-Are-Shy',
+			'Make-a-Dress',
+			'Make-a-Rope-Braid',
+			'Convert-a-Video-Into-a-Gif-Animation'
 		);
 		
 		if ($wgTitle->getNamespace() == NS_MAIN &&
@@ -111,7 +86,7 @@ class NewLayout extends UnlistedSpecialPage {
 		$head_element = "<html xmlns:fb=\"https://www.facebook.com/2008/fbml\" xmlns=\"{$wgXhtmlDefaultNamespace}\" xml:lang=\"$wgContLanguageCode\" lang=\"$wgContLanguageCode\" $rtl>\n";
 		
 
-		$css = '/extensions/min/f/skins/WikiHow/new.css,extensions/wikihow/common/jquery-ui-themes/jquery-ui.css,extensions/wikihow/gallery/prettyPhoto-3.12/src/prettyPhoto.css,extensions/wikihow/NewLayout/NewLayout.css';
+		$css = '/extensions/min/f/skins/WikiHow/new.css,extensions/wikihow/common/jquery-ui-themes/jquery-ui.css,extensions/wikihow/gallery/prettyPhoto-3.12/src/prettyPhoto.css,extensions/wikihow/NewLayout/Layout_03.css';
 		if ($wgUser->getID() > 0) $css .= ',/skins/WikiHow/loggedin.css';
 		$css .= '?'.WH_SITEREV;
 		
@@ -1051,4 +1026,576 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 			</script>";
 		}
 	}
+	
+	function parseArticle_03($article) {
+		global $wgTitle, $wgUser, $wgRequest, $wgServer, $wgLang, $wgArticle, $wgParser, $wgOut, $IP;
+		
+		$article = self::mungeSteps($article);
+		$sk = $wgUser->getSkin();
+
+		$url = urlencode($wgServer . "/" . $wgTitle->getPrefixedURL());
+		$img = urlencode(WikihowShare::getPinterestImage($wgTitle));
+		$desc = urlencode(wfMsg('howto', $wgTitle->getText()) . WikihowShare::getPinterestTitleInfo()); 
+				
+		$fb = '<div class="like_button"><fb:like href="' . $url . '" send="false" layout="button_count" width="100" show_faces="false"></fb:like></div>';
+		$gp1 = '<div class="gplus1_button"><g:plusone size="medium" callback="plusone_vote"></g:plusone></div>';
+
+		$pinterest = '<div id="pinterest"><a href="http://pinterest.com/pin/create/button/?url=' . $url . '&media=' . $img . '&description=' . $desc . '" class="pin-it-button" count-layout="horizontal">Pin It</a></div>';
+
+		// German includes "how to " in the title text
+		$howto = wfMsg('howto', htmlspecialchars($wgTitle->getText()));
+		$tb = '<div class="admin_state"><a href="http://twitter.com/share" data-lang="' . $wgLanguageCode . '" style="display:none; background-image: none; color: #ffffff;" class="twitter-share-button" data-count="horizontal" data-via="wikiHow" data-text="' . $howto . '" data-related="JackHerrick:Founder of wikiHow">Tweet</a></div>';
+		
+		$article = str_replace('<div class="corner top_right"></div>', '<div class="corner top_right">&nbsp;</div>', $article);
+		$article = str_replace('<div class="corner top_left"></div>', '<div class="corner top_left">&nbsp;</div>', $article);
+		$article = str_replace('<div class="corner bottom_right"></div>', '<div class="corner bottom_right">&nbsp;</div>', $article);
+		$article = str_replace('<div class="corner bottom_left"></div>', '<div class="corner bottom_left">&nbsp;</div>', $article);
+		$article = str_replace("<div class='corner top_right'></div>", "<div class='corner top_right'>&nbsp;</div>", $article);
+		$article = str_replace("<div class='corner top_left'></div>", "<div class='corner top_left'>&nbsp;</div>", $article);
+		$article = str_replace("<div class='corner bottom_right'></div>", "<div class='corner bottom_right'>&nbsp;</div>", $article);
+		$article = str_replace("<div class='corner bottom_left'></div>", "<div class='corner bottom_left'>&nbsp;</div>", $article);
+		$article = str_replace('<div style="clear:both"></div>', '<div style="clear:both">&nbsp;</div>', $article);
+		
+		$introImage = "";
+		require_once("$IP/extensions/wikihow/mobile/JSLikeHTMLElement.php");
+		$doc = new DOMDocument('1.0', 'utf-8');
+		$doc->registerNodeClass('DOMElement', 'JSLikeHTMLElement');
+		$doc->strictErrorChecking = false;
+		$doc->recover = true;
+		@$doc->loadHTML($article);
+		$doc->normalizeDocument();
+		$xpath = new DOMXPath($doc);
+		
+		//removing the featured article star
+		$nodes = $xpath->query('//div[@id="featurestar"]');
+		foreach($nodes as $node) {
+			$node->parentNode->removeChild($node);
+			break;
+		}
+		
+		$nodes = $xpath->query('//div[@class="rounders"]');
+		
+		foreach ($nodes as $node) {
+			$style = $node->getAttribute("style");
+			$start = strpos($style, "width:");
+			$end = strpos($style, "px", $start);
+			$width = intval(substr($style, $start + 6, $start + 6 - $end));
+			$newWidth = $width + 21;
+			$style = substr($style, 0, $start + 6) . $newWidth . substr($style, $end);
+			
+			$start = strpos($style, "height:");
+			$end = strpos($style, "px", $start);
+			$height = intval(substr($style, $start + 7, $start + 7 - $end));
+			$newheight = $height + 19;
+			$style = substr($style, 0, $start + 7) . $newHeight . substr($style, $end);
+			
+			$node->setAttribute("style", $style);
+			$childNode = $node->firstChild;
+			$node->removeChild($childNode);
+			$newNode = $doc->createElement("div");
+			$newNode->setAttribute('class', 'top');
+			$node->appendChild($newNode);
+			$newNode2 = $doc->createElement("div");
+			$newNode2->setAttribute('class', 'bottom');
+			$newNode->appendChild($newNode2);
+			$newNode3 = $doc->createElement("div");
+			$newNode3->setAttribute('class', 'left');
+			$newNode2->appendChild($newNode3);
+			$newNode4 = $doc->createElement("div");
+			$newNode4->setAttribute('class', 'right');
+			$newNode3->appendChild($newNode4);
+			$newNode4->appendChild($childNode);
+		}
+		
+		
+		//grabbing the intro image
+		/*$nodes = $xpath->query('//div[@class="mwimg"]');
+		foreach ($nodes as $node) {
+			$introImage = "<div class='mwimg'>" . $node->innerHTML . "</div>";
+			$node->parentNode->removeChild($node);
+			break;
+		}*/
+		
+		$nodes = $xpath->query('//ol[@class="steps_list_2"]/li/div[@class="mwimg"]');
+		foreach($nodes as $node) {
+			$checkNode = $xpath->evaluate($node->parentNode->getNodePath() . '/div[@class="check"]')->item(0);
+			$node->parentNode->removeChild($node);
+			$checkNode->parentNode->insertBefore($node, $checkNode->nextSibling);
+		}
+		
+		$article = $doc->saveHTML();
+		
+		$article = str_replace('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>', "", $article);
+		$article = str_replace('</body></html>', "", $article);
+
+		$share =  $fb . $gp1 . $pinterest;
+		
+		$mainVars = array(
+			'wgTitle' => $wgTitle,
+			'wgUser' => $wgUser,
+			'article' => $article,
+			'sk' => $sk,
+			'wgRequest' => $wgRequest,
+			'share' => $share,
+			'wgLang' => $wgLang,
+			'wgArticle' => $wgArticle,
+			'introImage' => $introImage,
+			'navigation' => self::getNavigation()
+		);
+		return EasyTemplate::html('main_'.self::ARTICLE_LAYOUT.'.tmpl.php', $mainVars);
+	}
+	
+	public function getNavigation() {
+		global $wgUser, $wgTitle;
+		
+		$sk = $wgUser->getSkin();
+		
+		// QWER links for everyone on all pages
+		$cp = Title::makeTitle(NS_PROJECT, "Community-Portal");
+		$cptab = Title::makeTitle(NS_PROJECT, "Community");
+
+		$helplink = $sk->makeLinkObj (Title::makeTitle(NS_CATEGORY, wfMsg('help')) ,  wfMsg('help'));
+		$logoutlink = $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Userlogout'), wfMsg('logout'));
+		$forumlink = "<a href='$wgForumLink'>" . wfMsg('forums') . "</a>";
+		$tourlink = "";
+		if ($wgLanguageCode =='en')
+			$tourlink = $sk->makeLinkObj(Title::makeTitle(NS_PROJECT, "Tour"), wfMsg('wikihow_tour')) ;
+		$splink = "";
+
+		if($wgUser->getID() != 0)
+			$splink = "<li>" . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Specialpages"), wfMsg('specialpages')) . "</li>";
+
+		$rclink = $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Recentchanges"), wfMsg('recentchanges'));
+		$requestlink = $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "RequestTopic"), wfMsg('requesttopic'));
+		$listrequestlink = $sk->makeLinkObj( Title::makeTitle(NS_SPECIAL, "ListRequestedTopics"), wfMsg('listrequtestedtopics'));
+		$rsslink = "<a href='" . $wgServer . "/feed.rss'>" . wfMsg('rss') . "</a>";
+		$rplink = $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Randompage"), wfMsg('randompage') ) ;
+		
+		//For logged out only
+		if($wgUser->getID() == 0){
+			$loginlink =  "<li>" . wfMsg('Anon_login', $q) . "</li>";
+			$cplink = "<li>" . $sk->makeLinkObj ($cptab, wfMsg('communityportal') ) . "</li>";
+		}
+		else{
+			$rcpatrollink = "<li>" . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "RCPatrol"), wfMsg('RCPatrol')) . "</li>";
+			if (class_exists('IntroImageAdder')) {
+			$imagepicklink = "<li>" . $sk->makeLinkObj(Title::makeTitle(NS_PROJECT, "IntroImageAdderStartPage"), wfMsg('IntroImageAdder')) . "</li>";
+			}
+			if ($wgLanguageCode == 'en') {
+				$moreideaslink = "<li><a href='/Special:CommunityDashboard'>" . wfMsg('more-ideas') . "</a></li>";
+				$categorypickerlink = "<li>" . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Categorizer"), wfMsg('UncategorizedPages')) . "</li>";
+			} else {
+				$moreideaslink = "<li><a href='/Contribute-to-wikiHow'>" . wfMsg('more-ideas') . "</a></li>";
+				$categorypickerlink = "<li>" . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Uncategorizedpages"), wfMsg('UncategorizedPages')) . "</li>";
+			}
+		}
+		
+		$editlink = "<li>" . " <a href='" . $wgTitle->escapeLocalURL($sk->editUrlOptions()) . "'>" . wfMsg('edit-this-article') . "</a>" . "</li>";
+		$createLink = $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "CreatePage"), wfMsg('Write-an-article'));
+		
+		$navigation = "
+		<div class='sidebox_shell'>
+        <div class='sidebox' id='side_nav'>
+            	<h3 id='navigation_list_title' >
+			<a href=\"#\" onclick=\"return sidenav_toggle('navigation_list',this);\" id='href_navigation_list'>" . wfMsg('navlist_collapse') . "</a>
+			<span onclick=\"return sidenav_toggle('navigation_list',this);\" style=\"cursor:pointer;\"> " . wfMsg('navigation') . "</span></h3>
+            <ul id='navigation_list' style='margin-top: 0;'>
+				<li> {$createLink}</li>
+				{$editlink}";
+
+				$navigation .= "<li> {$requestlink}</li><li> {$listrequestlink}</li>";
+
+				$navigation .= "
+				{$imagepicklink}
+				{$rcpatrollink}
+				{$categorypickerlink}
+				{$moreideaslink}
+				{$loginlink}
+            </ul>
+
+			<h3>
+			<a href=\"#\" onclick=\"return sidenav_toggle('visit_list',this);\" id='href_visit_list'>" . wfMsg('navlist_expand') . "</a>
+			<span onclick=\"return sidenav_toggle('visit_list',this);\" style=\"cursor:pointer;\"> " . wfMsg('places_to_visit') . "</span></h3>
+				<ul id='visit_list' style='display:none;'>
+					<li> {$rclink}</li>
+					<li> {$forumlink}</li>
+					{$cplink}
+					{$splink}
+				</ul>";
+
+			if ($wgTitle->getNamespace() == NS_MAIN && $isLoggedIn
+			  && $wgTitle->userCanEdit() && !$isMainPage)  {
+				$navigation .= "<h3>
+				<a href=\"#\" onclick=\"return sidenav_toggle('editing_list',this);\" id='href_editing_list'>" . wfMsg('navlist_expand') . "</a>
+				<span onclick=\"return sidenav_toggle('editing_list',this);\" style=\"cursor:pointer;\"> " . wfMsg('editing_tools') . "</span></h3>
+					<ul id='editing_list' style='display:none;'>
+						{$videolink}
+						{$mralink}
+						{$statslink}
+						{$wlhlink}
+					</ul>";
+			}
+
+			if($wgUser->getID() > 0 && ($wgTitle->getNamespace() == NS_IMAGE || $wgTitle->getNamespace() == NS_TEMPLATE || $wgTitle->getNamespace() == NS_TALK || $wgTitle->getNamespace() == NS_PROJECT)){
+				$navigation .= "<h3>
+				<a href=\"#\" onclick=\"return sidenav_toggle('editing_list',this);\" id='href_editing_list'>" . wfMsg('navlist_expand') . "</a>
+				<span onclick=\"return sidenav_toggle('editing_list',this);\" style=\"cursor:pointer;\"> " . wfMsg('editing_tools') . "</span></h3>
+					<ul id='editing_list' style='display:none;'>
+						{$wlhlink}
+					</ul>";
+			}
+
+
+			if($wgUser->getID() > 0){
+
+				$navigation .= "<h3><a href=\"#\" onclick=\"return sidenav_toggle('my_pages_list',this);\" id='href_my_pages_list'>" . wfMsg('navlist_expand') . "</a>
+			<span onclick=\"return sidenav_toggle('my_pages_list',this);\" style=\"cursor:pointer;\"> " . wfMsg('my_pages') . "</span></h3>
+				<ul id='my_pages_list' style='display:none;'>
+				<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Mytalk'), wfMsg('mytalkpage') ). "</li>
+				<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Mypage'), wfMsg('myauthorpage') ). "</li>
+				<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Watchlist'), wfMsg('watchlist') ). "</li>
+				<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Drafts'), wfMsg('mydrafts') ). "</li>
+				<li> " . $sk->makeLinkObj(SpecialPage::getTitleFor('Mypages', 'Contributions'),  wfMsg ('mycontris')) . "</li>
+				<li> " . $sk->makeLinkObj(SpecialPage::getTitleFor('Mypages', 'Fanmail'),  wfMsg ('myfanmail')) . "</li>
+				<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Preferences'), wfMsg('mypreferences') ). "</li>
+				<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Userlogout'), wfMsg('logout') ) . "</li>
+				</ul>";
+			}
+
+			$navigation .= "   {$userlinks}";
+
+			$navigation .= "</div>
+			<div class='sidebar_bottom_fold'></div>
+		</div>
+		";
+			
+		return $navigation;
+	}
+	
+	public static function mungeSteps($body, $opts = array()) {
+		global $wgWikiHowSections, $wgTitle, $wgUser;
+		$ads = $wgUser->getID() == 0 && !@$opts['no-ads'];
+		$parts = preg_split("@(<h2.*</h2>)@im", $body, 0, PREG_SPLIT_DELIM_CAPTURE);
+		$reverse_msgs = array();
+		$no_third_ad = false;
+		foreach ($wgWikiHowSections as $section) {
+			$reverse_msgs[wfMsg($section)] = $section;
+		}
+		$charcount = strlen($body);
+		$body= "";
+		for ($i = 0; $i < sizeof($parts); $i++) {
+			if ($i == 0) {
+
+				if ($body == "") {
+					// if there is no alt tag for the intro image, so it to be the title of the page
+					preg_match("@<img.*mwimage101[^>]*>@", $parts[$i], $matches);
+					if (sizeof($matches) > 0) {
+						$m = $matches[0];
+						$newm = str_replace('alt=""', 'alt="' . htmlspecialchars($wgTitle->getText()) . '"', $m);
+						if ($m != $newm) {
+							$parts[$i] = str_replace($m, $newm, $parts[$i]);
+						}
+						
+					}
+					
+					// done alt test
+					$anchorPos = stripos($parts[$i], "<a name=");
+					if($anchorPos > 0 && $ads){
+						$content = substr($parts[$i], 0, $anchorPos);
+						$count = preg_match_all('@</p>@', $parts[$i], $matches);
+						
+						if($count == 1) //this intro only has one paragraph tag
+							$class = 'low';
+						else {
+							$endVar = "<p><br /></p>\n<p>";
+							$end = substr($content, -1*strlen($endVar));
+
+							if($end == $endVar) {
+								$class = 'high'; //this intro has two paragraphs at the end, move ads higher
+							}
+							else{
+								$class = 'mid'; //this intro has no extra paragraphs at the end.
+							}
+						}
+						
+						
+						if(stripos($parts[$i], "mwimg") != false){
+							$body = "<div class='article_inner editable'>" . $content . "<div class='ad_image " . $class . "'>" . wikihowAds::getAdUnitPlaceholder('intro') . "</div>" . substr($parts[$i], $anchorPos) ."<br class='clearall' /></div>\n";
+						}else{
+							$body = "<div class='article_inner editable'>" . $content . "<div class='ad_noimage " . $class . "'>" . wikihowAds::getAdUnitPlaceholder('intro') . "</div>" . substr($parts[$i], $anchorPos) ."</div>\n";
+						}
+					}
+					elseif($anchorPos == 0 && $ads){
+						$body = "<div class='article_inner editable'>{$parts[$i]}" . wikihowAds::getAdUnitPlaceholder('intro') . "<br class='clearall' /></div>\n";
+					}
+					else
+						$body = "<div class='article_inner editable'>{$parts[$i]}<br class='clearall' /></div>\n";
+				}
+				continue;
+			}
+			
+			if (stripos($parts[$i], "<h2") === 0 && $i < sizeof($parts) - 1) {
+				preg_match("@<span>.*</span>@", $parts[$i], $matches);
+				$rev = "";
+				if (sizeof($matches) > 0) {
+					$h2 =  trim(strip_tags($matches[0]));
+					$rev = isset($reverse_msgs[$h2]) ? $reverse_msgs[$h2] : "";
+				}
+				
+				$body .= $parts[$i];
+				
+				$i++;
+				if ($rev == "steps") {
+					
+						$recipe_tag = "'";
+					
+					$body .= "\n<div id=\"steps\" class='editable{$recipe_tag}>{$parts[$i]}</div>\n";
+				} elseif ($rev != "") {
+					$body .= "\n<div id=\"{$rev}\" class='article_inner editable'>{$parts[$i]}</div>\n";
+				} else {
+					$body .= "\n<div class='article_inner editable'>{$parts[$i]}</div>\n";
+				}
+			} else {
+				$body .= $parts[$i];
+			}
+		}
+		
+		#echo $body; exit;
+		$punct = "!\.\?\:"; # valid ways of ending a sentence for bolding
+		$i = strpos($body, '<div id="steps"');
+		if ($i !== false) $j = strpos($body, '<div id=', $i+5);
+		if ($j === false) $j = strlen($body);
+		if ($j !== false && $i !== false) {
+			$steps = substr($body, $i, $j - $i);
+			$parts = preg_split("@(<[/]?ul>|<[/]?ol>|<[/]?li>)@im", $steps, 0, PREG_SPLIT_DELIM_CAPTURE  | PREG_SPLIT_NO_EMPTY);
+			$numsteps = preg_match_all('/<li>/m',$steps, $matches );
+			$level = 0;
+			$steps = "";
+			$upper_tag = "";
+			// for the redesign we need some extra formatting for the OL, etc
+	#print_r($parts); exit;
+			$levelstack = array();
+			$tagstack = array();
+			$current_tag = "";
+			$current_li = 1;
+			$donefirst = false; // used for ads to tell when we've put the ad after the first step
+			$bImgFound = false;
+			$the_last_picture = '';
+			$final_pic = array();
+			$alt_link = array();
+			
+			#foreach ($parts as $p) {
+			//XX Limit steps to 100 or it will timeout
+
+			if ($numsteps < 300) {
+
+				while ($p = array_shift($parts)) {
+					switch (strtolower($p)) {
+						case "<ol>":
+							$level++;
+							if ($level == 1)  {
+								$p = '<ol class="steps_list_2">';
+								$upper_tag = "ol";
+							} else {
+								$p = "&nbsp;<div class='listbody'>{$p}";
+							}
+							if ($current_tag != "")
+								$tagstack[] = $current_tag;
+							$current_tag = "ol";
+							$levelstack[] = $current_li;
+							$current_li = 1;
+							break;
+						case "<ul>":
+							if ($current_tag != "")
+								$tagstack[] = $current_tag;
+							$current_tag = "ul";
+							$levelstack[] = $current_li;
+							$level++;
+							break;
+						case "</ol>":
+						case "</ul>":
+							$level--;
+							if ($level == 0) $upper_tag = "";
+							$current_tag = array_pop($tagstack);
+							$current_li = array_pop($levelstack);
+							break;
+						case "<li>":
+							$closecount = 0;
+							if ($level == 1 && $upper_tag == "ol") {
+								$li_number = $current_li++;
+								$p = '<li><div class="step_num">' . $li_number . '</div><div class="check">&nbsp;</div>';
+									
+								
+								# this is where things get interesting. Want to make first sentence bold!
+								# but we need to handle cases where there are tags in the first sentence
+								# split based on HTML tags
+								$next = array_shift($parts);
+								
+								$htmlparts = preg_split("@(<[^>]*>)@im", $next,
+									0, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+								$dummy = 0;
+								$incaption = false;
+								$apply_b = false;
+								$the_big_step = $next;
+								while ($x = array_shift($htmlparts)) {
+									# if it's a tag, just append it and keep going
+									if (preg_match("@(<[^>]*>)@im", $x)) {
+										//tag
+										$p .= $x;
+										if ($x == "<span class='caption'>")
+											$incaption = true;
+										elseif ($x == "</span>" && $incaption)
+											$incaption = false;
+										continue;
+									}
+									# put the closing </b> in if we hit the end of the sentence
+									if (!$incaption) {
+										if (!$apply_b && trim($x) != "") {
+											$p .= "<b class='whb'>";
+											$apply_b = true;
+										}
+										if ($apply_b) {
+											$x = preg_replace("@([{$punct}])@im", "$1</b><br /><br />", $x, 1, $closecount);
+										}
+									}
+									$p .= $x;
+										
+									if ($closecount > 0) {
+										break;
+									} else {
+										#echo "\n\n-----$x----\n\n";
+									}
+									$dummy++;
+								}
+								
+								# get anything left over
+								$p .= implode("", $htmlparts);
+								
+								if ($closecount == 0) $p .= "</b>"; // close the bold tag if we didn't already
+								if ($level == 1 && $current_li == 2 && $ads && !$donefirst) {
+									$p .= wikihowAds::getAdUnitPlaceholder(0);
+									$donefirst = true;
+								}
+
+							} elseif ($current_tag == "ol") {
+								//$p = '<li><div class="step_num">'. $current_li++ . '</div>';
+							}
+							break;
+						case "</li>":
+							$p = "<div class='clearall'></div>{$p}"; //changed BR to DIV b/c IE doesn't work with the BR clear tag
+							break;
+					} // switch
+					$steps .= $p;
+				} // while
+			} else {
+				$steps = substr($body, $i, $j - $i);
+				$steps = "<div id='steps_notmunged'>\n" . $steps . "\n</div>\n";
+			}						
+						
+			// we have to put the final_li in the last OL LI step, so reverse the walk of the tokens
+			$parts = preg_split("@(<[/]?ul>|<[/]?ol>|<[/]?li>)@im", $steps, 0, PREG_SPLIT_DELIM_CAPTURE);
+			$parts = array_reverse($parts);
+			$steps = "";
+			$level = 0;
+			$gotit = false;
+			$donelast = false;
+			foreach ($parts as $p) {
+				$lp = strtolower($p);
+				if ($lp == "</ol>" ) {
+					$level++;
+					$gotit= false;
+				} elseif ($lp == "</ul>") {
+					$level++;
+				} elseif (strpos($lp, "<li") !== false && $level == 1 && !$gotit) {
+					/// last OL step list fucker
+					$p = preg_replace("@<li[^>]*>@i", '<li class="steps_li final_li">', $p);
+					$gotit = true;
+				} elseif (strpos($lp, "<ul") !== false) {
+					$level--;
+				} elseif (strpos($lp, "<ol") !== false) {
+					$level--;
+				} elseif ($lp == "</li>" && !$donelast) {
+					// ads after the last step
+					if ($ads){
+						if(substr($body, $j) == ""){
+							$p = "<script>missing_last_ads = true;</script>" . wikihowAds::getAdUnitPlaceholder(1) . $p;
+							$no_third_ad = true;
+						}
+						else {
+							$p = wikihowAds::getAdUnitPlaceholder(1) . $p;
+						}
+					}
+					$donelast = true;
+				}
+				$steps = $p . $steps;
+			}
+			
+			$body = substr($body, 0, $i) . $steps . substr($body, $j);
+			
+		} /// if numsteps == 100?
+		
+		//add watermarks
+		$watermark_div = WikiHowTemplate::getWatermark();
+		if ($watermark_div) {
+			$body = preg_replace("@(<div class=[\"|']corner bottom_right[\"|']></div>)@im",'$1'.$watermark_div,$body);
+		}
+
+		/// ads below tips, walk the sections and put them after the tips
+		if ($ads) {
+			$foundtips = false;
+			$anchorTag = "";
+			foreach ($wgWikiHowSections as $s) {
+				$isAtEnd = false;
+				if ($s == "ingredients" || $s == "steps")
+					continue; // we skip these two top sections
+				$i = strpos($body, '<div id="' . $s. '"');
+			    if ($i !== false) {
+					$j = strpos($body, '<h2>', $i + strlen($s));
+				} else {
+					continue; // we didnt' find this section
+				}
+	    		if ($j === false){
+					$j = strlen($body); // go to the end
+					$isAtEnd = true;
+				}
+	    		if ($j !== false && $i !== false) {
+	        		$section  = substr($body, $i, $j - $i);
+					if ($s == "video") {
+						// special case for video
+						$newsection = "<div id='video'><center>{$section}</center></div>";
+						$body = str_replace($section, $newsection, $body);
+						continue;
+					} elseif ($s == "tips") {
+						//tip ad is now at the bottom of the tips section
+						//need to account for the possibility of no sections below this and therefor
+						//no anchor tag
+						if($isAtEnd)
+							$anchorTag = "<p></p>";
+						
+						$index = strripos($section, "</div>");
+						$body = str_replace($section, substr($section, 0, $index) . wikihowAds::getAdUnitPlaceholder('2a') . "</div>" . $anchorTag , $body);
+						$foundtips = true;
+						break;
+					} else {
+						$foundtips = true;
+						if($isAtEnd)
+							$anchorTag = "<p></p>";
+						
+						$index = strripos($section, "</div>");
+						$body = str_replace($section, substr($section, 0, $index) . wikihowAds::getAdUnitPlaceholder(2) . "</div>" . $anchorTag , $body);
+						break;
+					}
+				}
+			}
+			if (!$foundtips && !$no_third_ad) { //must be the video section
+				//need to put in the empty <p> tag since all the other sections have them for the anchor tags.
+				$body .= "<p class='video_spacing'></p>" . wikihowAds::getAdUnitPlaceholder(2);
+			}
+
+		}	
+
+		return $body;
+	}
+	
 }

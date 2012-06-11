@@ -43,14 +43,6 @@ $(document).ready(function() {
      	return false;
     }); 
 	
-    $('#page_title').click(function(){
-		var ti_page_title = '<span class="sqlcolumn" style="height: 20px; ">' +
-			'<a class="addnewsqlcolumndelete ti_page_title_column" href="#1">[remove]</a>&nbsp;<a class="addnewsqlcolumn" id="0" href="#1">ti_page_title</a>' + 
-			'&nbsp;labeled as&nbsp;<span class="addnewsqlcolumnvalue" href="#0" id="0">ti_page_title</span>&nbsp;</span>';
-		$('.addnewsqlcolumn:last').before(ti_page_title);
-     	return false;
-    }); 
-
 	$('.sqlbuildercolumn').on('click', '.ti_page_title_column', function(e) {
 		e.preventDefault();
 		$(this).parent().slideUp(200, function() {

@@ -3,13 +3,14 @@
 * 
 */
 class TitusQueryTool extends UnlistedSpecialPage {
+	var $dbr = null;
 
 	function __construct() {
 		UnlistedSpecialPage::UnlistedSpecialPage('TitusQueryTool');
 	}
 
 	function execute($par) {
-		global $wgOut, $wgUser, $wgRequest, $isDevServer;
+		global $wgOut, $wgUser, $wgRequest, $isDevServer, $IP, $wgLoadBalancer;
 		$user = $wgUser->getName();
 		$userGroups = $wgUser->getGroups();
 		if (!(IS_SPARE_HOST || $isDevServer) || $wgUser->isBlocked() || !in_array('staff', $userGroups)) {
@@ -18,8 +19,11 @@ class TitusQueryTool extends UnlistedSpecialPage {
 			return;
 		}
 
+		require_once("$IP/extensions/wikihow/titus/Titus.class.php");
+		TitusDB::configureDB();
+		$this->dbr = wfGetDB(TITUS_READ_DB);
+
 		if ($wgRequest->wasPosted()) {
-			$this->configureDB();
 			$this->handleQuery();
 		} else {
 			$wgOut->addScript(HtmlSnips::makeUrlTags('js', array('download.jQuery.js'), 'extensions/wikihow/common', false));
@@ -29,20 +33,6 @@ class TitusQueryTool extends UnlistedSpecialPage {
 		}
 	}
 
-	// Use the spare DB for the query tool to reduce load on production dbs
-	function configureDB() {
-		global $wgDBservers;
-
-		if (IS_SPARE_HOST) {
-			$wgDBservers[1] = array(
-				'host'     => WH_DATABASE_BACKUP,
-				'dbname'   => WH_DATABASE_NAME,
-				'user'     => WH_DATABASE_USER,
-				'password' => WH_DATABASE_PASSWORD,
-				'load'     => 1
-			);
-		}
-	}
 
 	function getHeaderRow(&$res, $delimiter = "\t") {
 		$n = mysql_num_fields($res->result);
@@ -57,7 +47,7 @@ class TitusQueryTool extends UnlistedSpecialPage {
 
 	function getTitusFields() {
 		$data = array();
-		$dbr = wfGetDB(DB_SLAVE);
+		$dbr = $this->dbr;
 		$res = $dbr->query("SELECT * FROM titus LIMIT 1");
 		$n = mysql_num_fields($res->result);
 		for( $i = 0; $i < $n; $i++ ) {
@@ -77,9 +67,21 @@ class TitusQueryTool extends UnlistedSpecialPage {
 	function handleQuery() {
 		global $wgRequest; 
 
-		$sql = $this->buildSQL();
+		$ids = array();
+		if($wgRequest->getVal('page-filter') == 'urls') {
+			$ids = $this->getIdsFromUrls(trim(urldecode($wgRequest->getVal('urls'))));
+		}
+
+		try { 
+			$this->checkForErrors($ids);
+		} catch (Exception $e) {
+			$this->outputFile("titus_error.titus", $e->getMessage());
+			return;
+		}
+
+		$sql = $this->buildSQL($ids);
 		
-		$dbr = wfGetDB(DB_SLAVE);
+		$dbr = $this->dbr;
 		$res = $dbr->query($sql);
 		$output = $this->getHeaderRow($res);
 		while ($row = $dbr->fetchObject($res)) {
@@ -88,13 +90,28 @@ class TitusQueryTool extends UnlistedSpecialPage {
 		$this->outputFile("titus_query.titus", $output);
 	} 
 
-	function buildSQL() {
-		global $wgRequest;
-
-		$ids = array();
-		if($wgRequest->getVal('page-filter') == 'urls') {
-			$ids = $this->getIdsFromUrls(trim(urldecode($wgRequest->getVal('urls'))));
+	function checkForErrors(&$ids) {
+		// Check that there aren't any redirects
+		$pageUrls = array();
+		if (sizeof($ids)) {
+			$sql = "SELECT page_id FROM page where page_namespace = 0 and page_is_redirect = 1 and page_id IN (" . implode(",", $ids) . ")";
+			$dbr = wfGetDB(DB_SLAVE);
+			$res = $dbr->query($sql);
+			while ($row = $dbr->fetchObject($res)) {
+				$t = Title::newFromId($row->page_id);
+				$pageUrls[] = "http://www.wikihow.com" . $t->getLocalUrl();
+			}
 		}
+
+		if (sizeof($pageUrls)) {
+			$error = "ERROR: Following urls are redirects\n";
+			$error .= implode("\n", $pageUrls);
+			throw new Exception($error);
+		}
+	}
+
+	function buildSQL(&$ids) {
+		global $wgRequest;
 
 		$sql = urldecode($wgRequest->getVal('sql'));
 		if (empty($sql)) {

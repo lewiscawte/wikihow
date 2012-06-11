@@ -3,6 +3,13 @@
 * Titus is a meta db of stats pertaining to our articles.  This file includes the classes 
 * that store and retreive data from the db
 */
+
+if (IS_SPARE_HOST) {
+	define(TITUS_READ_DB, 1);
+} else {
+	define(TITUS_READ_DB, DB_SLAVE);
+}
+
 class TitusDB {
 	var $dbw;
 	var $dbr;
@@ -10,9 +17,26 @@ class TitusDB {
 	var $dataBatch = array();
 
 	function __construct($debugOutput = false) {
+		$this->configureDB();
 		$this->dbw = wfGetDB(DB_MASTER);
-		$this->dbr = wfGetDB(DB_SLAVE);
+		$this->dbr = wfGetDB(TITUS_READ_DB);
 		$this->debugOutput = $debugOutput;
+	}
+
+	// Use the spare DB for reads to reduce load on production dbs
+	function configureDB() {
+		global $wgDBservers, $wgMasterWaitTimeout, $wgLoadBalancer;
+
+		if (IS_SPARE_HOST) {
+			$wgDBservers[1] = array(
+				'host'     => WH_DATABASE_BACKUP,
+				'dbname'   => WH_DATABASE_NAME,
+				'user'     => WH_DATABASE_USER,
+				'password' => WH_DATABASE_PASSWORD,
+				'load'     => 1
+			);
+		}
+		$wgLoadBalancer = new StubObject( 'wgLoadBalancer', 'LoadBalancer', array( $wgDBservers, false, $wgMasterWaitTimeout, true ) );
 	}
 
 	/*
@@ -563,9 +587,9 @@ class TSAccuracy extends TitusStat {
 
 		$row = $dbr->fetchObject($res);
 		$lastReset = $row->C;
-		$stats['ti_accuracy_last_reset'] = wfTimestamp(TS_MS, 0);
+		$stats['ti_accuracy_last_reset_timestamp'] = wfTimestamp(TS_MS, 0);
 		if(!is_null($lastReset) && '0000-00-00 00:00:00' != $lastReset) { 
-			$stats['ti_accuracy_last_reset'] = wfTimestamp(TS_MW, strtotime($row->C));
+			$stats['ti_accuracy_last_reset_timestamp'] = wfTimestamp(TS_MW, strtotime($row->C));
 		}
 
 		return $stats;
@@ -783,10 +807,10 @@ class TSRushData extends TitusStat {
 */
 class TSSocial extends TitusStat {
 	public function calc(&$dbr, &$r, &$t, &$pageRow) {
-		$url = 'http://www.wikihow.com' . $t->getLocalUrl();
+		$url = 'http://www.wikihow.com' . urldecode($t->getLocalUrl());
 		$stats = array();
 		$stats['ti_tweets'] = $this->getTweets($url);
-		$stats['ti_likes'] = $this->getLikes($url);
+		$stats['ti_facebook'] = $this->getLikes($url);
 		$stats['ti_plusones'] = $this->getPlusOnes($url);
 		return $stats;
 	}

@@ -15,12 +15,28 @@ require_once('commandLine.inc');
 $dbr = wfGetDB(DB_SLAVE);
 $dbw = wfGetDB(DB_MASTER);
 
-$articles = array();
-//first grab all the pages
-$res = $dbr->select('pageview', array('pv_30day', 'pv_page'), __METHOD__);
+const CHUNKSIZE = 2000;
 
-while($row = $dbr->fetchObject($res)) {
-	$articles[] = $row;
+$startTime = microtime(true);
+
+$articles = array();
+
+$i = 0;
+
+while(1) {
+	//first grab all the pages
+	$res = $dbr->select('pageview', array('pv_30day', 'pv_page'), '', __METHOD__, array("LIMIT" => CHUNKSIZE, "OFFSET" => $i*CHUNKSIZE));
+	
+	if($dbr->numRows($res) == 0)
+		break;
+	
+	while($row = $dbr->fetchObject($res)) {
+		$articles[] = $row;
+	}
+	
+	usleep(500000);
+	
+	$i++;
 }
 
 //now we need to recalculate the pv data
@@ -28,6 +44,7 @@ $start = time();
 $monthAgo 	= substr(wfTimestamp(TS_MW, $start - 60 * 60 * 24 * 30), 0, 8); // 30 days
 var_dump($monthAgo);
 
+$articleCount = 0;
 foreach($articles as $articleData) {
 	$count = $articleData->pv_30day;
 	
@@ -55,7 +72,15 @@ foreach($articles as $articleData) {
 	else {
 		echo "Unable to update article id# " . $articleData->pv_page . "\n";
 	}
+	
+	$articleCount++;
+	if($articleCount % 2000 == 0)
+		usleep(500000);
 }
+
+$endTime = microtime(true);
+
+echo "Finished " . __FILE__ . " in " . ($endTime - $startTime) . "\n";
 
 /********
  * 

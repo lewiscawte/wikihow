@@ -333,9 +333,9 @@ class RCTest {
 			'rs_timestamp',
 			array('rs_user_id' => $userID, 'rs_correct' => 1),
 			__METHOD__,
-			array('ORDER BY rs_timestamp DESC'));
+			array('ORDER BY' => 'rs_timestamp DESC'));
 		
-		if (empty($startdate)) $startdate = '2005-01-01 22:07:25';
+		if (empty($startdate)) $startdate = '2012-05-28 22:07:25';
 		
 		$start = wfTimestamp(TS_MW, $startdate);
 		$end = wfTimestampNow(TS_MW);
@@ -356,10 +356,6 @@ class RCTest {
 						button and you'll do fine :)\r\n
 						The Patrol Coach";
 			Misc::adminPostTalkMessage($wgUser,$from_user,$comment);
-			
-			//blow away their skip cookie so it doesn't cause issues
-			//$cookiename = $wgCookiePrefix."Rcskip";
-			//setcookie($cookiename, '', time() - 3600, $wgCookiePath, $wgCookieDomain, $wgCookieSecure);
 		}
 	}
 

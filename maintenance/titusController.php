@@ -17,6 +17,7 @@ class TitusMaintenance {
 	*/
 	public function nightly() {
 		$this->updateHistorical();
+		$this->trimHistorical();
 		$this->incrementTitusDatestamp();
 		$this->updateTitus();
 	}
@@ -26,6 +27,7 @@ class TitusMaintenance {
 		$dailyEditStats = TitusConfig::getDailyEditStats();
 		$titus->calcLatestEdits($dailyEditStats);
 
+		// Run nightly stats
 		$nightlyStats = TitusConfig::getNightlyStats();
 		$titus->calcStatsForAllPages($nightlyStats);
 	}
@@ -46,6 +48,13 @@ class TitusMaintenance {
 	private function updateHistorical() {
 		$dbw = wfGetDB(DB_MASTER);
 		$sql = "INSERT INTO titus_historical SELECT * FROM titus";
+		$dbw->query($sql);
+	}
+
+	private function trimHistorical($lookBack = 30) {
+		$dbw = wfGetDB(DB_MASTER);
+		$lowDate = substr(wfTimestamp(TS_MW, strtotime("-$lookBack day", strtotime(date('Ymd', time())))), 0, 8);
+		$sql = "DELETE FROM titus_historical WHERE ti_datestamp < '$lowDate'";
 		$dbw->query($sql);
 	}
 

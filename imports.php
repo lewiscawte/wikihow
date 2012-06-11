@@ -18,6 +18,7 @@ if ($wgLanguageCode == 'en') {
 	require_once("$IP/extensions/wikihow/h5e/Html5editor.php");
 	require_once("$IP/extensions/wikihow/HAWelcome/HAWelcome.php");
 	require_once("$IP/extensions/wikihow/titus/TitusQueryTool.php");
+	require_once("$IP/extensions/wikihow/titus/TitusGraphTool.php");
 }
 
 # International-specific extensions

@@ -74,12 +74,6 @@ DIV#header {
 
 #logo a{ color:#514239; text-decoration:none; }
 
-#kiwi {
-	float: left;
-    margin: -28px 0 0 134px;
-    position: absolute;
-}
-
 #bubbles {
 	width: 737px;
 	position: absolute;

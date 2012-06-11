@@ -93,8 +93,10 @@ class Pagestats {
 		$html .= "<p>Accuracy: {$data->percentage}% of {$data->total} votes</p>";
 		
 		$t = Title::newFromID($pageId);
-		$cl = SpecialPage::getTitleFor( 'Clearratings', $t->getText());
-		$html .= "<p><a href='" . $cl->getFullUrl() . "'>Clear ratings</a></p>";
+		if($t) {
+			$cl = SpecialPage::getTitleFor( 'Clearratings', $t->getText());
+			$html .= "<p><a href='" . $cl->getFullUrl() . "'>Clear ratings</a></p>";
+		}
 		
 		return $html;
 	}

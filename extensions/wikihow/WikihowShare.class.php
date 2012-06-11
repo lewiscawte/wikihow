@@ -160,7 +160,7 @@ class WikihowShare{
 		}
 	}
 	
-	private static function getPinterestTitleInfo() {
+	public static function getPinterestTitleInfo() {
 		$whow = WikiHow::newFromCurrent();
 		if (!$whow) return '';
 

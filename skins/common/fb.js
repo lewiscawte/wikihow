@@ -111,7 +111,8 @@ WH.FB.init = function(debug) {
 		chUrl = wgServer + '/extensions/wikihow/xd_receiver.htm';
 		FB.init({ 
 			appId:wgFBAppId, cookie:true, 
-			status:true, xfbml:true, oauth:true
+			status:true, xfbml:true, oauth:true,
+			channelUrl: chUrl
 		});
 		FB.UIServer.setActiveNode = function(a,b){FB.UIServer._active[a.id]=b;} // IE hack to correct FB bug
 		WH.FB.initEventListeners();
