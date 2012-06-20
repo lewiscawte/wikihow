@@ -510,7 +510,7 @@ class RCPatrol extends SpecialPage {
 	function execute() {
 		global $wgServer, $wgRequest, $wgOut, $wgUser, $wgLanguageCode;
 		wfLoadExtensionMessages('RCPatrol');
-
+		
 		if (!$wgUser->isAllowed( 'patrol' )) {
 			$wgOut->errorpage( 'nosuchspecialpage', 'nospecialpagetext' );
 			return;

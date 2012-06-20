@@ -19,6 +19,12 @@ class Pagestats {
 		
 	}
 	
+	public static function get1day($pageId, &$dbr) {
+		$val = $dbr->selectField('pageview', 'pv_1day', array('pv_page' => $pageId));
+		
+		return $val;
+	}
+	
 	public static function update30day($pageId, $val) {
 		global $wgMemc;
 		
@@ -81,7 +87,9 @@ class Pagestats {
 		$html = "<h3 style='margin-bottom:5px'>Staff-only data</h3>";
 		
 		$day30 = self::get30day($pageId, $dbr);
+		$day1 = self::get1day($pageId, $dbr);
 		$html .= "<p>{$day30} " . wfMsg('ps-pv-30day') . "</p>";
+		$html .= "<p>{$day1} " . wfMsg('ps-pv-1day') . "</p>";
 		
 		$data = self::getStuData($pageId, $dbr);
 		$html .= "<hr style='margin:5px 0; '/>";

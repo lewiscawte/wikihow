@@ -67,7 +67,7 @@ abstract class MobileHtmlBuilder {
 		$isMainPage = $articleName == wfMsg('mainpage');
 		$titleBar = $isMainPage ? wfMsg('mobile-mainpage-title') : wfMsg('pagetitle', $articleName);
 		$canonicalUrl = 'http://' . MobileWikihow::getNonMobileSite() . '/' . $t->getPartialURL();
-		$js = $wgLanguageCode == 'en' ? array('stu') : null;
+		$js = $wgLanguageCode == 'en' ? array('mjq', 'stu') : null;
 
 		$headerVars = array(
 			'isMainPage' => $isMainPage,
@@ -140,8 +140,6 @@ abstract class MobileHtmlBuilder {
 	protected function addJSLibs() {
 		// We separate the lib from JS from the other stuff so that it can
 		// be cached.  iPhone caches objects under 25k.
-		self::addJS('mjq', false); // jQuery
-
 		self::addJS('mwh', true); // wikiHow's mobile JS
 		self::addJS('mga', true); // google analytics script
 	}

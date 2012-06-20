@@ -18,7 +18,6 @@ return array(
 		'//extensions/wikihow/common/jquery-1.7.1.min.js',
 		'//skins/common/highlighter-0.6.js',
 		'//skins/common/wikibits.js',
-		'//skins/common/stu.js',
 		'//extensions/wikihow/common/jquery-ui-slider-dialog-custom/jquery-ui-1.8.13.custom.min.js',
 		'//skins/common/swfobject.js',
 		'//extensions/wikihow/common/jquery.scrollTo/jquery.scrollTo.js',
@@ -28,6 +27,7 @@ return array(
 		'//skins/WikiHow/gaWHTracker.js',
 	),
 
+	'wkt' => array('//extensions/wikihow/common/download.jQuery.js'),
 	'rcw' => array('//extensions/wikihow/rcwidget.js'),
 	'sp' => array('//skins/WikiHow/spotlightrotate.js'),
 	'fl' => array('//extensions/wikihow/FollowWidget.js'),
@@ -36,7 +36,6 @@ return array(
 	'ads' => array('//extensions/wikihow/wikihowAds/wikihowAds.js'),
 	'thm' => array('//extensions/wikihow/thumbsup/thumbsnotifications.js'),
 	'stu' => array(
-		'//extensions/wikihow/common/jquery-1.7.1.min.js',
 		'//skins/common/stu.js'
 	),
 

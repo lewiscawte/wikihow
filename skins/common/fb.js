@@ -101,7 +101,7 @@ WH.FB.initEventListeners = function() {
 }
 
 WH.FB.initLikeButtons = function(){
-   if (is_ie6) {
+   if (is_ie6 || is_ie7) {
 		$(".like_button").html("");
    }
 }

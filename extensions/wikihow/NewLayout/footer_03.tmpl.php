@@ -16,7 +16,7 @@
 			</div>			
 		</div>
 		<div id="footer_side">
-			<img src="/skins/WikiHow/images/redesign/logo_footer.png" />
+			<img src="<?= wfGetPad('/skins/WikiHow/images/redesign/logo_footer.png') ?>" />
 			 <?=$footer_links?>
 			<div id="footer_main">
 				<form action="/Special:GoogSearch" id="cse-search-box-footer">
@@ -96,6 +96,10 @@
 			else
 				$("#rolling_logo").hide();*/
 
+		});
+		
+		$(".check").click(function(){
+			$(this).find("div").show();
 		});
 
 	})(jQuery);

@@ -2322,7 +2322,7 @@ class WikiHowTemplate extends QuickTemplate {
 		global $wgWikiHowSections, $IP, $wgServer, $wgServerName, $wgIsDomainTest;
 		$prefix = ""; 
 		
-		if (class_exists('NewLayout') && !self::isUserAgentMobile()) {
+		if (class_exists('NewLayout') && !self::isUserAgentMobile() && $wgUser->getID() == 0) {
 			$newLayout = new NewLayout();
 			if ($newLayout->isNewLayoutPage()) {
 				$newLayout->go();
@@ -3098,6 +3098,11 @@ class WikiHowTemplate extends QuickTemplate {
 	$showBreadCrumbs = self::showBreadCrumbs();
 	$showSideBar = self::showSideBar();
 
+	$showWikiTextWidget = false;
+	if (class_exists('WikiTextDownloader')) {
+		$showWikiTextWidget = WikiTextDownloader::isAuthorized(); 
+	}
+
     $showRCWidget =
 		class_exists('RCWidget') &&
 		!$profileBoxIsUser &&
@@ -3108,7 +3113,8 @@ class WikiHowTemplate extends QuickTemplate {
 		$wgTitle->getPrefixedText() != 'Special:IntroImageAdder' &&
 		$action != 'edit';
 
-	$showFollowWidget = class_exists('FollowWidget');
+	$showFollowWidget = class_exists('FollowWidget') &&
+						($wgLanguageCode == 'en' || $wgLanguageCode == 'de' || $wgLanguageCode == 'es' || $wgLanguageCode == 'pt');
 
 	$showSliderWidget =
 		class_exists('Slider') &&
@@ -3191,6 +3197,8 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 	*/
 
 	$showFBBar = false;	
+
+	$showExitTimer = class_exists('BounceTimeLogger');
 	
 // <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 ?>
@@ -3212,7 +3220,7 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 		<style type="text/css" media="all">/*<![CDATA[*/ @import "<?= wfGetPad('/extensions/min/f/skins/WikiHow/printable.css') . '?2' ?>";  /*]]>*/</style>
 	<? endif; ?>
 	<? // add present JS files to extensions/min/groupsConfig.php ?>
-	<script type="text/javascript" src="<?= wfGetPad('/extensions/min/?g=whjs' . ($showRCWidget ? ',rcw' : '') . ($showSpotlightRotate ? ',sp' : '') . ($showFollowWidget ? ',fl' : '') . ($showSliderWidget ? ',slj' : '') . ($showSlideShow ? ',ppj' : '') . (!$isLoggedIn ? ',ads' : '') . ($showThumbsUp ? ',thm' : '') . '&') . WH_SITEREV ?>"></script>
+	<script type="text/javascript" src="<?= wfGetPad('/extensions/min/?g=whjs' . ($showExitTimer ? ',stu' : '') . ($showRCWidget ? ',rcw' : '') . ($showSpotlightRotate ? ',sp' : '') . ($showFollowWidget ? ',fl' : '') . ($showSliderWidget ? ',slj' : '') . ($showSlideShow ? ',ppj' : '') . (!$isLoggedIn ? ',ads' : '') . ($showThumbsUp ? ',thm' : '') . ($showWikiTextWidget ? ',wkt' : '') . '&') . WH_SITEREV ?>"></script>
 	<? if ($wgLanguageCode == 'en'): ?>
 	<script>
 		if (WH.ExitTimer) {
@@ -3560,6 +3568,17 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 					<div class='sidebar_bottom_fold'></div>
 				</div>
 		<?php endif; ?>
+
+		<?php if ($showWikiTextWidget) { ?>
+		<div class="sidebox_shell" id="side_rc_widget">
+			<div class='sidebar_top'></div>
+			<div id="side_wikitext_download" class="sidebox">
+				<a id='wikitext_downloader' href='#'>Download WikiText</a>
+			</div><!--end side_recent_changes-->
+			<div class='sidebar_bottom_fold'></div>
+		</div><!--end sidebox_shell-->
+		<?php } ?>
+
 		<?php
 			if($wgUser->getID() == 0 && !$isMainPage && $action != 'edit' && $wgTitle->getText() != 'Userlogin' && $wgTitle->getNamespace() == NS_MAIN){
 				//comment out next line to turn off HHM ad

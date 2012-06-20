@@ -4,13 +4,18 @@ body {
 	font-size: .9em;
 }
 
+DIV#main{
+	width:993px;
+}
+
 DIV#footer_shell {
-    background: url('/skins/WikiHow/images/redesign/footer.jpg');
+    background: url('/skins/WikiHow/images/redesign/footer.jpg') repeat-x;
     margin-top: 50px;
+	height:212px;
 }
 
 DIV#article_shell{
-	width:664px;
+	width:679px;
 }
 
 DIV#article{
@@ -40,15 +45,15 @@ DIV#article{
 }
 
 #article h2{
-	background: url('/skins/WikiHow/images/redesign/corner.jpg') #ffffff no-repeat;
+	background: url('/skins/WikiHow/images/redesign/corner.png') #ffffff no-repeat top right;
 	margin:6px 6px 0 0;
 	padding:0;
 	width:auto;
-	line-height:82px;
+	line-height:84px;
 	font-size:42px;
 	color:#333333;
 	padding-left:28px;
-	height:auto;
+	height:84px;
 }
 
 #article OL.steps_list_2 LI{
@@ -62,16 +67,23 @@ DIV#article{
 	font-size: 40px;
 	position:absolute;
 	float:none;
+	left:22px;
+	margin-left: 0;
 }
 
 DIV#header{
-	background: url('/skins/WikiHow/images/redesign/header.jpg') repeat-x;
 	margin:0 0 -8px 0;
 	width:100%;
 	color:#cde3bc;
 	height:31px;
-	position:fixed;
+	position:relative;
 	z-index: 2;
+}
+
+DIV#header #header2{
+	background: url('/skins/WikiHow/images/redesign/header.jpg') repeat-x;
+	position:fixed;
+	width:100%;
 }
 
 #rolling_logo{
@@ -85,7 +97,7 @@ DIV#header{
 }
 
 #header_rolling{
-	width:989px;
+	width:993px;
 	margin:0 auto -8px auto;
 	z-index: 1;
 	padding-top:50px;
@@ -97,14 +109,18 @@ DIV#header{
 	color:#ffffff;
 }
 
+#header #login {
+	margin:10px 3px 0 0
+}
+
 #header_inner{
 	width:989px;
 	margin:0 auto;
 }
 
 #header_rolling DIV#logo{
-	float:none;
-	margin:0 0 0 -10px;
+	float:left;
+	margin:0 0 -8px -10px;
 }
 
 #header DIV#logo img{
@@ -240,7 +256,7 @@ a.editsection {
 }
 
 #article H1.firstHeading A{
-	font-size:48px;
+	font-size:45px;
 	color:#333333;
 }
 
@@ -248,8 +264,12 @@ a.editsection {
 	color:#669900;
 }
 
+#footer DIV#footer_side{
+	width:500px;
+}
+
 #footer_side UL{
-	width:350px;
+	width:400px;
 }
 
 #footer_side UL li{
@@ -291,6 +311,10 @@ a.editsection {
 	font-size:16px;
 }
 
+#header_rolling .search_box{
+	float:right;
+}
+
 .search_button{
 	background:url('/skins/WikiHow/images/redesign/button_green.png') no-repeat;
 	width:76px;
@@ -305,7 +329,6 @@ a.editsection {
 
 #header_rolling .search_button{
 	float:right;
-	margin-right:10px;
 }
 
 DIV#last_question{
@@ -368,6 +391,11 @@ DIV#last_question{
     right: -5px;
     width: 52px;
 	z-index: 2;
+}
+
+.check div{
+	padding:9px 0 0 14px;
+	display:none;
 }
 
 #article UL, #article OL{
@@ -469,10 +497,12 @@ UL#end_options LI#endop_fanmail{
 	clear:both;
 	float:right;
 	margin-top:5px;
+	width:500px;
 }
 
 #header_inner form div .search_box{
 	background:url('/skins/WikiHow/images/redesign/search_header.png') no-repeat;
+	width:993px;
 }
 
 #article a.white_button{

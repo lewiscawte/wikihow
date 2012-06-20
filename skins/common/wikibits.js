@@ -1420,3 +1420,9 @@ WH.setGooglePlusOneLangCode = function() {
 		window.___gcfg = {lang: langCode};
 	}
 }
+
+jQuery(document).on('click', 'a#wikitext_downloader', function(e) {
+	e.preventDefault();
+	var data = { 'pageid' : wgArticleId };
+	jQuery.download('/Special:WikiTextDownloader', data);           
+});

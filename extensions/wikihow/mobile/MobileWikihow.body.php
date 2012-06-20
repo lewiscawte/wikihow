@@ -223,13 +223,13 @@ class MobileWikihow extends UnlistedSpecialPage {
 				'image-zoom-width' => 270,
 				'image-zoom-height' => 430,
 				'max-image-width' => 100,
-				'full-image-width' => 100,
+				'full-image-width' => 250,
 				'max-video-width' => 300,
 				'intro-image-format' => 'conditional',
 				'show-only-steps-tab' => true,
 				'show-header-footer' => false,
 				'show-youtube' => true,
-				'show-ads' => true,
+				'show-ads' => false,
 				'show-css' => true,
 			),
 			'symbianapp' => array(
@@ -280,7 +280,6 @@ class MobileWikihow extends UnlistedSpecialPage {
 				'show-ads' => false,
 				'show-css' => true,
 			),
-			// add 'iphone4' here when it's time
 		);
 		$platform = $wgRequest->getVal('platform', self::DEFAULT_DEVICE);
 		if (!isset($platforms[ $platform ])) {

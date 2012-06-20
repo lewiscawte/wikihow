@@ -85,7 +85,7 @@ function getRCElem(listid, type) {
 			newelem.fadeIn();
 		}
 
-		if (rcCurrent < rcElementCount) {
+		if (rcCurrent < rcElementCount - 1) {
 			rcCurrent++;
 		} else {
 			rcCurrent = 0;

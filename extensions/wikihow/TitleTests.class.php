@@ -99,7 +99,6 @@ class TitleTests {
 		}
 		return array($wikitext, $stepsText);
 	}
-
 	
 	private static function genTitle($title, $test, $custom) {
 		$titleTxt = $title->getText();

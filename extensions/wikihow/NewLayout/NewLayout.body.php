@@ -20,33 +20,12 @@ class NewLayout extends UnlistedSpecialPage {
 		
 		//our test articles, ladies and gentlemen...
 		$newlayout_array = array(
-			'Lighten-Your-Skin',
-			'Make-Your-Own-Board-Game',
-			'Tell-if-a-Pineapple-Is-Ripe',
 			'Change-a-Word-Document-to-JPEG-Format',
-			'Make-Paper-Look-Old',
 			'Be-Popular',
-			'Flirt-Through-Text-Messages',
-			'Make-Scrambled-Eggs',
-			'Be-Yourself',
 			'Get-Over-a-Break-Up',
-			'Lucid-Dream',
-			'Pass-a-Drug-Test',
-			'Make-Your-Butt-Bigger',
-			'Make-Money-Fast',
-			'Get-Rid-of-Black-Circles-Under-Your-Eyes',
-			'Kiss',
-			'Permanently-Delete-a-Facebook-Account',
 			'Make-Your-Hair-Grow-Faster',
-			'Dye-Your-Hair-from-Brown-to-Blonde-Without-Bleach',
-			'Not-Get-Caught-Looking-at-Porn',
-			'Stay-Up-All-Night-Alone-(for-Kids)',
-			'Stay-Up-All-Night-Alone-%28for-Kids%29',
-			'Write-a-Movie-Review',
-			'Talk-to-Your-Crush-Even-Though-You-Are-Shy',
-			'Make-a-Dress',
-			'Make-a-Rope-Braid',
-			'Convert-a-Video-Into-a-Gif-Animation'
+			'Kiss',
+			'Dye-Your-Hair-from-Brown-to-Blonde-Without-Bleach'
 		);
 		
 		if ($wgTitle->getNamespace() == NS_MAIN &&
@@ -89,6 +68,8 @@ class NewLayout extends UnlistedSpecialPage {
 		$css = '/extensions/min/f/skins/WikiHow/new.css,extensions/wikihow/common/jquery-ui-themes/jquery-ui.css,extensions/wikihow/gallery/prettyPhoto-3.12/src/prettyPhoto.css,extensions/wikihow/NewLayout/Layout_03.css';
 		if ($wgUser->getID() > 0) $css .= ',/skins/WikiHow/loggedin.css';
 		$css .= '?'.WH_SITEREV;
+		
+		$css = wfGetPad($css);
 		
 		if ($wgIsDomainTest) {
 			$base_href = '<base href="http://www.wikihow.com/" />';
@@ -900,7 +881,7 @@ class NewLayout extends UnlistedSpecialPage {
 		
 		$sk = new SkinWikihowskin();
 		
-		$footertail = WikiHowTemplate::getPostLoadedAdsHTML();
+		//$footertail = WikiHowTemplate::getPostLoadedAdsHTML();
 		
 		$trackData = array();
 		// Data analysis tracker
@@ -983,7 +964,7 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 
 		$footertail .= '<!-- LOAD EVENT LISTENERS -->';
 		
-		if ($wgTitle->getPrefixedURL() == wfMsg('mainpage') && $wgLanguageCode == 'en') {
+		/*if ($wgTitle->getPrefixedURL() == wfMsg('mainpage') && $wgLanguageCode == 'en') {
 			$footertail .= "
 				<script type=\"text/javascript\">
 				if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
@@ -992,17 +973,17 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 					Event.observe(window, 'load', initSA);
 				}
 				</script>";
-		}
+		}*/
 
 		$footertail .= "<!-- LOAD EVENT LISTENERS ALL PAGES -->
 		<div id='img-box'></div>";
 
-		if (class_exists('CTALinks') && trim(wfMsgForContent('cta_feature')) == "on") {
+		/*if (class_exists('CTALinks') && trim(wfMsgForContent('cta_feature')) == "on") {
 			$footertail .= CTALinks::getBlankCTA();
-		}
+		}*/
 
 		// QuickBounce test
-		if (false && $sk->isQuickBounceUrl('ryo_urls')) {
+		/*if (false && $sk->isQuickBounceUrl('ryo_urls')) {
 
 		$footertail .= '<!-- Begin W3Counter Secure Tracking Code -->
 		<script type="text/javascript" src="https://www.w3counter.com/securetracker.js"></script>
@@ -1014,17 +995,19 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 		</noscript>
 		<!-- End W3Counter Secure Tracking Code-->';
 
-		}
+		}*/
 
-		$footertail .= '</body>';
+		//$footertail .= '</body>';
 		
-		if (($wgRequest->getVal("action") == "edit" || $wgRequest->getVal("action") == "submit2") && $wgRequest->getVal('advanced', null) != 'true') {
+		/*if (($wgRequest->getVal("action") == "edit" || $wgRequest->getVal("action") == "submit2") && $wgRequest->getVal('advanced', null) != 'true') {
 			$footertail .= "<script type=\"text/javascript\">
 			if (document.getElementById('steps') && document.getElementById('wpTextbox1') == null) {
 					InstallAC(document.editform,document.editform.q,document.editform.btnG,\"./".$wgLang->getNsText(NS_SPECIAL).":TitleSearch"."\",\"en\");
 			}
 			</script>";
-		}
+		}*/
+		
+		return $footertail;
 	}
 	
 	function parseArticle_03($article) {
@@ -1069,6 +1052,7 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 		//removing the featured article star
 		$nodes = $xpath->query('//div[@id="featurestar"]');
 		foreach($nodes as $node) {
+			$node->parentNode->removeChild($node->nextSibling->nextSibling);
 			$node->parentNode->removeChild($node);
 			break;
 		}
@@ -1129,7 +1113,7 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 <html><body>', "", $article);
 		$article = str_replace('</body></html>', "", $article);
 
-		$share =  $fb . $gp1 . $pinterest;
+		//$share =  $fb . $gp1 . $pinterest;
 		
 		$mainVars = array(
 			'wgTitle' => $wgTitle,
@@ -1424,7 +1408,7 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 							$closecount = 0;
 							if ($level == 1 && $upper_tag == "ol") {
 								$li_number = $current_li++;
-								$p = '<li><div class="step_num">' . $li_number . '</div><div class="check">&nbsp;</div>';
+								$p = '<li><div class="step_num">' . $li_number . '</div><div class="check"><div>&#x2713;</div></div>';
 									
 								
 								# this is where things get interesting. Want to make first sentence bold!

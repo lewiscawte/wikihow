@@ -5,20 +5,20 @@
  * in batches to decrease the load on the db. 
  */
 
-class BatchSelector {
+class DatabaseHelper {
 	
-	const BATCHSIZE = 2000;		//number of records to pull at once
+	const DEFAULT_BATCH_SIZE = 2000;		//number of records to pull at once
 	const SLEEPTIME = 500000;	//measured in microseconds = .5 seconds
 	
 	/**
 	 *
 	 * Essentially a wrapper for the database select function. Accepts the same parameters
 	 * as Database::select, with an additional optional parameter for the batch size.
-	 * Function selects rows in batches of BATCHSIZE and sleeps for SLEEPTIME microseconds
-	 * between each batch. All rows are returned in an array of row objects.
+	 * Function selects rows in batches of DEFAULT_BATCH_SIZE and sleeps for SLEEPTIME 
+	 * microseconds between each batch. All rows are returned in an array of row objects.
 	 * 
 	 */
-	public static function select($table, $fields, $conditions = '', $options = array(), $batchSize = BatchSelector::BATCHSIZE) {
+	public static function batchSelect($table, $fields, $conditions = '', $fname = __METHOD__, $options = array(), $batchSize = self::DEFAULT_BATCH_SIZE) {
 		$dbr = wfGetDB(DB_SLAVE);
 		
 		if( !is_array( $options ) ) {
@@ -29,22 +29,25 @@ class BatchSelector {
 		$rows = array();
 		$batchNum = 0;
 
-		while(1) {
+		while (true) {
 			$options['OFFSET'] = $batchNum*$batchSize;
-			$res = $dbr->select($table, $fields, $conditions, __METHOD__, $options);
+			$res = $dbr->select($table, $fields, $conditions, $fname, $options);
 
-			if($dbr->numRows($res) == 0)
+			if ($res->numRows() == 0)
 				break;
 
-			while($row = $dbr->fetchObject($res)) {
+			foreach ($res as $row) {
 				$rows[] = $row;
 			}
 
-			usleep(BatchSelector::SLEEPTIME);
+			$res->free();
 
+			usleep(self::SLEEPTIME);
 			$batchNum++;
 		}
 		
 		return $rows;
 	}
+
 }
+

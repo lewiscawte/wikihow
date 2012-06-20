@@ -4,13 +4,14 @@
 	<title>How to <?=$title?></title>
 	<?=$base_href?>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta name="robots" content="index,follow" />
 	<meta name="verify-v1" content="/Ur0RE4/QGQIq9F46KZyKIyL0ZnS96N5x1DwQJa7bR8=" />
     <meta name="google-site-verification" content="Jb3uMWyKPQ3B9lzp5hZvJjITDKG8xI8mnEpWifGXUb0" />
 	<meta name="msvalidate.01" content="CFD80128CAD3E726220D4C2420D539BE" />
 	<meta name="y_key" content="1b3ab4fc6fba3ab3" />
 	<?=$globalvar_script?>
 	<link rel="stylesheet" type="text/css" href="<?=$css?>" />
-	<script type="text/javascript" src="/extensions/min/?g=whjs,rcw,fl,slj,ads&<?=WH_SITEREV?>"></script>
+	<script type="text/javascript" src="<?= wfGetPad('/extensions/min/?g=whjs,stu,rcw,fl,slj,ads,thm&' . WH_SITEREV) ?>"></script>
 	<script>
 		if (WH.ExitTimer) {
 			WH.ExitTimer.start();
@@ -79,11 +80,28 @@
 		  DD_belatedPNG.fix('#RES_ID_fb_login_text');
 		  DD_belatedPNG.fix('.search_box_loggedout');
 		  DD_belatedPNG.fix('.step_num');
+ 
+		  DD_belatedPNG.fix('#logo img');
+		  DD_belatedPNG.fix('#rolling_logo');
+		  DD_belatedPNG.fix('.check');
+		  DD_belatedPNG.fix('#footer_side img');
+		  DD_belatedPNG.fix('.sub_footer_link');
+		  DD_belatedPNG.fix('.search_box');
 
 		  /* string argument can be any CSS selector */
 		  /* .png_bg example is unnecessary */
 		  /* change it to what suits you! */
 		</script>
+		<style type="text/css">
+			#article OL.steps_list_2 LI UL LI, #article #tips li, #article #warnings li{
+				background:none;
+			}
+			#article h2{
+				margin-right:9px;
+				margin-left:1px;
+				width:643px;
+			}
+		</style>
 	<![endif]-->
 	<!--[if IE 9]>
 		<style>
@@ -96,7 +114,7 @@
 		<link rel="shortcut icon" href="<?= wfGetPad('/favicon.ico') ?>" />
 
 		<link rel="search" type="application/opensearchdescription+xml" href="/opensearch_desc.php" title="wikiHow (English)" />
-			
+		<link href="https://plus.google.com/102818024478962731382" rel="publisher" />	
 		<link rel="alternate" type="application/rss+xml" title="wikiHow: How-to of the Day" href="http://www.wikihow.com/feed.rss"/>
 		<link rel="apple-touch-icon" href="<?= wfGetPad('/skins/WikiHow/safari-large-icon.png') ?>" />
 		<?=$headitems?>
@@ -104,9 +122,11 @@
 	</head>
 <body>
 	<div id="header">
+		<div id="header2">
 		<div id="header_inner">
 			<div id="login"><?=$login?></div>
 			<div id="rolling_logo" style="opacity:0;">wikiHow</div>
+		</div>
 		</div>
 	</div>
 	<div id="header_rolling">
@@ -120,7 +140,7 @@
 		loadGoogleCSESearchBox('en');
 		</script>
 		<div id="logo">
-			<img src="/skins/WikiHow/images/redesign/logo.png" alt="" />
+			<img src="<?= wfGetPad('/skins/WikiHow/images/redesign/logo.png') ?>" alt="" />
 		</div>
 	</div>
 <!--<div id="slim_header">

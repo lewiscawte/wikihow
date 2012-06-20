@@ -420,6 +420,7 @@ class RCTest {
 	* Returns true if a test should be displayed, false otherwise
 	*/
 	public function isTestTime() {
+		return false;
 		global $wgRequest;
 
 		// RCPatrol Test doesn't work for IE 7 and IE 6 beecause of use of negative margins in the css.

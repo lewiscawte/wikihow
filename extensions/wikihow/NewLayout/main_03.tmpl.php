@@ -8,8 +8,127 @@
 		echo WikiHow_i18n::genJSMsgs($langKeys);
 	?>
     <div id="article_shell" class="<?= $sidebar ?>">
+		<!-- MediaWiki:wikiohwads_setup -->
+		<script type='text/javascript'>
+		<!--
+
+		var missing_last_ads = false;
+
+		var gchans = "";
+		var adPadding = ' style="padding-top:3px" ';
+		var adColor = ' style="color:#404040;" ';
+		var adUrl = ' style="color:#336633;" ';
+		var adTitle = ' style="font-size:1.06em; color:#336633; text-decoration:underline;" ';
+		var adText = ' style="color:#414141;" ';
+
+		var rad = true;
+		var xchannels = '';
+		var showImageAd = true;
+
+		var r = Math.random();
+
+		var isHHM = '';
+
+		if(isHHM == "1")
+		  showImageAd = false;
+
+		document.write("<style type='text/css'>#bodycontents{font-size:1.1em;}a{color:#336633;} #login a{color:#336633;}</style>");
+
+		if(is_ff >= 0){
+		  //firefox
+		  gchans += "+0944676689";
+		} else if(is_chrome >= 0){
+		  //chrome
+		  gchans += "+6585791357";
+		} else if(is_safari){  //needs to be in this order, bc is_safari is true for chrome
+		  //safari
+		  gchans += "+0925121701";
+		} else if(is_ie6){
+		  //ie6
+		  gchans += "+5181221492";
+		} else if(is_ie7){
+		  //ie7
+		  gchans += "+3373262885";
+		} else if(is_ie8){
+		  //ie8
+		  gchans += "+2594021353";
+		} else if(is_ie9){
+		  //ie9
+		  gchans += "+1264837522";
+		}
+		
+		if(wgPageName == "Get-Over-a-Break-Up") {
+			gchans += "+2211589998";
+		}
+		else if(wgPageName == "Change-a-Word-Document-to-JPEG-Format") {
+			gchans += "+1129698311";
+		}
+		else if(wgPageName == "Make-Your-Hair-Grow-Faster") {
+			gchans += "+7903851856";
+		}
+		else if(wgPageName == "Kiss") {
+			gchans += "+7558104428";
+		}
+		else if(wgPageName == "Dye-Your-Hair-from-Brown-to-Blonde-Without-Bleach") {
+			gchans += "+2999673469";
+		}
+		else if(wgPageName == "Be-Popular") {
+			gchans += "+8105386060";
+		}
+
+		if(isiPad >= 0){
+		  //ipad
+		  gchans += "+5756207113";
+		}
+
+		//setting the search channels
+		if(fromsearch){
+			 gchans += "+3377966061";
+			 radChan1 += "+3377966061";
+		  }
+		  else{
+			  gchans += "+9658161873";
+			  radChan1 += "+9658161873";
+		  }
+
+		//put test stuff in here
+		if(testNum == 1){
+
+		}
+		if(testNum == 2){
+			  gchans += "";
+			  radChan1 += "";
+		}
+		if(testNum == 3){
+			  gchans += "";
+			  radChan1 += "";
+		}
+		//alert(adNum);
+
+		if (!gHideAds) {
+			// whole page
+			gchans += "+4744756494";
+			radChan1  += "+4744756494";
+		} else {
+			google_max_num_ads = '0';
+		}
+
+		function google_ad_request_done(google_ads) {
+			 WH.wikihowAds.setAds(google_ads);
+		}
+
+		google_ad_client = "pub-9543332082073187";
+		google_ad_output = 'js';
+		google_ad_type = 'text';
+		google_feedback = 'on';
+		google_ad_region = "test";
+		google_ad_format = '250x250_as';
+		google_max_num_ads = '11';
+
+		-->
+		</script>
 		<? 
-			echo wikihowAds::getSetup();
+			//echo wikihowAds::getSetup();
 			
 			
 			$recipe_hdr = '';

@@ -19,6 +19,7 @@ if ($wgLanguageCode == 'en') {
 	require_once("$IP/extensions/wikihow/HAWelcome/HAWelcome.php");
 	require_once("$IP/extensions/wikihow/titus/TitusQueryTool.php");
 	require_once("$IP/extensions/wikihow/titus/TitusGraphTool.php");
+	require_once("$IP/extensions/wikihow/WikiTextDownloader.php");
 }
 
 # International-specific extensions
@@ -145,8 +146,8 @@ require_once("$IP/extensions/wikihow/Videoadder.php");
 // in LocalSettings.php, which requires fewer resources and pings 
 // our servers less.
 if (!defined('WIKIHOW_LIMITED')) {
-	require_once("$IP/extensions/wikihow/RCBuddy.php");
 	require_once("$IP/extensions/wikihow/RCWidget.php");
+	require_once("$IP/extensions/wikihow/RCBuddy.php");
 	require_once("$IP/extensions/wikihow/dashboard/CommunityDashboard.php");
 	require_once("$IP/extensions/wikihow/TwitterReplier/TwitterReplier.php");
 	require_once("$IP/extensions/wikihow/BounceTimeLogger.php");

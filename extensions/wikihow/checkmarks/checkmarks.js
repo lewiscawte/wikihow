@@ -36,15 +36,14 @@ jQuery.extend(WH, (function($) {
 			return stepNum;
 		}
 
-		function randomFromTo(from, to){
+		function randomFromTo(from, to) {
 		 	return Math.floor(Math.random() * (to - from + 1) + from);
 		}
 
 		function generateMessage(li) {
 			var html = '';
 
-
-			if (isLastStep(li) && messages.last.length) {
+			if (isLastStep(li) && !isIAppURL() && messages.last.length) {
 				// Get the last step message
 				var lastMessage = messages.last.pop();
 				html = getMessageHtml(lastMessage, true);
@@ -97,10 +96,14 @@ jQuery.extend(WH, (function($) {
 						li.children('.chk_praise').slideDown('slow');
 					}
 					$(this).addClass('step_checked');
-					trackCheck(li);
+					if (!isIAppURL()) trackCheck(li);
 				}
 				return false;
 			});
+		}
+
+		function isIAppURL() {
+			return location.href.match(/[?&]platform=/i) || location.href.match(/^file:\/\/\//);
 		}
 
 		function trackCheck(li) {
@@ -113,7 +116,7 @@ jQuery.extend(WH, (function($) {
 			} else {
 				action = 'step-other';
 			}
-			try{
+			try {
 				if (action.length && pageTracker) {
 					pageTracker._trackEvent('m-checks', action, wgTitle);
 				}

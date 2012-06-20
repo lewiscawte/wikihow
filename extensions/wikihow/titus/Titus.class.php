@@ -708,41 +708,21 @@ class TSStu extends TitusStat {
 /*
 * Stu data (pv) for article
 */
-class TSPageViews extends TSStu {
+class TSPageViews extends TitusStat {
     public function calc(&$dbr, &$r, &$t, &$pageRow) {
         $stats = array('ti_daily_views' => 0, 'ti_30day_views' => 0);
 		
-		$query = $this->makeQuery(&$t, 'pv');
-		$ret = AdminBounceTests::doBounceQuery($query);
-		if (!$ret['err'] && $ret['results']) {
-			AdminBounceTests::cleanBounceData($ret['results']);
-			$stats = array_merge($stats, $this->extractStats($ret['results']));
+		$res = $dbr->select('pageview', array('pv_30day', 'pv_1day'), array('pv_page' => $pageRow->page_id), __METHOD__);
+		while($row = $dbr->fetchObject($res)) {
+			//only 1 row
+			break;
 		}
 		
-		$deleteQuery = $this->makeResetQuery($t, 'pv');
-		AdminBounceTests::doBounceQuery($deleteQuery);
+		if($row !== false) {
+			$stats['ti_daily_views'] = intval($row->pv_1day);
+			$stats['ti_30day_views'] = intval($row->pv_30day);
+		}
 		
-		$stats['ti_30day_views'] = intVal($dbr->selectField('pageview', array('pv_30day'), array('pv_page' => $pageRow->page_id)));
-		
-        return $stats;
-    }
-	
-	private function makeResetQuery(&$t, $domain = 'pv') {
-		return array(
-            'delete' => '*',
-            'from' => $domain,
-            'pages' => array($t->getDBkey()),
-        );
-	}
-
-    private function extractStats(&$data) {
-        $stats = array();
-        foreach ($data as $page => $datum) {
-            if (isset($datum['__'])) {
-                $stats['ti_daily_views'] = $datum['__'];
-            }
-            break; // should only be one record
-        }
         return $stats;
     }
 }
