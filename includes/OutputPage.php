@@ -571,7 +571,9 @@ class OutputPage {
 
 		# don't serve compressed data to clients who can't handle it
 		# maintain different caches for logged-in users and non-logged in ones
-		$response->header( 'Vary: Accept-Encoding, Cookie' );
+		# XXCHANGED - removed Accept-Encoding from Vary header since varnish 
+		# adds this too
+		$response->header( 'Vary: Cookie' );
 
 		# Add an X-Vary-Options header for Squid with Wikimedia patches
 		$response->header( $this->getXVO() );

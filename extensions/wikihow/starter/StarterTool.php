@@ -12,7 +12,9 @@ require_once("$IP/extensions/wikihow/WikiHow_i18n.class.php");
 require_once("$IP/includes/EasyTemplate.php");
 
 $wgSpecialPages['StarterTool'] = 'StarterTool';
+$wgSpecialPages['StarterToolAdmin'] = 'StarterToolAdmin';
 $wgAutoloadClasses['StarterTool'] = dirname( __FILE__ ) . '/StarterTool.body.php';
+$wgAutoloadClasses['StarterToolAdmin'] = dirname(__FILE__) . '/StarterTool.body.php';
 $wgExtensionMessagesFiles['StarterTool'] = dirname(__FILE__) . '/StarterTool.i18n.php';
 	
 $wgLogTypes[]            = 'starter';
@@ -23,3 +25,32 @@ $wgStarterPages = array('wikiHow:StarterTool001','wikiHow:StarterTool002','wikiH
 						'wikiHow:StarterTool004','wikiHow:StarterTool005','wikiHow:StarterTool006',
 						'wikiHow:StarterTool007','wikiHow:StarterTool008','wikiHow:StarterTool009',
 						'wikiHow:StarterTool010','wikiHow:StarterTool011','wikiHow:StarterTool012');
+
+$wgHooks["AddNewAccount"][] = "wfCheckStarterRef";
+
+function wfCheckStarterRef($user) {
+	global $wgRequest;
+	
+	if($_COOKIE[StarterTool::COOKIE_NAME] == "2") {
+		setcookie(StarterTool::COOKIE_NAME);
+		StarterTool::logInfo("signup");
+	}
+	else if($_COOKIE[StarterTool::COOKIE_NAME] == "1") {
+		setcookie(StarterTool::COOKIE_NAME);
+		StarterTool::logInfo("signup_top");
+	}
+	
+	return true;
+}
+
+/**
+ * 
+ CREATE TABLE `wikidb_112`.`startertool` (
+`st_user` INT( 10 ) NOT NULL ,
+`st_username` VARCHAR( 255) NOT NULL,
+`st_date` VARCHAR( 14 ) NOT NULL ,
+`st_action` VARCHAR( 20 ) NOT NULL
+) ENGINE = MYISAM ;
+ 
+ * 
+ */

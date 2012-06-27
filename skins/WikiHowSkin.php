@@ -1485,7 +1485,6 @@ class SkinWikihowskin extends SkinTemplate {
 		$tpl->set( 'about', $this->aboutLink() );
 
 		$tpl->setRef( 'debug', $out->mDebugtext );
-		$tpl->set( 'reporttime', $out->reportTime() );
 		$tpl->set( 'sitenotice', wfGetSiteNotice() );
 
 		//$out->addHTML($printfooter);
@@ -3588,6 +3587,9 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 					echo wikihowAds::getHhmAd();
 				else
 					echo wikihowAds::getAdUnitPlaceholder(4);
+				
+				//spellchecker test "ad"
+				//echo "<a href='/Special:StarterTool?ref=1' style='display:none' id='starter_ad'><img src='" . wfGetPad('/skins/WikiHow/images/sidebar_spelling3.png') . "' /></a>";
 			}
 			//<!-- <a href="#"><img src="/skins/WikiHow/images/imgad.jpg" /></a> -->
 		?>
@@ -3975,6 +3977,12 @@ w3counter(55901);
 				node3.src = 'http://assets.pinterest.com/js/pinit.js';
 				$('body').append(node3);
 			}
+			
+			/*var r = Math.random();
+			if(r <= .25) {
+				$('#starter_ad').show();
+			}*/
+				
 		});
 	})(jQuery);
 </script>
@@ -3987,7 +3995,7 @@ w3counter(55901);
 		<!-- displaying patrolled oldid: <?= $grevid ?> -->
 	<? endif; ?>
 <? endif; ?>
-<?php $this->html('reporttime') ?>
+<?= wfReportTime() ?>
 
 </html>
 

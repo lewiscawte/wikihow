@@ -16,10 +16,15 @@ class TitusMaintenance {
 	* Run the nightly maintenance for the titus and titus_historical tables
 	*/
 	public function nightly() {
+		sleep(60);
 		$this->updateHistorical();
+		sleep(60);
 		$this->trimHistorical();
+		sleep(60);
 		$this->incrementTitusDatestamp();
+		sleep(60);
 		$this->updateTitus();
+		sleep(60);
 	}
 
 	private function updateTitus() {

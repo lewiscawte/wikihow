@@ -30,7 +30,7 @@ class RCTest {
 
 	// Get the number of patrols total - number of patrols a user had when they first start using the rc test tool
 	public function getAdjustedPatrolCount() {
-		if (is_null($this->adjustedPatrolCount)) {
+		if (is_null($this->adjustedPatrolCount) || $this->adjustedPatrolCount < 0) {
 			$this->adjustedPatrolCount = $this->getTotalPatrols() - $this->getBasePatrolCount();
 		}
 		return $this->adjustedPatrolCount;
@@ -276,7 +276,7 @@ class RCTest {
 		if ($response != RCTestGrader::RESP_SKIP || $response != RCTestGrader::RESP_LINK) {
 			$this->recordScore($correct, $response);
 			
-			if (empty($correct)) {
+			if (empty($correct) && $testInfo['rq_difficulty'] == 1) {
 				$this->unpatrolbatch();
 			}
 			else {
@@ -325,22 +325,11 @@ class RCTest {
 	private function unpatrolbatch() {
 		global $wgUser, $wgCookiePrefix, $wgCookiePath, $wgCookieDomain, $wgCookieSecure;
 		
-		$userID = $wgUser->getId();
-		$dbr = wfGetDB(DB_SLAVE);
-
-		$startdate = $dbr->selectField(
-			'rctest_scores',
-			'rs_timestamp',
-			array('rs_user_id' => $userID, 'rs_correct' => 1),
-			__METHOD__,
-			array('ORDER BY' => 'rs_timestamp DESC'));
-		
-		if (empty($startdate)) $startdate = '2012-05-28 22:07:25';
-		
-		$start = wfTimestamp(TS_MW, $startdate);
+		$start = $this->getGoodStartDate();
 		$end = wfTimestampNow(TS_MW);
+		$max_to_unpatrol = 250;
 		
-		$unpatrolled = Unpatrol::doTheUnpatrol($wgUser,$start,$end);
+		$unpatrolled = Unpatrol::doTheUnpatrol($wgUser, $start, $end, $max_to_unpatrol);
 		
 		if (!empty($unpatrolled)) {
 			//send talk page note
@@ -356,6 +345,30 @@ class RCTest {
 						button and you'll do fine :)\r\n
 						The Patrol Coach";
 			Misc::adminPostTalkMessage($wgUser,$from_user,$comment);
+		}
+	}
+	
+	private function getGoodStartDate() {
+		global $wgUser;
+	
+		$dbr = wfGetDB(DB_SLAVE);
+
+		//get the date of the last successful easy test
+		$last_easy_test = $dbr->selectField(
+			'rctest_scores',
+			'rs_timestamp',
+			array('rs_user_id' => $wgUser->getId(), 'rs_correct' => 1),
+			__METHOD__,
+			array('ORDER BY' => 'rs_timestamp DESC'));
+		
+		//only go one week back max
+		$max_back = wfTimestamp(TS_MW, strtotime('-1 week'));
+		
+		if (!empty($last_easy_test) && $last_easy_test > $max_back) {
+			return $last_easy_test;
+		}
+		else {
+			return $max_back ;
 		}
 	}
 
@@ -420,7 +433,6 @@ class RCTest {
 	* Returns true if a test should be displayed, false otherwise
 	*/
 	public function isTestTime() {
-		return false;
 		global $wgRequest;
 
 		// RCPatrol Test doesn't work for IE 7 and IE 6 beecause of use of negative margins in the css.

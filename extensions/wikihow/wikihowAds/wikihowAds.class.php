@@ -703,6 +703,26 @@ EOHTML;
 				$sk->mGlobalChannels[] = "5905062452"; //is an HHM page
 			}
 			
+			$msg = ConfigStorage::dbGetConfig('redesign_control'); 
+			$articles = split("\n", $msg);
+			foreach ($articles as $article) {
+				if($article == $titleUrl){
+					$ts = $details->rev_timestamp;
+					$sk->mGlobalChannels[] = "2876223637"; //test off
+					break;
+				}
+			}
+			
+			$msg = ConfigStorage::dbGetConfig('redesign_test'); 
+			$articles = split("\n", $msg);
+			foreach ($articles as $article) {
+				if($article == $titleUrl){
+					$ts = $details->rev_timestamp;
+					$sk->mGlobalChannels[] = "3857858648";  //redesign test off
+					break;
+				}
+			}
+			
         }
 	}
 	

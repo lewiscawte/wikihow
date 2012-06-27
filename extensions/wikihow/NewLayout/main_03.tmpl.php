@@ -57,6 +57,8 @@
 		  gchans += "+1264837522";
 		}
 		
+		gchans += "+8923253916"; //redesign test
+		
 		if(wgPageName == "Get-Over-a-Break-Up") {
 			gchans += "+2211589998";
 		}

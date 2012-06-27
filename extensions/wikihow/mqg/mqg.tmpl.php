@@ -6,12 +6,13 @@
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="google-site-verification" content="Jb3uMWyKPQ3B9lzp5hZvJjITDKG8xI8mnEpWifGXUb0" />
 	<title><?=$mqg_title?></title>
-	<link href="<?=wfGetPad('/extensions/min/?g=mwhc,mwha,mqgc')?>&rev=<?=WH_SITEREV ?>" rel="stylesheet" type="text/css" /> 
+	<link href="<?=wfGetPad('/extensions/min/?g=mwhc,mwha')?>&rev=<?=WH_SITEREV ?>" rel="stylesheet" type="text/css" /> 
+	<?=$mqg_css?>
 	<script type="text/javascript">
 		var WH_SITEREV = <?= WH_SITEREV ?>;
 	</script>
-	<script type="text/javascript" src="<?= wfGetPad('/extensions/min/?g=mjq,mwh,mga,mqg,mah') ?>&rev=<?= WH_SITEREV ?>"></script>
-	<?//=$mqg_js?>
+	<script type="text/javascript" src="<?= wfGetPad('/extensions/min/?g=mjq,mwh,mga,mah') ?>&rev=<?= WH_SITEREV ?>"></script>
+	<?=$mqg_js?>
 	<link rel="apple-touch-icon" href="<?= wfGetPad('/skins/WikiHow/safari-large-icon.png') ?>" />
 	<link rel="apple-touch-icon" sizes="114x114" href="<?= wfGetPad('/skins/WikiHow/safari-large-icon.png') ?>" />
 	<meta name="robots" content="noindex,nofollow" />

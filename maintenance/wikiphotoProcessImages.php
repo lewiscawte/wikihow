@@ -976,10 +976,10 @@ class WikiPhotoProcess {
 		$doBackup = isset($opts['b']) || isset($opts['backup']);
 		$doCleanup = isset($opts['c']) || isset($opts['cleanup']);
 
-		self::$stagingDir = @$opts['d'] || @$opts['staging-dir'];
+		self::$stagingDir = @$opts['d'] ? @$opts['d'] : @$opts['staging-dir'];
 		if (empty(self::$stagingDir)) self::$stagingDir = self::DEFAULT_STAGING_DIR;
 
-		$skipID = @$opts['e'] || @$opts['exclude-article-id'];
+		$skipID = @$opts['e'] ? $opts['e'] : @$opts['exclude-article-id'];
 		if ($skipID) self::$excludeArticles[] = $skipID;
 
 		if ($_ENV['USER'] != 'apache') {

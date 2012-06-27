@@ -77,7 +77,7 @@ class GoodRevision {
 		$updateRevFunc = function ($row) {
 			$title = Title::newFromDBkey($row['page_title']);
 			$goodRev = GoodRevision::newFromTitle($title, $row['page_id']);
-			if ($goodRev) {
+			if ($goodRev && !$goodRev->latestGood()) {
 				$goodRev->updateRev($row['rev_id']);
 			}
 		};
@@ -93,7 +93,7 @@ class GoodRevision {
 				GROUP BY rc_cur_id';
 		$patrolled = array();
 		$res = $dbw->query($sql, __METHOD__);
-		while ($obj = $res->fetchObject()) {
+		foreach ($res as $obj) {
 			$patrolled[ $obj->page_id ] = (array)$obj;
 		}
 
@@ -111,7 +111,7 @@ class GoodRevision {
 				GROUP BY rev_page';
 		$rows = array();
 		$res = $dbw->query($sql, __METHOD__);
-		while ($obj = $res->fetchObject()) {
+		foreach ($res as $obj) {
 			$rows[] = (array)$obj;
 		}
 

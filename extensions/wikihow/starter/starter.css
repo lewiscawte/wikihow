@@ -14,6 +14,7 @@
 	border-bottom: 1px solid #DFDACD;
 	margin-top: 10px;
 	font-size: .9em;
+	position:relative;
 }
 
 #starter_head h1 {
@@ -22,16 +23,16 @@
 }
 
 #starter_options {
-	float: right;
-	
+	height:25px;
+	margin-top:10px;
 }
 #starter_options #starter_edit_button {
 	margin-right: 1.3em;
-	float: right;
+	float: left;
 	font-size: .95em;
 }
 #starter_options #starter_skip {
-	float:right; 
+	float:left; 
 	padding: 0 14px 0 0;
 	font-weight: bold;
 	line-height: 26px;	
@@ -59,6 +60,8 @@
 	height: 18px;
 	background: url(./snaggle.png) 0 0 no-repeat;
 	margin: -1px 0 20px 40px;
+	position:relative;
+	z-index: 2;
 }
 
 #starter_guts {
@@ -87,6 +90,19 @@
 	text-align: center;
 }
 
+.starter_logo{
+	position:absolute;
+	top:10px;
+	left:100px;
+	background:url('/skins/WikiHow/images/kiwi_100x80.png') no-repeat;
+	width:100px;
+	height:100px;
+}
+
+#starter_head img{
+	float:left;
+}
+
 #starter_grats h3 {
 	font-size: 2em;
 	padding-bottom: 5px;
@@ -95,12 +111,13 @@
 #starter_grats_options {
 	font-size: .95em;
 	text-align: center;
-	width: 350px;
+	width: 500px;
 	margin: 25px auto;
 }
 #starter_grats_options p {
 	line-height: 38px;
 	padding: 0 0 10px 0;
+	font-size: 19px;
 }
 
 h2 .editsectionbutton {
@@ -152,3 +169,26 @@ a.clickfail:hover {
 }
 
 #wpTextbox1 { height: 150px; }
+
+.spell{
+	color: #ff0000;
+}
+
+#starter_message{
+    font-size: 22px;
+    line-height: 44px;
+    position: absolute;
+    right: 30px;
+    top: 25px;
+}
+
+#grats_signup{
+	float: left;
+    margin-left: 100px;	
+}
+
+#grats_nothanks{
+	float: left;
+    line-height: 25px;
+    margin-left: 20px;
+}

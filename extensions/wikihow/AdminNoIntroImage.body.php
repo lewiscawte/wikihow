@@ -144,7 +144,6 @@ class AdminNoIntroImage extends UnlistedSpecialPage {
 
 		if ($wgRequest->wasPosted()) {
 			$wgOut->setArticleBodyOnly(true);
-			$dbr = wfGetDB(DB_SLAVE);
 
 			$b_final_step = $wgRequest->getVal('final-step','') == 1;
 			

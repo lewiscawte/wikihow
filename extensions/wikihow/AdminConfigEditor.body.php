@@ -159,8 +159,10 @@ class AdminConfigEditor extends UnlistedSpecialPage {
 				}
 				
 				if ($style == 'url') {
+					// ** commentting out because it times out if the input was too big
 					//translate back to urls for updated display
-					$val = $this->translateValues($val,'url');
+					//$val = $this->translateValues($val,'url');
+					$val = '';
 				}
 				
 				$result = array('result' => $output, 'val' => $val);
@@ -197,12 +199,12 @@ class AdminConfigEditor extends UnlistedSpecialPage {
 		}
 ?>
 		<style type="text/css">
-		table { width: 100%; }
-		td {
+		#url-list table { width: 100%; }
+		#url-list td {
 			background-color: #EEE;
 			padding: 5px;
 		}
-		td.x { text-align: center; }
+		#url-list td.x { text-align: center; }
 		#config_hidden_val { display: none; }
 		</style>
 		<form method='post' action='/Special:<?= $this->specialPage ?>'>

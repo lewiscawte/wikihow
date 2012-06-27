@@ -16,7 +16,7 @@
 			</div><!--end rounders-->
 		</div><!--end image-preview-->
 		<div id="article_top">
-			<? if ($thumb && !$isTestArticle): ?>
+			<? if ($thumb): ?>
 				<?
 					if ($deviceOpts['intro-image-format'] == 'conditional') {
 						$className = ($width <= $deviceOpts['screen-width'] / 2 ? 'vertical' : 'horizontal');
@@ -37,7 +37,7 @@
 				<script type="text/javascript">
 				</script>
 			<? endif; ?>
-			<h1><?= ($thumb  && !$isTestArticle ? $title : wfMsg('howto', $title)) ?></h1>
+			<h1><?= ($thumb ? $title : wfMsg('howto', $title)) ?></h1>
 			<p><?= $intro ?></p>
 			<? if (@$deviceOpts['show-ads']): ?>
 			<div class="wh_ad">

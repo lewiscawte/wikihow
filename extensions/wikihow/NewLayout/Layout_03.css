@@ -1,11 +1,12 @@
 /*GLOBAL*/
 body {
 	background-image: url('/skins/WikiHow/images/redesign/background.jpg');
-	font-size: .9em;
+	font-family: Georgia;
+	font-size: 0.9em;
 }
 
 DIV#main{
-	width:993px;
+	width:1008px;
 }
 
 DIV#footer_shell {
@@ -15,7 +16,7 @@ DIV#footer_shell {
 }
 
 DIV#article_shell{
-	width:679px;
+	width:694px;
 }
 
 DIV#article{
@@ -53,7 +54,11 @@ DIV#article{
 	font-size:42px;
 	color:#333333;
 	padding-left:28px;
-	height:84px;
+	height:70px;
+}
+
+#article OL.steps_list_2{
+	margin-top:-10px;
 }
 
 #article OL.steps_list_2 LI{
@@ -69,6 +74,7 @@ DIV#article{
 	float:none;
 	left:22px;
 	margin-left: 0;
+	line-height: inherit;
 }
 
 DIV#header{
@@ -100,7 +106,7 @@ DIV#header #header2{
 	width:993px;
 	margin:0 auto -8px auto;
 	z-index: 1;
-	padding-top:50px;
+	padding-top:30px;
 	z-index: 1;
 	position:relative;
 }
@@ -191,14 +197,15 @@ a.editsection {
 }
 
 #article .article_inner h3, #article #steps h3{
-	background: url('/skins/WikiHow/images/redesign/subheader.jpg') #ffffff no-repeat top left;
+	background: #e8ebe5;
 	font-size: 26px;
 	color:#305015;
 	padding-left:30px;
 	padding-right:0px;
-	width:595px;
+	width:640px;
 	line-height:61px;
 	height:auto;
+	margin-top:-10px;
 }
 
 #article .article_inner h3{
@@ -515,8 +522,8 @@ UL#end_options LI#endop_fanmail{
 }
 
 .whb{
-	font-size:26px;
-	line-height:26px;
+	font-size:20px;
+	line-height:20px;
 }
 
 .mwimg .top{

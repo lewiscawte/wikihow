@@ -20,12 +20,30 @@ class NewLayout extends UnlistedSpecialPage {
 		
 		//our test articles, ladies and gentlemen...
 		$newlayout_array = array(
+			'Lighten-Your-Skin',
+			'Make-Your-Own-Board-Game',
+			'Tell-if-a-Pineapple-Is-Ripe',
 			'Change-a-Word-Document-to-JPEG-Format',
+			'Make-Paper-Look-Old',
 			'Be-Popular',
+			'Flirt-Through-Text-Messages',
+			'Make-Scrambled-Eggs',
 			'Get-Over-a-Break-Up',
+			'Lucid-Dream',
+			'Pass-a-Drug-Test',
+			'Make-Your-Butt-Bigger',
+			'Get-Rid-of-Black-Circles-Under-Your-Eyes',
+			'Permanently-Delete-a-Facebook-Account',
 			'Make-Your-Hair-Grow-Faster',
-			'Kiss',
-			'Dye-Your-Hair-from-Brown-to-Blonde-Without-Bleach'
+			'Dye-Your-Hair-from-Brown-to-Blonde-Without-Bleach',
+			'Not-Get-Caught-Looking-at-Porn',
+			'Stay-Up-All-Night-Alone-(for-Kids)',
+			'Stay-Up-All-Night-Alone-%28for-Kids%29',
+			'Write-a-Movie-Review',
+			'Talk-to-Your-Crush-Even-Though-You-Are-Shy',
+			'Make-a-Dress',
+			'Make-a-Rope-Braid',
+			'Convert-a-Video-Into-a-Gif-Animation'
 		);
 		
 		if ($wgTitle->getNamespace() == NS_MAIN &&
@@ -1038,6 +1056,7 @@ if (typeof Event =='undefined' || typeof Event.observe == 'undefined') {
 		$article = str_replace("<div class='corner bottom_right'></div>", "<div class='corner bottom_right'>&nbsp;</div>", $article);
 		$article = str_replace("<div class='corner bottom_left'></div>", "<div class='corner bottom_left'>&nbsp;</div>", $article);
 		$article = str_replace('<div style="clear:both"></div>', '<div style="clear:both">&nbsp;</div>', $article);
+		$article = str_replace("’", "'", $article);
 		
 		$introImage = "";
 		require_once("$IP/extensions/wikihow/mobile/JSLikeHTMLElement.php");

@@ -23,6 +23,8 @@ class PageHistory {
 	var $linesonpage;
 	var $mNotificationTimestamp;
 	var $mLatestId = null;
+	var $mShowGoodRev = false;
+	var $mGoodRev = null;
 
 	/**
 	 * Construct a new PageHistory.
@@ -101,6 +103,17 @@ class PageHistory {
 		}
 
 		wfRunHooks( 'PageHistoryBeforeList', array( &$this->mArticle ) );
+
+		// XXCHANGED - show last patrolled revision to staff
+		global $wgUser;
+		$userGroups = $wgUser ? $wgUser->getGroups() : array();
+		$this->mShowGoodRev = in_array('staff', $userGroups);
+		if ($this->mShowGoodRev) {
+			$gr = GoodRevision::newFromTitle($this->mTitle, $this->mArticle->getId());
+			if ($gr) {
+				$this->mGoodRev = $gr->latestGood();
+			}
+		}
 
 		/** 
 		 * Do the list
@@ -247,6 +260,17 @@ class PageHistory {
 		}
 
 		$s .= "<td colspan='3' style='text-align:right'></td><td class='history_user' colspan='2'>";
+
+		// XXCHANGED - show last patrolled revision to staff
+		if( $this->mShowGoodRev ) {
+			if( $this->mGoodRev ) {
+				if( $rev->getId() == $this->mGoodRev ) {
+					$s .= ' <b>LP</b>';
+				}
+			} elseif( $latest ) {
+				$s .= ' <b>LP</b>';
+			}
+		}
 
 		if( $row->rev_minor_edit ) {
 			$s .= ' ' . wfElement( 'span', array( 'class' => 'minor' ), wfMsg( 'minoreditletter') );

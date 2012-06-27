@@ -15,7 +15,7 @@ class WikihowShare{
 		
 		$url = urlencode($wgServer . "/" . $wgTitle->getPrefixedURL());
 		$img = urlencode(self::getPinterestImage($wgTitle));
-		$desc = urlencode(wfMsg('howto', $wgTitle->getText()) . self::getPinterestTitleInfo()); 
+		$desc = urlencode(wfMsg('howto', $wgTitle->getText()) . " via www.wikiHow.com"); 
 				
 		$fb = '<div class="like_button"><fb:like href="' . $url . '" send="false" layout="box_count" width="46" show_faces="false"></fb:like></div>';
 		$gp1 = '<div class="gplus1_button"><g:plusone size="tall" callback="plusone_vote"></g:plusone></div>';

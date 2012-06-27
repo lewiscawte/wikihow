@@ -16,6 +16,7 @@ body{
 #header_logo{
 	background-color:#f7f5f2;
 	padding:10px 10px;
+	border-bottom:1px solid #b5aa95;
 }
 
 .header_static {
@@ -23,8 +24,7 @@ body{
 	z-index: 2;
 	width: 100%;
 	min-width: 320px;
-	height: 33px;
-	border-bottom:1px solid #b5aa95;
+	height: 32px;
 }
 
 .logo{
@@ -50,7 +50,7 @@ body{
 	/* faster than this: background:url(/extensions/wikihow/mobile/images/bkg_search.jpg) repeat-x; */
 	background:url('data:image/jpg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAAPAAA/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLDAoKCwoKDBAMDAwMDAwQDA4PEA8ODBMTFBQTExwbGxscHx8fHx8fHx8fHwEHBwcNDA0YEBAYGhURFRofHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f/8AAEQgAKwAPAwERAAIRAQMRAf/EAFIAAQEBAQAAAAAAAAAAAAAAAAAEAwcBAQEBAQAAAAAAAAAAAAAAAAABAgMQAQEBAAAAAAAAAAAAAAAAAAATEhEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A7/twYNgmooUBLUQqCSioUBNQCgMQAf/Z') repeat-x;
 
-	border:1px solid #b5aa95;
+	border-bottom:1px solid #b5aa95;
 	height:29px;
 	padding:7px 0;
 }

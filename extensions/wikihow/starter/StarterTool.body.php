@@ -2,6 +2,8 @@
 
 class StarterTool extends UnlistedSpecialPage {
 
+	const COOKIE_NAME = "starterTool";
+	
 	function __construct() {
 		UnlistedSpecialPage::UnlistedSpecialPage( 'StarterTool' );
 	}
@@ -30,20 +32,47 @@ class StarterTool extends UnlistedSpecialPage {
 		return false;
 	}
 
-	public static function getSentence() {
-		global $wgStarterPages;
+	public static function getSentence($sentenceNum = null) {
+		
+		$sentences = self::getSentences();
+		
+		if($sentenceNum != null) {
+			return $sentences[$sentenceNum];
+		}
+		else {
 
-		//get random sentence from our array
-		$numb = rand(0,(count($wgStarterPages)-1));
-		$the_title = $wgStarterPages[$numb];
+			//get random sentence from our array
+			$numb = rand(0,(count($sentences)-1));
+			$sentence = $sentences[$numb];
 
-		$t = Title::newFromText($the_title);
-		$r = Revision::newFromTitle($t);
+			$sent = '<span id="starter_sentence">'.$sentence.'</span>';
+			$sent .= '<input type="hidden" value="'.$numb.'" id="starter_title" />';
 
-		$sent = '<span id="starter_sentence">'.$r->getText().'</span>';
-		$sent .= '<input type="hidden" value="'.$the_title.'" id="starter_title" />';
-
-		return $sent;
+			return $sent;
+		
+		}
+	}
+	
+	function getSentences() {
+		global $wgMemc;
+		
+		$key = "startertool_sentences";
+		//$sentences = $wgMemc->get($key);
+		
+		if(!$sentences) {
+			$msg = ConfigStorage::dbGetConfig('startertool_sentences'); //startup companies
+			$sentences = split("\n", $msg);
+			
+			$wgMemc->set($key, $sentences);
+		}
+		
+		return $sentences;
+	}
+	
+	function getSentenceCode() {
+		$sentenceInfo = getSentence();
+		
+		$number = $sentenceInfo['number'];
 	}
 
 	function getFirstArticleRevision($pageId) {
@@ -75,18 +104,41 @@ class StarterTool extends UnlistedSpecialPage {
 			$wgOut->blockedPage();
 			return;
 		}
+		
+		$referral = $wgRequest->getVal('ref');
 
 		//get contents
 		if ($wgRequest->getVal('edit')) {
 			$wgOut->setArticleBodyOnly(true);
-			$t = Title::newFromText($wgRequest->getVal('starter_title'));
-			$a = new Article($t);
-			$editor = new EditPage( $a );
-			$editor->edit();
+			$sentenceNum = $wgRequest->getVal('starter_title');
+			$sentence = $this->getSentence($sentenceNum);
+			
+			$sentence = preg_replace('@<[/]?(span|[ovwxp]:\w+)[^>]*?>@', '', $sentence);
+			
+			$vars = array('sentence' => $sentence);
+			$html = EasyTemplate::html('edit',$vars);
+			$wgOut->addHTML($html);
+			
 			return;
-		} elseif ($wgRequest->getVal('getsome')) {
+		} elseif ($wgRequest->getVal('finish') ) {
+			$finishNum = "Finish-" . $wgRequest->getVal('finish');
+			self::logInfo($finishNum);
+		} elseif ($wgRequest->getVal('editNum')) {
+			$editNum = "Edit-" . $wgRequest->getVal('editNum');
+			self::logInfo($editNum);
+			if($wgRequest->getVal('getsome')) {
+				$wgOut->setArticleBodyOnly(true);
+				$sentence = self::getSentence();
+
+				$wgOut->addHTML($sentence);
+				return;
+			}
+		
+		}elseif ($wgRequest->getVal('getsome')) {
 			$wgOut->setArticleBodyOnly(true);
-			$wgOut->addHTML(self::getSentence());
+			$sentence = self::getSentence();
+			
+			$wgOut->addHTML($sentence);
 			return;
 
 		} elseif ($wgRequest->getVal( 'action' ) == 'submit') {
@@ -94,6 +146,10 @@ class StarterTool extends UnlistedSpecialPage {
 
 			$t = Title::newFromText($wgRequest->getVal('starter-title'));
 			$a = new Article($t);
+			
+			//internal log
+			if($referral != "")
+				self::logInfo("submit");
 
 			//log it
 			$params = array();
@@ -126,12 +182,18 @@ class StarterTool extends UnlistedSpecialPage {
  			return;
 		} else {
 			//default; get a sentence
+			if($referral != "") {
+				//log that they came in from the specific ad
+				self::logInfo("Ad-" . $referral);
+				
+				setcookie(StarterTool::COOKIE_NAME, 1, 0);
+			}
 
-			$wgOut->addScript("<script type='text/javascript' src='". wfGetPad('/extensions/min/f/extensions/wikihow/starter/starter.js?rev=') . WH_SITEREV . "'></script>");
-			$wgOut->addScript("<script type='text/javascript' src='". wfGetPad('/extensions/min/f/skins/common/clientscript.js?rev=') . WH_SITEREV . "'></script>");
-
-			$wgOut->addStyle('../extensions/wikihow/starter/starter.css');
-
+			$wgOut->addScript(HtmlSnips::makeUrlTags('css', array('starter.css'), 'extensions/wikihow/starter', false));
+			$wgOut->addScript(HtmlSnips::makeUrlTags('js', array('starter.js'), 'extensions/wikihow/starter', false));
+			$wgOut->addScript(HtmlSnips::makeUrlTags('js', array('clientscript.js'), 'skins/common/', false));
+			$wgOut->addScript(HtmlSnips::makeUrlTags('js', array('jquery.cookie.js'), 'extensions/wikihow/common', false));
+			
 			$sk = $wgUser->getSkin();
 			$wgOut->setArticleBodyOnly(false);
 
@@ -143,4 +205,60 @@ class StarterTool extends UnlistedSpecialPage {
 		$wgOut->setHTMLTitle( wfMsg('pagetitle', wfMsg('app-name')) );
 
 	}
+	
+	function logInfo($action) {
+		global $wgUser;
+		
+		$dbw = wfGetDB(DB_MASTER);
+		
+		$dbw->insert('startertool', array('st_user' => $wgUser->getID(), 'st_username' => $wgUser->getName(), 'st_date' => wfTimestamp(TS_MW), 'st_action' => $action) );
+		
+	}
+}
+
+class StarterToolAdmin extends UnlistedSpecialPage {
+
+	function __construct() {
+		UnlistedSpecialPage::UnlistedSpecialPage( 'StarterToolAdmin' );
+	}
+	
+	function execute($par) {
+		global $wgOut, $wgUser;
+		
+		if ($wgUser->getID() == 0 || !in_array('staff', $wgUser->getGroups())) {
+			$wgOut->setRobotpolicy( 'noindex,nofollow' );
+			$wgOut->errorpage( 'nosuchspecialpage', 'nospecialpagetext' );
+			return;
+		}
+		
+		$dbr = wfGetDB(DB_SLAVE);
+		
+		$sql = "SELECT st_action, count(*) from startertool GROUP BY st_action";
+		$res = $dbr->select("startertool", array('st_action', 'count(*) as total'), array(), __METHOD__, array("GROUP BY" => "st_action"));
+		
+		$wgOut->addHTML("<table>");
+		foreach($res as $row) {
+			if(stripos($row->st_action, "ad-") !== false) {
+				$adNum = substr($row->st_action, 3);
+				$wgOut->addHTML("<tr><td>Number of people who clicked on ad #{$adNum}</td><td style='padding-left:10px;'>{$row->total}</td></tr>");
+			}
+			if(stripos($row->st_action, "edit-") !== false) {
+				$editNum = substr($row->st_action, 5);
+				$wgOut->addHTML("<tr><td>Number of people who made {$editNum} edit" . ($editNum=="1"?"":"s") . "</td><td style='padding-left:10px;'>{$row->total}</td></tr>");
+			}
+			if(stripos($row->st_action,"finish-" ) !== false) {
+				$finish = substr($row->st_action, 7);
+				$wgOut->addHTML("<tr><td>Number of people who clicked \"{$finish}\" on final screen</td><td style='padding-left:10px;'>{$row->total}</td></tr>");
+			}
+			else if(stripos($row->st_action, "signup_top") !== false) {
+				$wgOut->addHTML("<tr><td>Number of people who finished the signup process (clicked top signup)</td><td style='padding-left:10px;'>{$row->total}</td></tr>");
+			}
+			elseif(stripos($row->st_action, "signup") !== false) {
+				$wgOut->addHTML("<tr><td>Number of people who finished the signup process</td><td style='padding-left:10px;'>{$row->total}</td></tr>");
+			}
+		}
+		$wgOut->addHTML("</table>");
+		
+	}
+		
 }

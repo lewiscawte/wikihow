@@ -295,8 +295,10 @@ class MediaWiki {
 					/* Rewrite environment to redirected article */
 										
 					//XXCHANGED USE 301 redirects for redirected articles
-					global $wgOut;
-					$wgOut->redirect($target->getFullURL(), 301);
+					global $wgOut, $wgRequest;
+					// XXCHANGED - pass platform param through the redirect
+					$platform = @$wgRequest ? '?platform=' . @$wgRequest->getVal('platform') : '';
+					$wgOut->redirect($target->getFullURL() . $platform, 301);
 
 					$rarticle = $this->articleFromTitle($target);
 					$rarticle->loadPageData($rarticle->pageDataFromTitle($dbr,$target));

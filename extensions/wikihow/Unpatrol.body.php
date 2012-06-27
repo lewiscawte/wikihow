@@ -55,7 +55,7 @@ class Unpatrol extends UnlistedSpecialPage {
 				return;
 			}
 			
-			$unpatrolled = $this->doTheUnpatrol($user,$cutoff,$cutoff2);
+			$unpatrolled = $this->doTheUnpatrol($user,$cutoff,$cutoff2,false);
 			
 			if ($unpatrolled > 0) {
 				$wgOut->addHTML("Unpatrolled " . $unpatrolled . " patrols by {$user->getName()}\n");
@@ -69,15 +69,28 @@ class Unpatrol extends UnlistedSpecialPage {
 	
 	//does the unpatrolling
 	// - returns the count of unpatrolled articles
-	public static function doTheUnpatrol($user,$cutoff,$cutoff2) {
+	// *** MAKE SURE TO ADD AN UNPATROL LIMIT ***
+	public static function doTheUnpatrol($user,$cutoff,$cutoff2,$unpatrol_limit) {
 		global $wgLang;
+		
+		//max number of possible unpatrols
+		if (!empty($unpatrol_limit)) {
+			$limit = array('LIMIT' => $unpatrol_limit);
+		}
+		else {
+			$limit = array();
+		}
 		
 		$dbw = wfGetDB(DB_MASTER);
 		$options = array('log_user'=>$user->getID(), 'log_type'=>'patrol', "log_timestamp > '{$cutoff}'", 'log_deleted' => 0);
 		if ($cutoff2)
 			$options[] = "log_timestamp < '{$cutoff2}'";
 	
-		$res = $dbw->select('logging', array('log_title', 'log_params'), $options);
+		$res = $dbw->select('logging', 
+				array('log_title', 'log_params'), 
+				$options,
+				__METHOD__,  
+				$limit);
 	
 		$oldids = array();
 		while ($row = $dbw->fetchObject($res)) {
@@ -88,13 +101,15 @@ class Unpatrol extends UnlistedSpecialPage {
 		$count = sizeof($oldids);
 		if ($count > 0) {
 			//set the patrols in recentchanges as not patrolled
-			$res = $dbw->query("UPDATE recentchanges set rc_patrolled=0 where rc_this_oldid IN (" . implode(", ", $oldids) . ");");
+			$sql = "UPDATE recentchanges set rc_patrolled=0 where rc_this_oldid IN (" . implode(", ", $oldids) . ")";
+			if (!empty($unpatrol_limit)) $sql .= " LIMIT ".$unpatrol_limit;
+			$res = $dbw->query($sql,__METHOD__);
 			
 			wfRunHooks('Unpatrol', array(&$oldids));
 
 			if ($res) {
 				//set logs to deleted
-				$res = $dbw->update('logging', array('log_deleted' => 1), $options);
+				$res = $dbw->update('logging', array('log_deleted' => 1), $options, __METHOD__,$limit);
 				
 				//remove from QG
 				$del_res = $dbw->delete("qc", array("qc_rev_id IN (" . implode(", ", $oldids) . ")","qc_user" => $dbw->addQuotes($user->getID())));
