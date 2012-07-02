@@ -88,7 +88,7 @@ class CheckImagesMaint {
 	}
 
 	public static function getDiff(&$a, &$b) {
-		$c=0;
+$c=0;
 //$dbw=wfGetDB(DB_MASTER);
 //		foreach ($a as $k=>$v) {
 //			if (!isset($b[$k]) && strpos($v['name'], '/') === false) {
@@ -97,7 +97,7 @@ class CheckImagesMaint {
 //			}
 //		}
 		foreach ($b as $k=>$v) {
-			if (!isset($a[$k]) && preg_match('@^Temp_file_@',$v['file'])) {// && strpos($v['name'], '/') === false) {
+			if (!isset($a[$k]) && strpos($v['file'], '/') === false) {
 $prefix = substr($k,0,1) . '/' . substr($k,0,2);
 $bkup = '/root/backup';
 //print "mkdir -p $bkup/$prefix $bkup/thumb/$prefix\n";
@@ -107,14 +107,14 @@ print $v['time'] . ' ' . $v['file'] . "\n";
 $c++;
 			}
 		}
-//print "missing: $c\n";
+print "missing: $c\n";
 	}
 
 	public static function main() {
 		$c = array('/tmp/c0', '/tmp/c1');
 		if (!file_exists($c[0])) {
 			$images = self::listImagesFromDB();
-			file_put_contents($c[0], serialize($images));
+			//file_put_contents($c[0], serialize($images));
 		} else {
 			$images = unserialize(file_get_contents($c[0]));
 		}
@@ -123,7 +123,7 @@ $c++;
 		if (!file_exists($c[1])) {
 			$base_path = '/var/www/images_en';
 			$files = self::listFiles($base_path);
-			file_put_contents($c[1], serialize($files));
+			//file_put_contents($c[1], serialize($files));
 		} else {
 			$files = unserialize(file_get_contents($c[1]));
 		}

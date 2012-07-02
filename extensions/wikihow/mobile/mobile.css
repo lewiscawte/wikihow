@@ -68,6 +68,9 @@ body{
 }
 
 .home_label{
+	background-image: url(/extensions/wikihow/mobile/images/HowTo_Label.svg), url(/extensions/wikihow/mobile/images/label_howto_en.png);
+	width: 88px;
+	height: 51px;
 	position:absolute;
 	top:-10px;
 	left:-12px;
@@ -225,7 +228,7 @@ h3{
 
 #header_logo img {
 	width: 82px;
-	height: 13px;
+	height: 14px;
 }
 
 #sharing_inner {

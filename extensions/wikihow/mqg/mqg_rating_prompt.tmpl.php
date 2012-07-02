@@ -13,11 +13,13 @@
 			<a href="#" id="mqg_skip">Skip</a>
 		</div>
 		<div id="mqg_rating_div">
-			<input name="star1" type="radio" class="star required"/>
-			<input name="star1" type="radio" class="star"/>
-			<input name="star1" type="radio" class="star"/>
-			<input name="star1" type="radio" class="star"/>
-			<input name="star1" type="radio" class="star"/>
+			<input name="star1" type="radio" class="mqg_star required" value="1"/>
+			<input name="star1" type="radio" class="mqg_star" value="2"/>
+			<input name="star1" type="radio" class="mqg_star" value="3"/>
+			<input name="star1" type="radio" class="mqg_star" value="4"/>
+			<input name="star1" type="radio" class="mqg_star" value="5"/>
 		</div>
 	</div>
 </div>
+<script type='text/javascript'>
+</script>

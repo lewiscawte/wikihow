@@ -2,7 +2,7 @@
 
 class StarterTool extends UnlistedSpecialPage {
 
-	const COOKIE_NAME = "starterTool";
+	const COOKIE_NAME = "wiki_starterTool";
 	
 	function __construct() {
 		UnlistedSpecialPage::UnlistedSpecialPage( 'StarterTool' );

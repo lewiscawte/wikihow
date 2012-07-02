@@ -2284,27 +2284,50 @@ class WikiHowTemplate extends QuickTemplate {
 <?
 	}
 
-        function setCategories() {
-            global $wgUser;
+	function setCategories() {
+		global $wgUser;
 
-            $sk = $wgUser->getSkin();
+		$sk = $wgUser->getSkin();
 
-            $tree = WikiHow::getCurrentParentCategoryTree();
-            if ($tree != null) {
-                foreach($tree as $key => $path) {
-                    $catString = str_replace("Category:", "", $key);
-                    $sk->mCategories[$catString] = $catString;
+		$tree = WikiHow::getCurrentParentCategoryTree();
+		if ($tree != null) {
+			foreach($tree as $key => $path) {
+				$catString = str_replace("Category:", "", $key);
+				$sk->mCategories[$catString] = $catString;
 
-                    $subtree = wikihowAds::flattenCategoryTree($path);
-                    for ($i = 0; $i < count($subtree); $i++) {
-                        $catString = str_replace("Category:", "", $subtree[$i]);
-                        $sk->mCategories[$catString] = $catString;
-                    }
-                }
-            }
-        }
-        
+				$subtree = wikihowAds::flattenCategoryTree($path);
+				for ($i = 0; $i < count($subtree); $i++) {
+					$catString = str_replace("Category:", "", $subtree[$i]);
+					$sk->mCategories[$catString] = $catString;
+				}
+			}
+		}
+	}
 	
+	function getTorbitInsightsJS($isArticlePage, $isLoggedIn) {
+		$pad_server = wfGetPad('/extensions/wikihow/common/torbit-insight.min.js');
+
+		$tags = array();
+		if ($isArticlePage) $tags[] = 'Article';
+		if ($isLoggedIn) $tags[] = 'LoggedIn';
+		$tagsJS = $tags ? "TBRUM.q.push(['tags', '" . join(', ', $tags) . "']);" : '';
+
+		return <<<EOHTML
+<script>
+	var TBRUM=TBRUM||{};TBRUM.q=TBRUM.q||[];
+	TBRUM.q.push(['mark','firstbyte',(new Date).getTime()]);
+	{$tagsJS}
+	(function(){
+		var a=document.createElement('script');
+		a.type='text/javascript';
+		a.async=true;
+		a.src='{$pad_server}';
+		var b=document.getElementsByTagName('script')[0];
+		b.parentNode.insertBefore(a,b)
+	})();
+</script>
+EOHTML;
+	}
 
 	/**
 	 * Template filter callback for WikiHow skin.
@@ -2344,10 +2367,15 @@ class WikiHowTemplate extends QuickTemplate {
 		if ($wgTitle
 			&& $wgTitle->getNamespace() == NS_MAIN
 			&& $wgTitle->getText() == wfMsg('mainpage')
-			&& $action == 'view'
-		) {
+			&& $action == 'view')
+		{
 			$isMainPage = true;
 		}
+
+		$isArticlePage = $wgTitle
+			&& !$isMainPage
+			&& $wgTitle->getNamespace() == NS_MAIN
+			&& $action == 'view';
 
 		// determine whether or not the user is logged in
 		$isLoggedIn = $wgUser->getID() > 0;
@@ -2530,15 +2558,15 @@ class WikiHowTemplate extends QuickTemplate {
 		$use_chikita_sky = false;  //rand(0, 4) == 3;
 		#$use_chikita_sky = true;
 
-        $rad_links_top = true;
-        if (rand(0, 1) == 1) {
-            $sk->mGlobalChannels[] =  "8962074949";
-            $sk->mGlobalComments[] = "RL Top";
-        } else {
-            $sk->mGlobalChannels[] =  "8388126455";
-            $sk->mGlobalComments[] = "RL Below";
-            $rad_links_top = false;
-        }
+		$rad_links_top = true;
+		if (rand(0, 1) == 1) {
+			$sk->mGlobalChannels[] =  "8962074949";
+			$sk->mGlobalComments[] = "RL Top";
+		} else {
+			$sk->mGlobalChannels[] =  "8388126455";
+			$sk->mGlobalComments[] = "RL Below";
+			$rad_links_top = false;
+		}
 
 		// do the tool bar/ quick bar
 		if ($wgTitle->getFullText() ==$wgLang->getNsText(NS_SPECIAL).":Search"
@@ -2564,14 +2592,14 @@ class WikiHowTemplate extends QuickTemplate {
 						break;
 					}
 					$ads = wfMsg('chikita_ads_skyscraper', $query);
-        			$ads = preg_replace('/\<[\/]?pre\>/', '', $ads);
+					$ads = preg_replace('/\<[\/]?pre\>/', '', $ads);
 				}
 				// SHOW RAD LINKS AFTER SKYSCRAPER
 				$rad_links = $sk->getRADLinks($use_chikita_sky);
-                $ads = "{$rad_links}$ads";
-                //$ads .= "<br/><br/>{$rad_links}";
+				$ads = "{$rad_links}$ads";
+				//$ads .= "<br/><br/>{$rad_links}";
 		} elseif ($isMainPage && $action == "view") {
-		      $show_related = false;
+			  $show_related = false;
 		} else {
 			//$s .= "<td>\n";
 
@@ -2587,8 +2615,8 @@ class WikiHowTemplate extends QuickTemplate {
 		$talk_post_form = "";
 		if (MWNamespace::isTalk($wgTitle->getNamespace()) && $action == "view")
 
-	   	if ($isPrintable) {
-	   	    // override all of these values for printable versions
+		if ($isPrintable) {
+			// override all of these values for printable versions
 		  $contentStyle = "content_printable";
 		  $bodyStyle = "body_style_printable";
 		  $toolbox = "";
@@ -2619,7 +2647,7 @@ class WikiHowTemplate extends QuickTemplate {
 			($wgTitle->getFullText() == $wgLang->getNsText(NS_SPECIAL).":Search" || $wgTitle->getFullText() == $wgLang->getNsText(NS_SPECIAL).":LSearch" || $wgTitle->getFullText() == $wgLang->getNsText(NS_SPECIAL).":GoogSearch")) {
 			$search = htmlspecialchars($_GET['search']);
 		} else {
-		    $search = wfMsg('type_here');
+			$search = wfMsg('type_here');
 		}
 
 		// QWER links for everyone on all pages
@@ -2689,32 +2717,32 @@ class WikiHowTemplate extends QuickTemplate {
 
 		//user stats
 		$userstats = "";
-        if ($wgTitle->getNamespace() == NS_USER) {
-            $userstats .= "<p id='userstats'>";
-            $real_name = $sk->getUsernameFromTitle();
-            $username = $wgTitle->getText();
-            $username = ereg_replace("/.*", "", $username);
+		if ($wgTitle->getNamespace() == NS_USER) {
+			$userstats .= "<p id='userstats'>";
+			$real_name = $sk->getUsernameFromTitle();
+			$username = $wgTitle->getText();
+			$username = ereg_replace("/.*", "", $username);
 			$contribsPage = SpecialPage::getTitleFor( 'Contributions', $username );
 			$u = User::newFromName($username);
 			if ($u && $u->getID() != 0)
-            	$userstats .= wfMsg('contributions-made', $real_name, number_format(User::getAuthorStats($username), 0, "", ","), $contribsPage->getFullURL());
+				$userstats .= wfMsg('contributions-made', $real_name, number_format(User::getAuthorStats($username), 0, "", ","), $contribsPage->getFullURL());
 			else
-            	$userstats .= wfMsg('contributions-link', $real_name, number_format(User::getAuthorStats($username), 0, "", ","), $contribsPage->getFullURL());
-            $userstats .= "<br/>";
-            $userstats .= "</p>";
-        }
-
+				$userstats .= wfMsg('contributions-link', $real_name, number_format(User::getAuthorStats($username), 0, "", ","), $contribsPage->getFullURL());
+			$userstats .= "<br/>";
+			$userstats .= "</p>";
+		}
 
 
 		//Editing Tools
 		$uploadlink = "";
 		$freephotoslink = "";
 		$uploadlink = $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "Upload"), wfMsg('upload'));
-        $videolink = "";
-        if ($wgTitle->getNamespace() == NS_MAIN && $isLoggedIn
-          && $wgTitle->userCanEdit() && !$isMainPage)  {
-	        $videolink = "<li id='gatVideoImport' > " . $sk->makeLinkObj( SpecialPage::getTitleFor( 'Importvideo', $wgTitle->getText() ), wfMsg('importvideo')) . "</li>";
-       }
+		$videolink = "";
+		if ($wgTitle->getNamespace() == NS_MAIN && $isLoggedIn
+			&& $wgTitle->userCanEdit() && !$isMainPage)
+		{
+			$videolink = "<li id='gatVideoImport' > " . $sk->makeLinkObj( SpecialPage::getTitleFor( 'Importvideo', $wgTitle->getText() ), wfMsg('importvideo')) . "</li>";
+		}
 		$freephotoslink = $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, "ImportFreeImages"), wfMsg('imageimport'));
 		$relatedchangeslink = "";
 		if ($wgArticle != null)
@@ -2742,27 +2770,27 @@ class WikiHowTemplate extends QuickTemplate {
 			$sitenotice = preg_replace('/<p>/', "<p>",  $this->data['sitenotice']);
 		}
 
-        if( $wgUser->getNewtalk() ) {
-            $usertalktitle = $wgUser->getTalkPage();
-           	if($usertalktitle->getPrefixedDbKey() != $this->thispage){
+		if ($wgUser->getNewtalk()) {
+			$usertalktitle = $wgUser->getTalkPage();
+			if($usertalktitle->getPrefixedDbKey() != $this->thispage){
 				$trail = "";
 				if ($wgUser->getOption('scrolltalk'))
 					$trail = "#post";
-                $announcement = wfMsg( 'newmessages2', $wgUser->getName(), $usertalktitle . $trail );
-            }
-        }
-
-        if( $wgUser->getNewkudos() && !$wgUser->getOption('ignorefanmail')) {
-            $userkudostitle = $wgUser->getKudosPage();
-            if($userkudostitle->getPrefixedDbKey() != $this->thispage) {
-                if ($announcement != '') {
-			$announcement .= " and ";
-			$announcement .= wfMsg( 'newfanmail2', $wgUser->getName(), $userkudostitle->getPrefixedURL());                # Disable Cache
-		} else {
-			$announcement = wfMsg( 'newfanmail2', $wgUser->getName(), $userkudostitle->getPrefixedURL());
+				$announcement = wfMsg( 'newmessages2', $wgUser->getName(), $usertalktitle . $trail );
+			}
 		}
-            }
-        }
+
+		if ($wgUser->getNewkudos() && !$wgUser->getOption('ignorefanmail')) {
+			$userkudostitle = $wgUser->getKudosPage();
+			if($userkudostitle->getPrefixedDbKey() != $this->thispage) {
+				if ($announcement != '') {
+					$announcement .= " and ";
+					$announcement .= wfMsg( 'newfanmail2', $wgUser->getName(), $userkudostitle->getPrefixedURL());                # Disable Cache
+				} else {
+					$announcement = wfMsg( 'newfanmail2', $wgUser->getName(), $userkudostitle->getPrefixedURL());
+				}
+			}
+		}
 
 		if ($announcement != "") {
 			$announcement = "<span id='gatNewMessage'><div class='message_box'>$announcement</div></span>";
@@ -2817,9 +2845,9 @@ class WikiHowTemplate extends QuickTemplate {
 		//INTL: Search options for the english site are a bit more complex
 		if ($wgLanguageCode == 'en') {
 			if ($wgUser->getID() == 0) {
-            	$top_search = GoogSearch::getSearchBox("cse-search-box");
-            	$footer_search = GoogSearch::getSearchBox("cse-search-box-footer");
-            	$footer_search = $footer_search . "<br />";
+				$top_search = GoogSearch::getSearchBox("cse-search-box");
+				$footer_search = GoogSearch::getSearchBox("cse-search-box-footer");
+				$footer_search = $footer_search . "<br />";
 				/*
 				$top_search  = '
 				<form id="bubble_search" name="search_site" action="/wikiHowTo" method="get">
@@ -2838,12 +2866,12 @@ class WikiHowTemplate extends QuickTemplate {
 				</form>';
 				$footer_search = str_replace("bubble_search", "footer_search", $top_search);
 			}
-       	}
+		}
 	else {
 		//INTL: International search just uses Google custom search
 		$top_search = GoogSearch::getSearchBox("cse-search-box");
-	       	$footer_search = GoogSearch::getSearchBox("cse-search-box-footer");
-        	$footer_search = $footer_search . "<br />";
+			$footer_search = GoogSearch::getSearchBox("cse-search-box-footer");
+			$footer_search = $footer_search . "<br />";
 	}
 
 	$text = $this->data['bodytext'];
@@ -2860,15 +2888,15 @@ class WikiHowTemplate extends QuickTemplate {
 
 		// show suggested titles
 		$suggested_titles = "";
-        if ($wgLanguageCode == 'en'
-            && $wgTitle->getNamespace() == NS_MAIN
+		if ($wgLanguageCode == 'en'
+			&& $wgTitle->getNamespace() == NS_MAIN
 			&& !$isMainPage
 			&& $action == "view"
 			&& $wgTitle->getArticleID() > 0
 		) {
 			$suggested_titles = "<div id='st_wrap'><div class='article_inner'>" . wfGetSuggestedTitles($wgTitle) . "</div></div>";
-            if ($wgUser->getID() == 0) {
-                //$suggested_titles = WikiHowTemplate::getAdUnitPlaceholder(3, true) . $suggested_titles;
+			if ($wgUser->getID() == 0) {
+				//$suggested_titles = WikiHowTemplate::getAdUnitPlaceholder(3, true) . $suggested_titles;
 			}
 		}
 
@@ -2938,11 +2966,11 @@ class WikiHowTemplate extends QuickTemplate {
 		$navigation = "
 	<div class='sidebox_shell'>
 		<div class='sidebar_top'></div>
-        <div class='sidebox' id='side_nav'>
-            	<h3 id='navigation_list_title' >
+		<div class='sidebox' id='side_nav'>
+				<h3 id='navigation_list_title' >
 			<a href=\"#\" onclick=\"return sidenav_toggle('navigation_list',this);\" id='href_navigation_list'>" . wfMsg('navlist_collapse') . "</a>
 			<span onclick=\"return sidenav_toggle('navigation_list',this);\" style=\"cursor:pointer;\"> " . wfMsg('navigation') . "</span></h3>
-            <ul id='navigation_list' style='margin-top: 0;'>
+			<ul id='navigation_list' style='margin-top: 0;'>
 				<li> {$createLink}</li>
 				{$editlink}";
 
@@ -2956,7 +2984,7 @@ class WikiHowTemplate extends QuickTemplate {
 				{$categorypickerlink}
 				{$moreideaslink}
 				{$loginlink}
-            </ul>
+			</ul>
 
 			<h3>
 			<a href=\"#\" onclick=\"return sidenav_toggle('visit_list',this);\" id='href_visit_list'>" . wfMsg('navlist_expand') . "</a>
@@ -2969,7 +2997,7 @@ class WikiHowTemplate extends QuickTemplate {
 				</ul>";
 
 		if ($wgTitle->getNamespace() == NS_MAIN && $isLoggedIn
-          && $wgTitle->userCanEdit() && !$isMainPage)  {
+		  && $wgTitle->userCanEdit() && !$isMainPage)  {
 			$navigation .= "<h3>
 			<a href=\"#\" onclick=\"return sidenav_toggle('editing_list',this);\" id='href_editing_list'>" . wfMsg('navlist_expand') . "</a>
 			<span onclick=\"return sidenav_toggle('editing_list',this);\" style=\"cursor:pointer;\"> " . wfMsg('editing_tools') . "</span></h3>
@@ -2993,30 +3021,30 @@ class WikiHowTemplate extends QuickTemplate {
 
 		if($wgUser->getID() > 0){
 
-            $navigation .= "<h3><a href=\"#\" onclick=\"return sidenav_toggle('my_pages_list',this);\" id='href_my_pages_list'>" . wfMsg('navlist_expand') . "</a>
+			$navigation .= "<h3><a href=\"#\" onclick=\"return sidenav_toggle('my_pages_list',this);\" id='href_my_pages_list'>" . wfMsg('navlist_expand') . "</a>
 		<span onclick=\"return sidenav_toggle('my_pages_list',this);\" style=\"cursor:pointer;\"> " . wfMsg('my_pages') . "</span></h3>
-            <ul id='my_pages_list' style='display:none;'>
-            <li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Mytalk'), wfMsg('mytalkpage') ). "</li>
-            <li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Mypage'), wfMsg('myauthorpage') ). "</li>
+			<ul id='my_pages_list' style='display:none;'>
+			<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Mytalk'), wfMsg('mytalkpage') ). "</li>
+			<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Mypage'), wfMsg('myauthorpage') ). "</li>
 			<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Watchlist'), wfMsg('watchlist') ). "</li>
-            <li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Drafts'), wfMsg('mydrafts') ). "</li>
-            <li> " . $sk->makeLinkObj(SpecialPage::getTitleFor('Mypages', 'Contributions'),  wfMsg ('mycontris')) . "</li>
-            <li> " . $sk->makeLinkObj(SpecialPage::getTitleFor('Mypages', 'Fanmail'),  wfMsg ('myfanmail')) . "</li>
-            <li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Preferences'), wfMsg('mypreferences') ). "</li>
-            <li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Userlogout'), wfMsg('logout') ) . "</li>
-            </ul>";
+			<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Drafts'), wfMsg('mydrafts') ). "</li>
+			<li> " . $sk->makeLinkObj(SpecialPage::getTitleFor('Mypages', 'Contributions'),  wfMsg ('mycontris')) . "</li>
+			<li> " . $sk->makeLinkObj(SpecialPage::getTitleFor('Mypages', 'Fanmail'),  wfMsg ('myfanmail')) . "</li>
+			<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Preferences'), wfMsg('mypreferences') ). "</li>
+			<li> " . $sk->makeLinkObj(Title::makeTitle(NS_SPECIAL, 'Userlogout'), wfMsg('logout') ) . "</li>
+			</ul>";
 		}
 
 		$navigation .= "   {$userlinks}";
 
-        $navigation .= "</div>
+		$navigation .= "</div>
 		<div class='sidebar_bottom_fold'></div>
 	</div>
 	";
 
 
 /*
-            <a id="nav_home" href="<?=$mainPageObj->getFullURL();?>" id="nav_home" title="Home" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">Home</a>            <a id="nav_articles" href="" title="Articles" class="on" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">Articles</a>            <a id="nav_community" href="<?=$cp->getFullURL();?>" id="nav_community" title="Community" onmouseover="button_swap(this);" onmouseout="button_unswap(this);" onmousedown="button_click(this)"><?=wfMsg('community');?></a>            <?if ($wgUser->getID() >0) { ?>            <a id="nav_profile" href="<?=$wgUser->getUserPage()->getFullURL(); ?>" id="nav_profile" title="My Profile" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">My Profile</a>            <? } else{ ?>            <a id="nav_profile" href="/Special:Userlogin" id="nav_profile" title="My Profile" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">My Profile</a>            <? } ?>
+			<a id="nav_home" href="<?=$mainPageObj->getFullURL();?>" id="nav_home" title="Home" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">Home</a>            <a id="nav_articles" href="" title="Articles" class="on" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">Articles</a>            <a id="nav_community" href="<?=$cp->getFullURL();?>" id="nav_community" title="Community" onmouseover="button_swap(this);" onmouseout="button_unswap(this);" onmousedown="button_click(this)"><?=wfMsg('community');?></a>            <?if ($wgUser->getID() >0) { ?>            <a id="nav_profile" href="<?=$wgUser->getUserPage()->getFullURL(); ?>" id="nav_profile" title="My Profile" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">My Profile</a>            <? } else{ ?>            <a id="nav_profile" href="/Special:Userlogin" id="nav_profile" title="My Profile" onmousedown="button_click(this)" onmouseover="button_swap(this);" onmouseout="button_unswap(this);">My Profile</a>            <? } ?>
 */
 	$lpage = Title::makeTitle(NS_SPECIAL, "Userlogin");
 	$dpage = $wgLanguageCode == 'en' ? Title::makeTitle(NS_SPECIAL, "CommunityDashboard") : Title::makeTitle(NS_PROJECT, wfMsg("community"));
@@ -3090,7 +3118,7 @@ class WikiHowTemplate extends QuickTemplate {
 		}
 	}
 
- 	$showSpotlightRotate =
+	$showSpotlightRotate =
 		$isMainPage &&
 		$wgLanguageCode == 'en';
 
@@ -3102,7 +3130,7 @@ class WikiHowTemplate extends QuickTemplate {
 		$showWikiTextWidget = WikiTextDownloader::isAuthorized(); 
 	}
 
-    $showRCWidget =
+	$showRCWidget =
 		class_exists('RCWidget') &&
 		!$profileBoxIsUser &&
 		(!$isLoggedIn || $wgUser->getOption('recent_changes_widget_show') != '0' ) &&
@@ -3199,20 +3227,28 @@ $slideshow_array = array('Recover-from-a-Strained-or-Pulled-Muscle'
 
 	$showExitTimer = class_exists('BounceTimeLogger');
 	
+	$showTorbitInsightsJS = true;
+
 // <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <?= $head_element ?><head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
 	<title><?= $title ?></title>
- 	<?if ($wgIsDomainTest) {?>
- 	<base href="http://www.wikihow.com/" />
- 	<?}?>
+	<? if ($showTorbitInsightsJS): ?>
+		<?= $this->getTorbitInsightsJS($isArticlePage, $isLoggedIn) ?>
+	<? endif; ?>
+	<? if ($wgIsDomainTest): ?>
+	<base href="http://www.wikihow.com/" />
+	<? endif; ?>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<meta name="verify-v1" content="/Ur0RE4/QGQIq9F46KZyKIyL0ZnS96N5x1DwQJa7bR8=" />
-    <meta name="google-site-verification" content="Jb3uMWyKPQ3B9lzp5hZvJjITDKG8xI8mnEpWifGXUb0" />
+	<meta name="google-site-verification" content="Jb3uMWyKPQ3B9lzp5hZvJjITDKG8xI8mnEpWifGXUb0" />
 	<meta name="msvalidate.01" content="CFD80128CAD3E726220D4C2420D539BE" />
 	<meta name="y_key" content="1b3ab4fc6fba3ab3" />
-<?php print Skin::makeGlobalVariablesScript( $this->data ); ?>
+	<? if ($isArticlePage || $isMainPage): ?>
+	<link rel="alternate" media="only screen and (max-width: 640px)" href="http://m.wikihow.com/<?= $wgTitle->getPartialUrl() ?>">
+	<? endif; ?>
+<?= Skin::makeGlobalVariablesScript( $this->data ) ?>
 	<? // add CSS files to extensions/min/groupsConfig.php ?>
 	<style type="text/css" media="all">/*<![CDATA[*/ @import "<?= wfGetPad('/extensions/min/?g=whcss' . ($isLoggedIn ? ',li' : '') . ($showSliderWidget ? ',slc' : '') . ($showSlideShow ? ',ppc' : '') . '&') . WH_SITEREV ?>"; /*]]>*/</style>
 	<? if ($isPrintable): ?>

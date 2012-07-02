@@ -1,4 +1,9 @@
 <div id="spch-container">
+	<?php if($_COOKIE[StarterTool::COOKIE_NAME] == "2"): ?>
+		<div id="spch-welcome">
+			<img src="<?= wfGetPad('/skins/WikiHow/images/kiwihow_2.png')?>" />Welcome to wikiHow! A great way to get started here is to do some spell checking with our Spell Checker tool. If you're looking for other ways to help, please visit the <a href="/Special:CommunityDashboard">Community Dashboard</a>.
+		</div>
+	<?php endif; ?>
 	<div id="spch-head">
 		<div id="spch-options">
 			<div id="spch-skip"><a href="#"><?= wfMsg("spch-no"); ?></a><div id="spch-skip-arrow"></div></div>

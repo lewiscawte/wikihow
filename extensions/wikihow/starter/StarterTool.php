@@ -32,11 +32,9 @@ function wfCheckStarterRef($user) {
 	global $wgRequest;
 	
 	if($_COOKIE[StarterTool::COOKIE_NAME] == "2") {
-		setcookie(StarterTool::COOKIE_NAME);
 		StarterTool::logInfo("signup");
 	}
 	else if($_COOKIE[StarterTool::COOKIE_NAME] == "1") {
-		setcookie(StarterTool::COOKIE_NAME);
 		StarterTool::logInfo("signup_top");
 	}
 	

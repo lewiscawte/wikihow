@@ -4,6 +4,8 @@
 * that store and retreive data from the db
 */
 
+require_once("$IP/extensions/wikihow/DatabaseHelper.class.php");
+
 if (IS_SPARE_HOST) {
 	define(TITUS_READ_DB, 1);
 } else {
@@ -48,9 +50,9 @@ class TitusDB {
 
 		$lowDate = wfTimestamp(TS_MW, strtotime("-$lookBack day", strtotime(date('Ymd', time()))));
 		$highDate = wfTimestamp(TS_MW, strtotime(date('Ymd', time())));
-		$res = $dbr->select('daily_edits', 'de_page_id', array("de_timestamp >= '$lowDate'", "de_timestamp < '$highDate'"), __METHOD__);
+		$rows = DatabaseHelper::batchSelect('daily_edits', 'de_page_id', array("de_timestamp >= '$lowDate'", "de_timestamp < '$highDate'"), __METHOD__, array(), 1000, $dbr);
 		$pageIds = array();
-		while ($row = $dbr->fetchObject($res)) {
+		foreach ($rows as $row) {
 			$pageIds[] = $row->de_page_id;
 		}
 		$pageChunks = array_chunk($pageIds, 1000);
@@ -71,13 +73,16 @@ class TitusDB {
 		$pageIds = implode(",", $pageIds);
 
 
-		$res = $dbr->select('page', 
+		$rows = DatabaseHelper::batchSelect('page', 
 			array('page_id', 'page_title', 'page_counter', 'page_is_featured', 'page_catinfo', 'page_len'), 
 			array('page_namespace' => 0, 'page_is_redirect' => 0, 
 				"page_id IN ($pageIds)"), 
-			__METHOD__);
+			__METHOD__, 
+			array(),
+			DatabaseHelper::DEFAULT_BATCH_SIZE,
+			$dbr);
 
-		while ($row = $dbr->fetchObject($res)) {
+		foreach ($rows as $row) {
 			$fields = $this->calcPageStats($statsToCalc, $row);
 
 			if (!empty($fields)) {
@@ -96,13 +101,15 @@ class TitusDB {
 	public function calcStatsForAllPages(&$statsToCalc, $limit = array()) {
 		$dbr = $this->dbr;		
 
-		$res = $dbr->select('page', 
+		$rows = DatabaseHelper::batchSelect('page', 
 			array('page_id', 'page_title', 'page_counter', 'page_is_featured', 'page_catinfo', 'page_len'), 
 			array('page_namespace' => 0, 'page_is_redirect' => 0), 
 			__METHOD__, 
-			$limit);
+			$limit,
+			DatabaseHelper::DEFAULT_BATCH_SIZE,
+			$dbr);
 
-		while ($row = $dbr->fetchObject($res)) {
+		foreach ($rows as $row) {
 			$fields = $this->calcPageStats($statsToCalc, $row);
 
 			if (!empty($fields)) {
@@ -125,7 +132,10 @@ class TitusDB {
 
 		$t = Title::newFromId($row->page_id); 
 		$goodRevision = GoodRevision::newFromTitle($t, $row->page_id);
-		$revId = $goodRevision->latestGood();
+		$revId = 0;
+		if ($goodRevision) {
+			$revId = $goodRevision->latestGood();
+		}
 		$r = $revId > 0 ? Revision::loadFromId($dbr, $revId) : Revision::loadFromPageId($dbr, $row->page_id);
 
 		$fields = array();

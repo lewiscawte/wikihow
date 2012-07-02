@@ -64,6 +64,7 @@ DIV#article{
 #article OL.steps_list_2 LI{
 	border-bottom: 1px dotted #d7d4ce;
 	padding:20px 50px 20px 80px;
+	overflow:hidden; /* for IE7 */
 }
 
 #article OL.steps_list_2 LI DIV.step_num{
@@ -454,7 +455,7 @@ UL#end_options LI#endop_email{
 
 UL#end_options LI#endop_print{
 	background-position: 0 -150px;
-	width:75px;
+	width:78px;
 }
 
 UL#end_options LI#endop_fanmail{
@@ -474,25 +475,26 @@ UL#end_options LI#endop_fanmail{
 	margin-top:20px;
 }
 
-.top_left{
+/* need .mwimg for IE7 selection */
+.mwimg .top_left{
 	background: url('/skins/WikiHow/images/redesign/top_left.png') top left no-repeat;
 	top:-4px;
 	left:-1px;
 }
 
-.top_right{
+.mwimg .top_right{
 	background: url('/skins/WikiHow/images/redesign/top_right.png') top right no-repeat;
 	top:-2px;
 	right:0px;
 }
 
-.bottom_left{
+.mwimg .bottom_left{
 	background: url('/skins/WikiHow/images/redesign/bottom_left.png') bottom left no-repeat;
 	bottom:0px;
 	left:0px;
 }
 
-.bottom_right{
+.mwimg .bottom_right{
 	background: url('/skins/WikiHow/images/redesign/bottom_right.png') right bottom no-repeat;
 	bottom:-4px;
 	right:-2px;

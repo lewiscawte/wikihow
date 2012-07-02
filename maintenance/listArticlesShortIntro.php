@@ -15,7 +15,7 @@ $fp = fopen('short-intros.csv', 'w');
 if (!$fp) die("could not open file for write\n");
 
 fputcsv($fp, array('page_id', 'URL', 'has_template', 'intro_length', 'intro'));
-while ($row = $dbr->fetchObject($res)) {
+foreach ($res as $row) {
 	$title = Title::newFromDBkey($row->page_title); 
 	if (!$title) {
 		print "Can't make title out of {$row->page_title}\n";

@@ -297,8 +297,9 @@ class MediaWiki {
 					//XXCHANGED USE 301 redirects for redirected articles
 					global $wgOut, $wgRequest;
 					// XXCHANGED - pass platform param through the redirect
-					$platform = @$wgRequest ? '?platform=' . @$wgRequest->getVal('platform') : '';
-					$wgOut->redirect($target->getFullURL() . $platform, 301);
+					$platform = @$wgRequest ? @$wgRequest->getVal('platform') : '';
+					$platformStr = $platform ? '?platform=' . $platform : '';
+					$wgOut->redirect($target->getFullURL() . $platformStr, 301);
 
 					$rarticle = $this->articleFromTitle($target);
 					$rarticle->loadPageData($rarticle->pageDataFromTitle($dbr,$target));

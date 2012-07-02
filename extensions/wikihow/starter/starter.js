@@ -14,12 +14,16 @@ StarterTool.prototype.init = function () {
 	congrats = new Array("Super!", "Keep up the good work", "Thanks", "Thanks for helping");
 	starter.getSentence();
 	$('#starter_edit_button').click( function(e) {
-		e.preventDefault();
-		starter.edit();
+		if (!jQuery(this).hasClass('clickfail')) {
+			e.preventDefault();
+			starter.edit();
+		}
 	});
 	$('#starter_skip a').click( function(e) {
-		e.preventDefault();
-		window.location = './Main-Page';
+		if (!jQuery(this).hasClass('clickfail')) {
+			e.preventDefault();
+			window.location = './Main-Page';
+		}
 	});
 }
 
@@ -76,6 +80,7 @@ StarterTool.prototype.edit = function () {
 							//$("#starter_head img").show();
 							//$("#starter_head h1").html("Great job, now can you fix this sentence?");
 							$('#starter_contents').html(data);
+							starter.resetTopButtons();
 						});
 					});
 				});
@@ -116,7 +121,7 @@ StarterTool.prototype.edit = function () {
 			jQuery('html, body').animate({scrollTop:0});
 		});*/
 
-		//starter.disableTopButtons();
+		starter.disableTopButtons();
 		
 		//jQuery('#editform').attr('action',jQuery('#editform').attr('action')+'&starter-title='+title);
 	});
@@ -188,8 +193,8 @@ StarterTool.prototype.getGrats_options = function() {
 			"<a href='#' class='button button136' style='float:left' id='grats_imageadd'>Add an image</a></p>" +
 			"<p>Or you can visit our <a href='#' id='grats_dash'>Community Dashboard</a>.</p></div>";*/
 	grats = "<div id='starter_grats_options'>";
-	grats += "<p>Thank you so much for your help! We'd love it if you would sign up so you can help fix more spelling errors, or help us accomplish other much needed tasks around here.</p>";
-	grats += "<a href='#' id='grats_signup' class='button button220'>Cool, take me to sign up</a> <a href='#' id='grats_nothanks'>No thanks</a>";
+	grats += "<p>Thanks, we love your work.  We want you to do some more spellchecking for us. Before you can start, please complete our one page sign up, and then we'll take you to our really awesome spellchecker tool.</p>";
+	grats += "<a href='#' id='grats_signup' class='button button220'>Cool, go to the Spell Checker tool</a> <a href='#' id='grats_nothanks'>No thanks</a>";
 	//grats += "<p><a href='#' id='grats_spelling'>Fix more spelling mistakes</a></p>";
 	//grats += "<p>or <a href='#' id='grats_edit'>edit a random article</a></p>";
 	//grats += "<p> or try visiting our <a href='#' id='grats_dash'>Community Dashboard</a> for more ideas</p>";
@@ -241,7 +246,7 @@ StarterTool.prototype.doGratsButtons = function() {
 	jQuery('#grats_signup').click(function(e) {
 		e.preventDefault();
 		
-		$.cookie('starterTool', '2', 0);
+		$.cookie('wiki_starterTool', '2', {expires:0});
 		
 		var url = '/Special:StarterTool?finish=signup';
 		$.get(url, function(data){

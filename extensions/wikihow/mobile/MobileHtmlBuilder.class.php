@@ -219,6 +219,8 @@ class MobileBasicArticleBuilder extends MobileHtmlBuilder {
 	protected function generateBody() {
 		global $wgLanguageCode;
 
+		$device = $this->getDevice();
+
 		list($sections, $intro, $firstImage) = $this->getArticleParts();
 		if ($firstImage) {
 			$title = Title::newFromURL($firstImage, NS_IMAGE);
@@ -226,9 +228,9 @@ class MobileBasicArticleBuilder extends MobileHtmlBuilder {
 				$introImage = RepoGroup::singleton()->findFile($title);
 			}
 			if ($introImage) {
-				$thumb = $introImage->getThumbnail(290, 194);
-				$width = $thumb->getWidth();
-				$height = $thumb->getHeight();
+				list($thumb, $width, $height) =
+					self::makeThumbDPI($introImage, 290, 194,
+							$device['enlarge-thumb-high-dpi']);
 			} else {
 				$firstImage = '';
 			}
@@ -250,7 +252,6 @@ class MobileBasicArticleBuilder extends MobileHtmlBuilder {
 			$width = 0; $height = 0;
 		}
 
-		$deviceOpts = $this->getDevice();
 		$articleVars = array(
 			'title' => $this->t->getText(),
 			'sections' => $sections,
@@ -258,7 +259,7 @@ class MobileBasicArticleBuilder extends MobileHtmlBuilder {
 			'thumb' => &$thumb,
 			'width' => $width,
 			'height' => $height,
-			'deviceOpts' => $deviceOpts,
+			'deviceOpts' => $device,
 			'nonEng' => $wgLanguageCode != 'en',
 			'isGerman' => $wgLanguageCode == 'de',
 		);
@@ -288,6 +289,35 @@ class MobileBasicArticleBuilder extends MobileHtmlBuilder {
 
 	protected function addJSLibs() {
 		parent::addJSLibs();
+	}
+
+	// Make a thumb either regular res or high res (2x pixel density such
+	// as retina display)
+	private static function makeThumbDPI($image, $newWidth, $newHeight, $makeHighDPI) {
+		if ($makeHighDPI) {
+			$thumb = $image->getThumbnail(2 * $newWidth, 2 * $newHeight);
+			$actualWidth = $thumb->getWidth();
+			$actualHeight = $thumb->getHeight();
+			if ($actualWidth > $newWidth) {
+				$nh = round( $actualHeight * $newWidth / $actualWidth );
+				// if $nh is still too high, balance $newWidth
+				if ($nh > $newHeight) { 
+					$newWidth = round( $newWidth * $newHeight / $nh );
+				} else {
+					$newHeight = $nh;
+				}
+			} elseif ($actualHeight > $newHeight) {
+				$newWidth = round( $actualWidth * $newHeight / $actualHeight );
+			} else {
+				$newWidth = $actualWidth;
+				$newHeight = $actualHeight;
+			}
+		} else {
+			$thumb = $image->getThumbnail($newWidth, $newHeight);
+			$newWidth = $thumb->getWidth();
+			$newHeight = $thumb->getHeight();
+		}
+		return array($thumb, $newWidth, $newHeight);
 	}
 
 	/**
@@ -491,9 +521,10 @@ DONE;
 			if ($title) {
 				$image = RepoGroup::singleton()->findFile($title);
 				if ($image) {
-					$thumb = $image->getThumbnail($newWidth, $newHeight);
-					$newWidth = $thumb->getWidth();
-					$newHeight = $thumb->getHeight();
+					list($thumb, $newWidth, $newHeight) =
+						self::makeThumbDPI($image, $newWidth, $newHeight,
+							$device['enlarge-thumb-high-dpi']);
+
 					$url = wfGetPad($thumb->getUrl());
 
 					$srcNode->nodeValue = $url;
@@ -536,9 +567,9 @@ DONE;
 						}
 					}
 
-					$thumb = $image->getThumbnail($device['image-zoom-width'], $device['image-zoom-height']);
-					$newWidth = $thumb->getWidth();
-					$newHeight = $thumb->getHeight();
+					list($thumb, $newWidth, $newHeight) =
+						self::makeThumbDPI($image, $device['image-zoom-width'], 
+							$device['image-zoom-height'], $device['enlarge-thumb-high-dpi']);
 					$url = wfGetPad($thumb->getUrl());
 
 					$a->setAttribute('id', 'image-zoom-' . $imgNum);

@@ -26,9 +26,9 @@
 				?>
 				<div id='intro_img' class="rounders grey <?= $className ?>" style="width:<?= $width ?>px; height:<?= $height ?>px;">
 					<? if (!$nonEng) { ?>
-					<img src="<?= wfGetPad('/extensions/wikihow/mobile/images/' . wfMsg('mobile-howto-image-overlay')) ?>" alt="" class="home_label" />
+					<div class="home_label"></div>
 					<? } ?>
-					<?= $thumb->toHtml() ?>
+					<img alt="" src="<?= wfGetPad( $thumb->getUrl() ) ?>" width="<?= $width ?>" height="<?= $height ?>" border="0" class="mwimage101" />
 					<div class="corner top_left"></div>
 					<div class="corner top_right"></div>
 					<div class="corner bottom_right"></div>

@@ -3,10 +3,17 @@ var mobileWikihow = (function () {
 	var contentDropdowns = ['ingredients', 'steps', 'thingsyoullneed', 'tips', 'warnings', 'video', 'relatedwikihows', 'sources'];
 
 	function initQGCTA() {
-		return;
 		var isMQG = document.location.pathname.indexOf('Special:MQG') != -1;
-		if (!isMQG && (new Date()).getMilliseconds() % 10 == 0) {
-			// Show the CTA about 10% of the time
+		var now = new Date();
+		var mqgTypes = ['pic', 'rating', 'video', 'yesno', 'recommend'];
+		// Show the CTA about 10% of the time
+		if (!isMQG && now.getMilliseconds() % 20 == 0) {
+		//if (true) {
+			var ctaLink = $('#qg_intro_link');
+			now = new Date();
+			var pos = now.getMilliseconds() % 5;
+			var href = ctaLink.attr('href') + '?qc_type=' + mqgTypes[pos];
+			ctaLink.attr('href', href);
 			$('#qg_cta').delay(200).slideDown('fast');
 		}
 	}

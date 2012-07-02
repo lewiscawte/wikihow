@@ -38,7 +38,6 @@ class NewLayout extends UnlistedSpecialPage {
 			'Dye-Your-Hair-from-Brown-to-Blonde-Without-Bleach',
 			'Not-Get-Caught-Looking-at-Porn',
 			'Stay-Up-All-Night-Alone-(for-Kids)',
-			'Stay-Up-All-Night-Alone-%28for-Kids%29',
 			'Write-a-Movie-Review',
 			'Talk-to-Your-Crush-Even-Though-You-Are-Shy',
 			'Make-a-Dress',

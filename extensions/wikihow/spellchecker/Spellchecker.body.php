@@ -115,7 +115,7 @@ class Spellchecker extends UnlistedSpecialPage {
 		
 		$setVars = $wgUser->isSysop() || in_array( 'newarticlepatrol', $wgUser->getRights() );
 		$tmpl->set_vars(array('addWords' => $setVars));
-
+		
 		$wgOut->addHTML($tmpl->execute('Spellchecker.tmpl.php'));
 		
 		// add standings widget

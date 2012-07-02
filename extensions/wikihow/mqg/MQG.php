@@ -9,6 +9,6 @@ $wgExtensionCredits['specialpage'][] = array(
 );
 
 $wgSpecialPages['MQG'] = 'MQG';
-#$wgAutoloadClasses['MQG'] = dirname(__FILE__) . '/MQGTest.body.php';
-$wgAutoloadClasses['MQG'] = dirname(__FILE__) . '/MQG.body.php';
+$wgAutoloadClasses['MQG'] = dirname(__FILE__) . '/MQGTest.body.php';
+#$wgAutoloadClasses['MQG'] = dirname(__FILE__) . '/MQG.body.php';
 $wgExtensionMessagesFiles['MQG'] = dirname(__FILE__) . '/MQG.i18n.php';

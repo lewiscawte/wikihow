@@ -98,6 +98,8 @@ $("document").ready(function() {
 		//dialog they're using
 		addWord(this);
 	})
+	
+	$('#spch-welcome').slideDown('slow');
 });
 
 // asks the backend for a new article

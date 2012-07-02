@@ -111,13 +111,13 @@
 #starter_grats_options {
 	font-size: .95em;
 	text-align: center;
-	width: 500px;
+	width: 550px;
 	margin: 25px auto;
 }
 #starter_grats_options p {
-	line-height: 38px;
+	line-height: 35px;
 	padding: 0 0 10px 0;
-	font-size: 19px;
+	font-size: 17px;
 }
 
 h2 .editsectionbutton {
@@ -185,6 +185,7 @@ a.clickfail:hover {
 #grats_signup{
 	float: left;
     margin-left: 100px;	
+	font-size:12px;
 }
 
 #grats_nothanks{

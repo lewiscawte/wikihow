@@ -17,8 +17,9 @@
 		this.qc_num_votes = 0;
 		this.qc_loading = false;
 		this.qc_yes_responses = ["Nice!",  "Sweet!", "You are a rockstar!", "That's incredible!", "Bam! That was Spicy!", "So Fab!", "That's Hot!", "BooYah!"];
-		this.qc_no_responses = ["Get that outta here.", "Go away image!", "Adios.", "See ya later, alligator.", "Lame."];
+		this.qc_no_responses = ["Get that outta here.", "Adios.", "See ya later, alligator.", "Lame."];
 		this.qc_skip_responses = ["No prob.  We'll get you another."];
+		this.qc_test_num = 0;
 
 		this.getNextQC = function() {
 			//grab options
@@ -36,12 +37,27 @@
 
 		this.loadResult = function(result) {
 			$('#mqg_spinner').css('display', 'none');
-			var mqg_body = $('#mqg_body');
-			mqg_body.html(result['html']);
+			$('#mqg_body').html(result['html']);
 			mqgTest.qc_type = $('#mqg_type').html();
 			mqgTest.qc_rev_id = $('#mqg_rev_id').html();
 			$('#mqg_pic img').addClass('mqg_rounded');
+			mqgTest.qc_test_num++;
+			mqgTest.trackResult();
 		}
+
+		this.trackResult = function(){
+			try {
+				if (mqgTest.qc_test_num && pageTracker) {
+					pageTracker._trackEvent('m-mqg', mqgTest.qc_type + '-' + mqgTest.qc_test_num, mqgTest.qc_test_num);
+				}
+			} catch(err) {
+				alert(err);
+			}
+			if (mqgTest.qc_test_num) {
+				$.get(mqgTest.qc_page, {'log' : mqgTest.qc_type + '-' + mqgTest.qc_test_num});
+			}
+		}
+
 
 		this.initEventListeners = function() {
 			//skip
@@ -103,6 +119,10 @@
 
 		this.postDisplayArticle = function(){}
 
+		this.resetEmailPopup = function() {
+			$('#mqg_eml_box').hide().css('margin-left', '0').css('top', '0');
+			$('#mqg_eml').val('');
+		}
 
 		this.transition = function() {
 			mqgTest.displayResponseTxt();
@@ -191,7 +211,7 @@
 			if (!mqgTest.qc_loading) {
 				mqgTest.qc_loading = true;
 				$.get(mqgTest.qc_page, {'email': email}, function() {mqgTest.qc_loading = false;});
-				resetEmailPopup();
+				mqgTest.resetEmailPopup();
 			}
 		}
 	}
@@ -218,11 +238,74 @@
 	* MQGRatingTest - use for star rating test types
 	*/
 	function MQGRatingTest() {
-		this.initEventListeners = function() {
-			// Init parent event listeners
-			mqgTestType.initEventListeners.call(this);
+		this.loadResult = function(result) {
+			mqgTestType.loadResult.call(this, result);
+			if ($('input.mqg_star').length) {
+				$('input.mqg_star').rating({
+				callback: function(value, link){
+					mqgTest.qcVote(value);
+					mqgTest.transition();
+				}
+				});
+			}
+		}
+
+		this.displayResponseTxt = function() {
+			var responses = [];
+			if (mqgTest.qc_skip) {
+				responses = mqgTest.qc_skip_responses;	
+			} else if (mqgTest.qc_vote >= 3) {
+				responses = mqgTest.qc_yes_responses;	
+			} else if (mqgTest.qc_vote < 3) {
+				responses = mqgTest.qc_no_responses;
+			}
+
+			var arrLength = responses.length;
+			var rnd = Math.floor(Math.random() * arrLength);
+			$('#mqg_trans_response').html(responses[rnd]).show();
+		}
+
+		this.displayResponseImg = function() {
+			var mqg_class = '';
+			if (mqgTest.qc_skip) {
+				mqg_class = 'mqg_skip';
+			} else if (mqgTest.qc_vote >= 3) {
+				mqg_class = 'mqg_yes';
+			} else if (mqgTest.qc_vote < 3) {
+				mqg_class = 'mqg_no';
+			}
+
+			$('#mqg_pic').css('width', 160).removeClass('mqg_pic_yesno').addClass(mqg_class).fadeIn('slow', function() {
+				setTimeout(mqgTest.displayResponseImgCallback, 500);
+			});
 		}
 	}
+
+	/*
+	* MQGVideoTest - use for video test types
+	*/
+	function MQGVideoTest() {
+		this.loadResult = function(result) {
+			mqgTestType.loadResult.call(this, result);
+			$('#mqg_pic').html($('#video:first center:first').clone());
+		}
+
+		this.displayResponseImg = function() {
+			var mqg_class = '';
+			if (mqgTest.qc_skip) {
+				mqg_class = 'mqg_skip';
+			} else if (mqgTest.qc_vote) {
+				mqg_class = 'mqg_yes';
+			} else {
+				mqg_class = 'mqg_no';
+			}
+
+			$('#mqg_pic').empty().css('width', 160).removeClass('mqg_pic_yesno').addClass(mqg_class).fadeIn('slow', function() {
+				setTimeout(mqgTest.displayResponseImgCallback, 500);
+			});
+		}
+	}
+
 
 	/*
 	* MQGYesNoTest - use for yes/no test types
@@ -255,8 +338,8 @@
 	*/
 	function MQGPhotoTest() {
 		this.postDisplayArticle = function() {
-			mqgTest.displayAddAppDiag();
-			mqgTest.displayEmailPopup();
+			//mqgTest.displayAddAppDiag();
+			//mqgTest.displayEmailPopup();
 		}
 
 
@@ -274,10 +357,6 @@
 			}
         }
 
-		this.resetEmailPopup = function() {
-			$('#mqg_eml_box').hide().css('margin-left', '0').css('top', '0');
-			$('#mqg_eml').val('');
-		}
 
 		this.displayEmailPopup = function() {
 			// After 3 votes, show email collection prompt
@@ -287,7 +366,7 @@
 				mqgTest.qc_num_votes == 7 && 
 				$('#mqg_pic').length && 
 				$('#mqg_finish_eml').length == 0) {
-				resetEmailPopup();
+				mqgTest.resetEmailPopup();
 				var display = function() {
 					var marginLeft = $(window).width() / 2 - $('#mqg_eml_box').width() / 2;
 					$('#mqg_eml_box').css('display', 'block').css('margin-left', marginLeft - 5).animate({top: '+=50'}, 500);
@@ -353,6 +432,11 @@
 	if (mqgTestType.qc_type == 'yesno') {
 		MQGYesNoTest.prototype = mqgTestType;
 		mqgTest = new MQGYesNoTest();
+	} else if (mqgTestType.qc_type == 'video') { 
+		MQGYesNoTest.prototype = mqgTestType;
+		mqgYesNoTest = new MQGYesNoTest();
+		MQGVideoTest.prototype = mqgYesNoTest;
+		mqgTest = new MQGVideoTest();
 	} else if (mqgTestType.qc_type == 'recommend') { 
 		MQGYesNoTest.prototype = mqgTestType;
 		mqgYesNoTest = new MQGYesNoTest();
@@ -366,7 +450,6 @@
 		mqgTest = new MQGPhotoTest();
 	}
 
-	mqgTest.initEventListeners();
 	mqgTest.getNextQC();
-
+	mqgTest.initEventListeners();
 }(jQuery));

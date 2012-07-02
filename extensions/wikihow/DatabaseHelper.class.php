@@ -13,13 +13,15 @@ class DatabaseHelper {
 	/**
 	 *
 	 * Essentially a wrapper for the database select function. Accepts the same parameters
-	 * as Database::select, with an additional optional parameter for the batch size.
+	 * as Database::select, with an additional optional parameters for the batch size and dbr.
 	 * Function selects rows in batches of DEFAULT_BATCH_SIZE and sleeps for SLEEPTIME 
 	 * microseconds between each batch. All rows are returned in an array of row objects.
 	 * 
 	 */
-	public static function batchSelect($table, $fields, $conditions = '', $fname = __METHOD__, $options = array(), $batchSize = self::DEFAULT_BATCH_SIZE) {
-		$dbr = wfGetDB(DB_SLAVE);
+	public static function batchSelect($table, $fields, $conditions = '', $fname = __METHOD__, $options = array(), $batchSize = self::DEFAULT_BATCH_SIZE, $dbr = null) {
+		if (is_null($dbr)) {
+			$dbr = wfGetDB(DB_SLAVE);
+		}
 		
 		if( !is_array( $options ) ) {
 			$options = array( $options );

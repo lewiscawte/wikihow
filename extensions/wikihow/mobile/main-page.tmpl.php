@@ -1,7 +1,7 @@
 	<div id="article_top">
 		<div class="rounders grey" style="width:290px; height:194px;">
 			<? if ($imageOverlay) { ?>
-        	<img src="<?= wfGetPad('/extensions/wikihow/mobile/images/' . wfMsg('mobile-howto-image-overlay')) ?>" alt="" class="home_label" />
+        	<div class="home_label"></div>
 			<? } ?>
 			<a href="/<?= $spotlight['url'] ?>"><img src="<?= $spotlight['img'] ?>" alt="" width="290" /></a>
 			<div class="corner top_left"></div>
