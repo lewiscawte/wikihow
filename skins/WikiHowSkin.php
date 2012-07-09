@@ -490,7 +490,7 @@ class SkinWikihowskin extends SkinTemplate {
 			// get keywords
 			$subcats = $this->getMetaSubcategories(3);
 			$keywords = implode(", ", $subcats);
-			if ($keywords != "")
+			if ($keywords)
 				$return = wfMsg('category_meta_description', $wgTitle->getText(), $keywords);
 			else
 				$return = wfMsg('subcategory_meta_description', $wgTitle->getText(), $keywords);
@@ -504,19 +504,19 @@ class SkinWikihowskin extends SkinTemplate {
 	function getMetaKeywords() {
 		global $wgTitle;
 
-		$return = "";
+		$return = '';
 		if ($wgTitle->getNamespace() == NS_MAIN && $wgTitle->getFullText() == wfMsg('mainpage')) {
 			$return = wfMsg('mainpage_meta_keywords');
 		} elseif ($wgTitle->getNamespace() == NS_MAIN ) {
-			$return = wfMsg('article_meta_keywords', $wgTitle->getText() );
+			$return = wfMsg('article_meta_keywords', htmlentities($wgTitle->getText()) );
 		} elseif ($wgTitle->getNamespace() == NS_CATEGORY) {
 			$subcats = $this->getMetaSubcategories(10);
 			$return = implode(", ", $subcats);
-			if (trim($return == "")) {
-				$return = wfMsg('category_meta_keywords_default', $wgTitle->getText() );
+			if (!trim($return)) {
+				$return = wfMsg( 'category_meta_keywords_default', htmlentities($wgTitle->getText()) );
 			}
 		} elseif ($wgTitle->getNamespace() == NS_SPECIAL && $wgTitle->getText() == "Popularpages"){
-			return wfMsg('popularpages_meta_keywords');
+			$return = wfMsg('popularpages_meta_keywords');
 		}
 		return $return;
 	}
@@ -1367,7 +1367,7 @@ class SkinWikihowskin extends SkinTemplate {
 			$wgOut->addMeta('description', $description);
 		}
 		$keywords = $this->getMetaKeywords();
-		if ($keywords != "") {
+		if ($keywords) {
 			$wgOut->mKeywords = array();
 			$wgOut->addMeta('keywords', $keywords);
 		}

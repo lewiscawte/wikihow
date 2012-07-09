@@ -7,7 +7,7 @@
 			array('rc_id <= ' . $hi,
 					'rc_id >= ' . $low,
 				  'rc_cur_id = ' . $curid,
-					'rc_patrolled != 1'
+					'rc_patrolled <> 1'
 				),
 			"wfGetRCPatrols"
 		);

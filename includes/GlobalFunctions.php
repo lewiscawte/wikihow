@@ -2564,7 +2564,7 @@ function wfDiff( $before, $after, $params = '-u' ) {
  */
 function wfTimeAgo($date, $isUnixTimestamp = false) {
 	// INTL: Use the internationalized time function based off the original wfTimeAgo
-	return RCWidget::getDTDifferenceString($date, $isUnixTimestamp);
+	return Misc::getDTDifferenceString($date, $isUnixTimestamp);
 }
 
 function wfFlattenArrayCategoryKeys ($arg, &$results = array()) {

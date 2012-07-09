@@ -21,7 +21,7 @@ class TitusQueryTool extends UnlistedSpecialPage {
 
 		require_once("$IP/extensions/wikihow/titus/Titus.class.php");
 		TitusDB::configureDB();
-		$this->dbr = wfGetDB(TITUS_READ_DB);
+		$this->dbr = wfGetDB(TITUS_READ_DB_HOST);
 
 		if ($wgRequest->wasPosted()) {
 			$this->handleQuery();
@@ -114,9 +114,10 @@ class TitusQueryTool extends UnlistedSpecialPage {
 		global $wgRequest;
 
 		$sql = urldecode($wgRequest->getVal('sql'));
-		if (empty($sql)) {
+		if (false === stripos($sql, TitusDB::TITUS_TABLE_NAME)) {
 			$sql = "SELECT * FROM titus";
 		}
+
 		if (sizeof($ids)) {
 			$pageCondition = "ti_page_id IN (" . implode(",", $ids) . ")";
 			$orderBy = " ORDER BY FIELD(ti_page_id, " . implode(",", $ids) . ")";

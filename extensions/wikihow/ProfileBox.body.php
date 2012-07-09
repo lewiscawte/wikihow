@@ -1134,7 +1134,7 @@ Event.observe(window, 'load', pbInitForm);
 	}
 
 	static function getMemberLength($joinDate){
-		wfLoadExtensionMessages('RCWidget');
+		wfLoadExtensionMessages('Misc');
 		if($joinDate != ''){
 
 		}

@@ -18,6 +18,7 @@ class Article {
 	 */
 	var $mComment;			//!<
 	var $mContent;			//!<
+	var $mContentLength;	//!<
 	var $mContentLoaded;	//!<
 	var $mCounter;			//!<
 	var $mForUpdate;		//!<
@@ -125,6 +126,7 @@ class Article {
 		$this->mRedirectUrl = false;
 		$this->mLatest = false;
 		$this->mPreparedEdit = false;
+		$this->mContentLength = 0;
 	}
 
 	/**
@@ -341,6 +343,7 @@ class Article {
 			$this->mTouched	 = wfTimestamp( TS_MW, $data->page_touched );
 			$this->mIsRedirect  = $data->page_is_redirect;
 			$this->mLatest	  = $data->page_latest;
+			$this->mContentLength = $data->page_len;
 		} else {
 			if ( is_object( $this->mTitle ) ) {
 				$lc->addBadLinkObj( $this->mTitle );
@@ -3095,6 +3098,16 @@ class Article {
 			$this->loadPageData();
 		}
 		return $this->mLatest;
+	}
+
+	/**
+	 * Get the page_len field
+	 */
+	function getContentLength() {
+		if ( !$this->mDataLoaded ) {
+			$this->loadPageData();
+		}
+		return $this->mContentLength;
 	}
 
 	/**

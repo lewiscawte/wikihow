@@ -13,5 +13,5 @@ function trimDailyEdits() {
 	echo "Trimming daily edits with timestamps older than $trimDate\n";
 	$dbw = wfGetDB(DB_MASTER);
 	$dbw->delete('daily_edits', array("de_timestamp < '$trimDate'"), __METHOD__);
-	echo "Finished trimming daily edits table";
+	echo "Finished trimming daily edits table\n";
 }

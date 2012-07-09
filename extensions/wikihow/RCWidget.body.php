@@ -8,52 +8,6 @@ class RCWidget extends UnlistedSpecialPage {
 		UnlistedSpecialPage::UnlistedSpecialPage('RCWidget');
 	}
 
-	public static function getDTDifferenceString($date, $isUnixTimestamp = false) {
-		wfLoadExtensionMessages('RCWidget');
-		if (empty($date)) {
-			return "No date provided";
-		}
-
-		if ($isUnixTimestamp) {
-			$unix_date = $date;
-		} else {
-			$date = $date . " UTC";
-			$unix_date = strtotime($date);
-		}
-
-		$now = time();
-		$lengths = array("60","60","24","7","4.35","12","10");
-
-		// check validity of date
-		if (empty($unix_date)) {
-			return "Bad date: $date";
-		}
-
-		// is it future date or past date
-		if ($now > $unix_date) {
-			$difference = $now - $unix_date;
-			$tenseMsg = 'rcwidget_time_past_tense';
-		} else {
-			$difference = $unix_date - $now;
-			$tenseMsg = 'rcwidget_time_future_tense';
-		}
-
-		for ($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
-			$difference /= $lengths[$j];
-		}
-		$difference = round($difference);
-
-		if ($difference != 1) {
-			$periods = array(wfMsg("second-plural"), wfMsg("minute-plural"), wfMsg("hour-plural"), wfMsg("day-plural"), 
-						wfMsg("week-plural"), wfMsg("month-plural"), wfMsg("year-plural"), wfMsg("decade-plural"));
-		} else {
-			$periods = array(wfMsg("second"), wfMsg("minute"), wfMsg("hour"), wfMsg("day"), 
-						wfMsg("week"), wfMsg("month"), wfMsg("year"), wfMsg("decade"));
-		}
-
-		return wfMsg($tenseMsg, $difference, $periods[$j]);
-	}
-
 	private static function addRCElement(&$widget, &$count, $obj) {
 		if ((strlen(strip_tags($obj['text'])) < 100) &&
 			 (strlen($obj['text']) > 0)) {
@@ -102,22 +56,22 @@ class RCWidget extends UnlistedSpecialPage {
 			$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 			if ($row->log_namespace == NS_USER) {
 					$obj['type'] = 'patrol';
-					$obj['ts'] = self::getDTDifferenceString($row->log_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->log_timestamp);
 					$resourceLink = '<a href="/User:'.$row->log_title.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 					$obj['text'] = wfMsg('action_patrolled', $userLink, $resourceLink);
 				} else if ($row->log_namespace == NS_USER_TALK) {
 					$obj['type'] = 'patrol';
-					$obj['ts'] = self::getDTDifferenceString($row->log_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->log_timestamp);
 					$resourceLink = '<a href="/User_talk:'.$row->log_title.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 					$obj['text'] = wfMsg('action_patrolled', $userLink, $resourceLink);
 				} else if ($row->log_namespace == NS_TALK) {
 					$obj['type'] = 'patrol';
-					$obj['ts'] = self::getDTDifferenceString($row->log_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->log_timestamp);
 					$resourceLink = '<a href="/Discussion:'.$row->log_title.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 					$obj['text'] = wfMsg('action_patrolled', $userLink, $resourceLink);
 				} else if ($row->log_namespace == NS_MAIN) {
 					$obj['type'] = 'patrol';
-					$obj['ts'] = self::getDTDifferenceString($row->log_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->log_timestamp);
 					$resourceLink = '<a href="/'.$row->log_title.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 					$obj['text'] = wfMsg('action_patrolled', $userLink, $resourceLink);
 				}
@@ -125,7 +79,7 @@ class RCWidget extends UnlistedSpecialPage {
 				break;
 			case 'nap':
 				$obj['type'] = 'nab';
-				$obj['ts'] = self::getDTDifferenceString($row->log_timestamp);
+				$obj['ts'] = Misc::getDTDifferenceString($row->log_timestamp);
 				$userLink  = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 				$resourceLink = '<a href="/'.$row->log_title.'">'.preg_replace('/-/',' ',$row->log_title).'</a>';
 				$obj['text'] = wfMsg('action_boost', $userLink, $resourceLink);
@@ -134,7 +88,7 @@ class RCWidget extends UnlistedSpecialPage {
 			case 'upload':
 				if ( ($row->log_action == 'upload') && ($row->log_namespace == 6)) {
 					$obj['type'] = 'image';
-					$obj['ts'] = self::getDTDifferenceString($row->log_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->log_timestamp);
 					$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 					if (strlen($row->log_title) > 25) {
 						$resourceLink = '<a href="/Image:'.$row->log_title.'">'.substr($row->log_title,0,25).'...</a>';
@@ -148,7 +102,7 @@ class RCWidget extends UnlistedSpecialPage {
 			case 'vidsfornew':
 				if ( ($row->log_action == 'added') && ($row->log_namespace == 0)) {
 					$obj['type'] = 'video';
-					$obj['ts'] = self::getDTDifferenceString($row->log_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->log_timestamp);
 					$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 					$resourceLink = '<a href="/'.$row->log_title.'">'.preg_replace('/-/',' ',$row->log_title).'</a>';
 					$obj['text'] = wfMsg('action_addedvideo', $userLink, $resourceLink);
@@ -185,14 +139,14 @@ class RCWidget extends UnlistedSpecialPage {
 			case NS_MAIN: //MAIN
 				if (preg_match('/^New page:/',$row->rc_comment)) {
 					$obj['type'] = 'newpage';
-					$obj['ts'] = self::getDTDifferenceString($row->rc_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->rc_timestamp);
 					$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 					$resourceLink = '<a href="'.$destUserLink.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 					$obj['text'] = wfMsg('action_newpage', $userLink, $resourceLink);
 					self::addRCElement($widget, $count, $obj);
 				} else if (preg_match('/^categorization/',$row->rc_comment)) {
 					$obj['type'] = 'categorized';
-					$obj['ts'] = self::getDTDifferenceString($row->rc_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->rc_timestamp);
 					$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 					$resourceLink = '<a href="'.$destUserLink.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 					$obj['text'] = wfMsg('action_categorized', $userLink, $resourceLink);;
@@ -205,7 +159,7 @@ class RCWidget extends UnlistedSpecialPage {
 								(preg_match('/^$/',$row->rc_comment)) ||
 								(preg_match('/^Quick edit/',$row->rc_comment)) ) {
 					$obj['type'] = 'edit';
-					$obj['ts'] = self::getDTDifferenceString($row->rc_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->rc_timestamp);
 					$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 					$resourceLink = '<a href="'.$destUserLink.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 					$obj['text'] .= wfMsg('action_edit', $userLink, $resourceLink);
@@ -216,13 +170,13 @@ class RCWidget extends UnlistedSpecialPage {
 				if (!preg_match('/^Reverts edits by/',$row->rc_comment)) {
 					if (preg_match('/^Marking new article as a Rising Star from From/',$row->rc_comment)) {
 						$obj['type'] = 'risingstar';
-						$obj['ts'] = self::getDTDifferenceString($row->rc_timestamp);
+						$obj['ts'] = Misc::getDTDifferenceString($row->rc_timestamp);
 						$userLink= '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 						$resourceLink = '<a href="'.$destUserLink.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 						$obj['text'] = wfMsg('action_risingstar', $userLink, $resourceLink);
 					} else if ($row->rc_comment == '') {
 						$obj['type'] = 'discussion';
-						$obj['ts'] = self::getDTDifferenceString($row->rc_timestamp);
+						$obj['ts'] = Misc::getDTDifferenceString($row->rc_timestamp);
 						$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 						$resourceLink = '<a href="/Discussion:'.$row->rc_title.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 						$obj['text'] = wfMsg('action_discussion', $userLink, $resourceLink);
@@ -233,7 +187,7 @@ class RCWidget extends UnlistedSpecialPage {
 			case NS_USER_TALK: //USER_TALK
 				if (!preg_match('/^Revert/',$row->rc_comment)) {
 					$obj['type'] = 'usertalk';
-					$obj['ts'] = self::getDTDifferenceString($row->rc_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->rc_timestamp);
 					$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 					$resourceLink = '<a href="/User_talk:'.$row->rc_title.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 					$obj['text'] = wfMsg('action_usertalk', $userLink, $resourceLink);
@@ -242,7 +196,7 @@ class RCWidget extends UnlistedSpecialPage {
 				break;
 			case NS_USER_KUDOS: //KUDOS
 				$obj['type'] = 'kudos';
-				$obj['ts'] = self::getDTDifferenceString($row->rc_timestamp);
+				$obj['ts'] = Misc::getDTDifferenceString($row->rc_timestamp);
 				$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 				$resourceLink = '<a href="/User_kudos:'.$row->rc_title.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 				$obj['text'] = wfMsg('action_fanmail', $userLink, $resourceLink);
@@ -252,7 +206,7 @@ class RCWidget extends UnlistedSpecialPage {
 				// I KNOW I HAVE VIDEO FOR BOTH RC & LOGGING. LOGGING ONLY DOESN'T SEEM TO CATCH EVERYTHING.
 				if (preg_match('/^adding video/',$row->rc_comment)) {
 					$obj['type'] = 'video';
-					$obj['ts'] = self::getDTDifferenceString($row->rc_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->rc_timestamp);
 					$userLink = '<a href="'.$wuserLink.'">'.$wuser.'</a>';
 					$resourceLink = '<a href="'.$destUserLink.'">'.preg_replace('/-/',' ',$destUser).'</a>';
 					$obj['text'] = wfMsg('action_addedvideo', $userLink, $resourceLink);
@@ -262,7 +216,7 @@ class RCWidget extends UnlistedSpecialPage {
 			case NS_SPECIAL: //OTHER
 				if (preg_match('/^New user/',$row->rc_comment)) {
 					$obj['type'] = 'newuser';
-					$obj['ts'] = self::getDTDifferenceString($row->rc_timestamp);
+					$obj['ts'] = Misc::getDTDifferenceString($row->rc_timestamp);
 					$userLink = '<a href="/User:'.$row->rc_user_text.'">'.$wuser.'</a>';
 					$obj['text'] = wfMsg('action_newuser', $userLink);
 					self::addRCElement($widget, $count, $obj);

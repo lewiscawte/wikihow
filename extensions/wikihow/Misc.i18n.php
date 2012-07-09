@@ -18,5 +18,23 @@ $messages['en'] =
     'toolbarhelper' => 'Toolbar helper',
     'uploadpopup' => 'Upload popup',
 	'multipleupload' => 'Upload multiple images',
+	'rcwidget_time_future_tense' => "just now",
+	'rcwidget_time_past_tense' => "$1 $2 ago",
+	'second' => "second",
+	'minute' => "minute",
+	'hour' => "hour",
+	'day' => "day",
+	'week' => "week",
+	'month' => "month",
+	'year' => "year",
+	'decade' => "decade",
+	'second-plural' => "seconds",
+	'minute-plural' => "minutes",
+	'hour-plural' => "hours",
+	'day-plural' => "days",
+	'week-plural' => "weeks",
+	'month-plural' => "months",
+	'year-plural' => "years",
+	'decade-plural' => "decades"
 	);
 

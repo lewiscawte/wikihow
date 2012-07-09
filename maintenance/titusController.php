@@ -16,15 +16,10 @@ class TitusMaintenance {
 	* Run the nightly maintenance for the titus and titus_historical tables
 	*/
 	public function nightly() {
-		sleep(60);
 		$this->updateHistorical();
-		sleep(60);
 		$this->trimHistorical();
-		sleep(60);
 		$this->incrementTitusDatestamp();
-		sleep(60);
 		$this->updateTitus();
-		sleep(60);
 	}
 
 	private function updateTitus() {
@@ -51,22 +46,30 @@ class TitusMaintenance {
 	* worth of titus page rows. The titus_historical table should maintain 30-60 days worth of titus table dumps
 	*/
 	private function updateHistorical() {
-		$dbw = wfGetDB(DB_MASTER);
 		$sql = "INSERT INTO titus_historical SELECT * FROM titus";
-		$dbw->query($sql);
+		$this->performMaintenanceQuery($sql);
 	}
 
 	private function trimHistorical($lookBack = 30) {
-		$dbw = wfGetDB(DB_MASTER);
 		$lowDate = substr(wfTimestamp(TS_MW, strtotime("-$lookBack day", strtotime(date('Ymd', time())))), 0, 8);
 		$sql = "DELETE FROM titus_historical WHERE ti_datestamp < '$lowDate'";
-		$dbw->query($sql);
+		$this->performMaintenanceQuery($sql);
 	}
 
+	private function performMaintenanceQuery($sql) {
+		$conn = TitusDB::getWriteConnection();
+		$res = mysql_query($sql, $conn);
+		if (!$res) {
+			die("Error insert into titus: " . mysql_error());
+		}
+
+		mysql_close($conn);
+	}
+
+
 	private function incrementTitusDatestamp() {
-		$dbw = wfGetDB(DB_MASTER);
 		$today = wfTimestamp(TS_MW, strtotime(date('Ymd', time())));
 		$sql = "UPDATE titus set ti_datestamp = '$today'";
-		$dbw->query($sql);
+		$this->performMaintenanceQuery($sql);
 	}
 }

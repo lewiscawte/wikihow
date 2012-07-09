@@ -7,9 +7,11 @@
 require_once("$IP/extensions/wikihow/DatabaseHelper.class.php");
 
 if (IS_SPARE_HOST) {
-	define(TITUS_READ_DB, 1);
+	define(TITUS_READ_DB_HOST, 1);
+	define(TITUS_WRITE_DB_HOST, WH_DATABASE_BACKUP);
 } else {
-	define(TITUS_READ_DB, DB_SLAVE);
+	define(TITUS_WRITE_DB_HOST, WH_DATABASE_MASTER);
+	define(TITUS_READ_DB_HOST, DB_SLAVE);
 }
 
 class TitusDB {
@@ -17,11 +19,12 @@ class TitusDB {
 	var $dbr;
 	var $debugOutput;
 	var $dataBatch = array();
+	const TITUS_DB_NAME = 'titusdb';
+	const TITUS_TABLE_NAME = 'titus';
 
 	function __construct($debugOutput = false) {
 		$this->configureDB();
-		$this->dbw = wfGetDB(DB_MASTER);
-		$this->dbr = wfGetDB(TITUS_READ_DB);
+		$this->dbr = wfGetDB(TITUS_READ_DB_HOST);
 		$this->debugOutput = $debugOutput;
 	}
 
@@ -33,8 +36,8 @@ class TitusDB {
 			$wgDBservers[1] = array(
 				'host'     => WH_DATABASE_BACKUP,
 				'dbname'   => WH_DATABASE_NAME,
-				'user'     => WH_DATABASE_USER,
-				'password' => WH_DATABASE_PASSWORD,
+				'user'     => WH_DATABASE_MAINTENANCE_USER,
+				'password' => WH_DATABASE_MAINTENANCE_PASSWORD,
 				'load'     => 1
 			);
 		}
@@ -86,7 +89,6 @@ class TitusDB {
 			$fields = $this->calcPageStats($statsToCalc, $row);
 
 			if (!empty($fields)) {
-				//$this->storeRecord($fields);
 				$this->batchStoreRecord($fields);
 			}
 		}
@@ -113,7 +115,6 @@ class TitusDB {
 			$fields = $this->calcPageStats($statsToCalc, $row);
 
 			if (!empty($fields)) {
-				//$this->storeRecord($fields);
 				$this->batchStoreRecord($fields);
 			}
 		}
@@ -127,7 +128,6 @@ class TitusDB {
 	* but this should probably be abstracted in the future to something like TitusArticle with the appropriate fields
 	*/
 	public function calcPageStats(&$statsToCalc, &$row) {
-		$dbw = $this->dbw;
 		$dbr = $this->dbr;
 
 		$t = Title::newFromId($row->page_id); 
@@ -152,26 +152,6 @@ class TitusDB {
 	}
 
 	/*
-	* Stores a Titus record
-	*/
-	public function storeRecord(&$data) {
-		$dbw = $this->dbw;
-		$fields = join(",", array_keys($data));
-		$values = "'" . join("','", array_values($data)) . "'";
-		$set = array();
-		foreach ($data as $col => $val) {
-			$set[] = "$col = '$val'";
-		}
-		$set = join(",", $set);
-
-		if ($this->debugOutput) {
-			var_dump($data);
-		}
-		$sql = "INSERT INTO titus ($fields) VALUES ($values) ON DUPLICATE KEY UPDATE $set";
-		$dbw->query($sql);
-	}
-
-	/*
 	* Stores records in batches sized as specified by the $batchSize parameter
 	* NOTE:  This method buffers the data and only stores data once $batchSize threshold has been 
 	* met.  To immediately store the bufffered data call flushDataBatch()
@@ -191,7 +171,6 @@ class TitusDB {
 			return;
 		}
 
-		$dbw = $this->dbw;
 		$fields = join(",", array_keys($dataBatch[0]));
 		$set = array();
 		foreach ($dataBatch[0] as $col => $val) {
@@ -205,11 +184,33 @@ class TitusDB {
 		}
 		$values = implode(",", $values);
 
+		$conn = self::getWriteConnection();
+
 		$sql = "INSERT INTO titus ($fields) VALUES $values ON DUPLICATE KEY UPDATE $set";
 		if ($this->debugOutput) {
 			var_dump($this->dataBatch);
 		}
-		$dbw->query($sql);
+		$res = mysql_query($sql, $conn);
+		if (!$res) {
+			die("Error insert into titus: " . mysql_error());
+		}
+
+		mysql_close($conn);
+	}
+
+	/*
+	* Get the write connection for titus db
+	*/
+	public static function getWriteConnection() {
+		$conn = mysql_connect(TITUS_WRITE_DB_HOST, WH_DATABASE_MAINTENANCE_USER, WH_DATABASE_MAINTENANCE_PASSWORD, true);
+		if (!$conn) {
+		    die('Could not connect to titus write db: ' . mysql_error());
+		}
+		$isSelected = mysql_select_db(TitusDB::TITUS_DB_NAME, $conn);
+		if (!$isSelected) {
+		    die('Could not select titusdb: ' . mysql_error());
+		}
+		return $conn;
 	}
 
 	/*

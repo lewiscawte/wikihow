@@ -237,8 +237,15 @@ class GoodRevision {
 
 		// if "oldid" is a URL param, we don't want to override the displayed
 		// revision.
-		if ($wgRequest->getVal('oldid')) {
-			return true;
+		if (@$wgRequest) {
+			if ($wgRequest->getVal('oldid')) {
+				return true;
+			}
+			$action = $wgRequest->getVal('action');
+			if ($action != '' && $action != 'view')
+			{
+				return true;
+			}
 		}
 
 		// fetch correct revision, if there is one
