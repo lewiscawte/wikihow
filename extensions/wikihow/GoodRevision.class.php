@@ -14,6 +14,7 @@ $wgHooks['ArticleFromTitle'][] = array('GoodRevision::onArticleFromTitle');
 $wgHooks['MarkPatrolledDB'][] = array('GoodRevision::onMarkPatrolled');
 $wgHooks['EditURLOptions'][] = array('GoodRevision::onEditURLOptions');
 $wgHooks['Unpatrol'][] = array('GoodRevision::onUnpatrol');
+$wgHooks['TitleMoveComplete'][] = array('GoodRevision::onMovePage');
 
 class GoodRevision {
 
@@ -286,11 +287,32 @@ class GoodRevision {
 	 * Callback when a list of revisions are unpatrolled
 	 */
 	public static function onUnpatrol(&$oldids) {
+		if ($oldids) {
+			self::dbDeleteIDs($oldids);
+		}
+		return true;
+	}
+
+	/**
+	 * Callback when a page title is moved (changed)
+	 */
+	public static function onMovePage(&$oldTitle, &$newTitle) {
+		$oldids = array();
+		if ($oldTitle && $oldTitle->getNamespace() == NS_MAIN) $oldids[] = $oldTitle->getArticleID();
+		if ($newTitle && $newTitle->getNamespace() == NS_MAIN) $oldids[] = $newTitle->getArticleID();
+		if ($oldids) {
+			self::dbDeleteIDs($oldids);
+		}
+		return true;
+	}
+
+	// delete article IDs from the good_revision table, which resets
+	// the good_rev info to the head revision
+	private static function dbDeleteIDs($ids) {
 		$dbw = self::getDB('write');
 		$sql = 'DELETE FROM good_revision
-				WHERE gr_rev IN (' . join(',', $oldids) . ')';
+				WHERE gr_rev IN (' . join(',', $ids) . ')';
 		$dbw->query($sql, __METHOD__);
-		return true;
 	}
 
 	/**

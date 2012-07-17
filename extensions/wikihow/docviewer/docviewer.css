@@ -1,0 +1,21 @@
+#docviewer_side {
+	width: 150px;
+	float: right; 
+	text-align: center;
+}
+	
+	#docviewer_side .back_link { 
+		padding-top: 3em;
+		font-weight: bold; 
+	}
+	
+	#docviewer_side .button { margin:0 auto; }
+	
+#pdfobject {
+	width: 760px;
+	height: 600px;
+}
+
+	#pdfobject img {
+		border: 1px solid #111;
+	}

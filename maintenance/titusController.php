@@ -11,11 +11,14 @@ $maintenance->nightly();
 //$maintenance->repairTitus($lookBack);
 
 class TitusMaintenance {
+	var $titus = null;
 
 	/*
 	* Run the nightly maintenance for the titus and titus_historical tables
 	*/
 	public function nightly() {
+		$this->titus = new TitusDB(true);
+
 		$this->updateHistorical();
 		$this->trimHistorical();
 		$this->incrementTitusDatestamp();
@@ -23,7 +26,7 @@ class TitusMaintenance {
 	}
 
 	private function updateTitus() {
-		$titus = new TitusDB(true);
+		$titus = $this->titus;
 		$dailyEditStats = TitusConfig::getDailyEditStats();
 		$titus->calcLatestEdits($dailyEditStats);
 
@@ -46,7 +49,7 @@ class TitusMaintenance {
 	* worth of titus page rows. The titus_historical table should maintain 30-60 days worth of titus table dumps
 	*/
 	private function updateHistorical() {
-		$sql = "INSERT INTO titus_historical SELECT * FROM titus";
+		$sql = "INSERT IGNORE INTO titus_historical SELECT * FROM titus";
 		$this->performMaintenanceQuery($sql);
 	}
 
@@ -57,13 +60,8 @@ class TitusMaintenance {
 	}
 
 	private function performMaintenanceQuery($sql) {
-		$conn = TitusDB::getWriteConnection();
-		$res = mysql_query($sql, $conn);
-		if (!$res) {
-			die("Error insert into titus: " . mysql_error());
-		}
-
-		mysql_close($conn);
+		$titus = $this->titus;
+		return $titus->performTitusQuery($sql);
 	}
 
 

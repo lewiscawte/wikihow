@@ -3,7 +3,7 @@
 * 
 */
 class TitusQueryTool extends UnlistedSpecialPage {
-	var $dbr = null;
+	var $titus = null;
 
 	function __construct() {
 		UnlistedSpecialPage::UnlistedSpecialPage('TitusQueryTool');
@@ -20,8 +20,7 @@ class TitusQueryTool extends UnlistedSpecialPage {
 		}
 
 		require_once("$IP/extensions/wikihow/titus/Titus.class.php");
-		TitusDB::configureDB();
-		$this->dbr = wfGetDB(TITUS_READ_DB_HOST);
+		$this->titus = new TitusDB(false); 
 
 		if ($wgRequest->wasPosted()) {
 			$this->handleQuery();
@@ -47,14 +46,14 @@ class TitusQueryTool extends UnlistedSpecialPage {
 
 	function getTitusFields() {
 		$data = array();
-		$dbr = $this->dbr;
-		$res = $dbr->query("SELECT * FROM titus LIMIT 1");
+		$titus = $this->titus;
+		$res = $titus->performTitusQuery("SELECT * FROM " . TitusDB::TITUS_TABLE_NAME . " LIMIT 1");
 		$n = mysql_num_fields($res->result);
 		for( $i = 0; $i < $n; $i++ ) {
 			$meta = mysql_fetch_field( $res->result, $i );
 			$field =  new MySQLField($meta);
 			$data[] = array(
-				'field' => 'titus.' . $field->name(), 
+				'field' => TitusDB::TITUS_TABLE_NAME . '.' . $field->name(), 
 				'name' => $field->name(), 
 				'id'  => $i, 
 				'ftype' => $field->type(),
@@ -81,10 +80,10 @@ class TitusQueryTool extends UnlistedSpecialPage {
 
 		$sql = $this->buildSQL($ids);
 		
-		$dbr = $this->dbr;
-		$res = $dbr->query($sql);
+		$titus = $this->titus;
+		$res = $titus->performTitusQuery($sql);
 		$output = $this->getHeaderRow($res);
-		while ($row = $dbr->fetchObject($res)) {
+		foreach ($res as $row) {
 			$output .= $this->outputRow($row);
 		}
 		$this->outputFile("titus_query.titus", $output);
@@ -115,7 +114,7 @@ class TitusQueryTool extends UnlistedSpecialPage {
 
 		$sql = urldecode($wgRequest->getVal('sql'));
 		if (false === stripos($sql, TitusDB::TITUS_TABLE_NAME)) {
-			$sql = "SELECT * FROM titus";
+			$sql = "SELECT * FROM " . TitusDB::TITUS_TABLE_NAME;
 		}
 
 		if (sizeof($ids)) {

@@ -597,7 +597,10 @@ class Easyimageupload extends UnlistedSpecialPage {
 				}
 
 				// finish initializing the $file obj
-				$file->upload($filename, '', '');
+				$status = $file->upload($filename, '', '');
+				if (!$status->ok) {
+					$error = wfMsg('eiu-upload-error');
+				}
 			} else {
 				$error = wfMsg('eiu-download-error', $sourceName);
 			}

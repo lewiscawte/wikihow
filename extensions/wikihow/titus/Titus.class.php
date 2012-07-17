@@ -6,42 +6,23 @@
 
 require_once("$IP/extensions/wikihow/DatabaseHelper.class.php");
 
-if (IS_SPARE_HOST) {
-	define(TITUS_READ_DB_HOST, 1);
-	define(TITUS_WRITE_DB_HOST, WH_DATABASE_BACKUP);
+if (strpos(@$_SERVER['HOSTNAME'], 'wikidiy.com') !== false) {
+        define(TITUS_DB_HOST, WH_DATABASE_MASTER);
 } else {
-	define(TITUS_WRITE_DB_HOST, WH_DATABASE_MASTER);
-	define(TITUS_READ_DB_HOST, DB_SLAVE);
+        define(TITUS_DB_HOST, WH_DATABASE_BACKUP);
 }
 
 class TitusDB {
-	var $dbw;
-	var $dbr;
+	var $titusDB = null;
+	var $wikiDB = null;
 	var $debugOutput;
 	var $dataBatch = array();
 	const TITUS_DB_NAME = 'titusdb';
 	const TITUS_TABLE_NAME = 'titus';
+	const TITUS_HISTORICAL_TABLE_NAME = 'titus_historical';
 
 	function __construct($debugOutput = false) {
-		$this->configureDB();
-		$this->dbr = wfGetDB(TITUS_READ_DB_HOST);
 		$this->debugOutput = $debugOutput;
-	}
-
-	// Use the spare DB for reads to reduce load on production dbs
-	function configureDB() {
-		global $wgDBservers, $wgMasterWaitTimeout, $wgLoadBalancer;
-
-		if (IS_SPARE_HOST) {
-			$wgDBservers[1] = array(
-				'host'     => WH_DATABASE_BACKUP,
-				'dbname'   => WH_DATABASE_NAME,
-				'user'     => WH_DATABASE_MAINTENANCE_USER,
-				'password' => WH_DATABASE_MAINTENANCE_PASSWORD,
-				'load'     => 1
-			);
-		}
-		$wgLoadBalancer = new StubObject( 'wgLoadBalancer', 'LoadBalancer', array( $wgDBservers, false, $wgMasterWaitTimeout, true ) );
 	}
 
 	/*
@@ -49,7 +30,7 @@ class TitusDB {
 	* See DailyEdits.class.php for more details
 	*/
 	public function calcLatestEdits(&$statsToCalc, $lookBack = 1) {
-		$dbr = $this->dbr;		
+		$dbr = $this->getWikiDB();		
 
 		$lowDate = wfTimestamp(TS_MW, strtotime("-$lookBack day", strtotime(date('Ymd', time()))));
 		$highDate = wfTimestamp(TS_MW, strtotime(date('Ymd', time())));
@@ -72,7 +53,7 @@ class TitusDB {
 			throw new Exception("\$pageIds must be an array of 1000 or fewer page ids");
 		}
 
-		$dbr = $this->dbr;
+		$dbr = $this->getWikiDB();
 		$pageIds = implode(",", $pageIds);
 
 
@@ -101,7 +82,7 @@ class TitusDB {
 	* WARNING:  Use this with caution as calculating all Titus stats takes many hours
 	*/
 	public function calcStatsForAllPages(&$statsToCalc, $limit = array()) {
-		$dbr = $this->dbr;		
+		$dbr = $this->getWikiDB();		
 
 		$rows = DatabaseHelper::batchSelect('page', 
 			array('page_id', 'page_title', 'page_counter', 'page_is_featured', 'page_catinfo', 'page_len'), 
@@ -128,7 +109,7 @@ class TitusDB {
 	* but this should probably be abstracted in the future to something like TitusArticle with the appropriate fields
 	*/
 	public function calcPageStats(&$statsToCalc, &$row) {
-		$dbr = $this->dbr;
+		$dbr = $this->getWikiDB();
 
 		$t = Title::newFromId($row->page_id); 
 		$goodRevision = GoodRevision::newFromTitle($t, $row->page_id);
@@ -184,33 +165,40 @@ class TitusDB {
 		}
 		$values = implode(",", $values);
 
-		$conn = self::getWriteConnection();
-
+		$dbw = $this->getTitusDB();
 		$sql = "INSERT INTO titus ($fields) VALUES $values ON DUPLICATE KEY UPDATE $set";
 		if ($this->debugOutput) {
 			var_dump($this->dataBatch);
 		}
-		$res = mysql_query($sql, $conn);
+		$res = $dbw->query($sql, __METHOD__);
 		if (!$res) {
 			die("Error insert into titus: " . mysql_error());
 		}
-
-		mysql_close($conn);
 	}
 
 	/*
-	* Get the write connection for titus db
+	* Get the connection for titus db
 	*/
-	public static function getWriteConnection() {
-		$conn = mysql_connect(TITUS_WRITE_DB_HOST, WH_DATABASE_MAINTENANCE_USER, WH_DATABASE_MAINTENANCE_PASSWORD, true);
-		if (!$conn) {
-		    die('Could not connect to titus write db: ' . mysql_error());
+	private function getTitusDB() {
+		if (is_null($this->titusDB) || !$this->titusDB->ping()) {
+			$this->titusDB = new Database(TITUS_DB_HOST, WH_DATABASE_MAINTENANCE_USER, WH_DATABASE_MAINTENANCE_PASSWORD, self::TITUS_DB_NAME);
 		}
-		$isSelected = mysql_select_db(TitusDB::TITUS_DB_NAME, $conn);
-		if (!$isSelected) {
-		    die('Could not select titusdb: ' . mysql_error());
+		return $this->titusDB;
+	}
+
+	/**
+	* Get connection to the wiki database 
+	*/
+	private function getWikiDB() {
+		if (is_null($this->wikiDB) || !$this->wikiDB->ping()) {
+			$this->wikiDB = new Database(TITUS_DB_HOST, WH_DATABASE_MAINTENANCE_USER, WH_DATABASE_MAINTENANCE_PASSWORD, WH_DATABASE_NAME);
 		}
-		return $conn;
+		return $this->wikiDB;
+	}
+
+	public function performTitusQuery($sql) {
+		$db = $this->getTitusDB();
+		return $db->query($sql);
 	}
 
 	/*

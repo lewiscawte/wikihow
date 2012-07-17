@@ -61,7 +61,7 @@ class PreferencesForm {
 		}
 		if (class_exists('RCTest')) {
 			$userGroups = $wgUser->getGroups();
-			if (in_array('staff', $userGroups) || in_array('admin', $userGroups) || in_array('newarticlepatrol', $userGroups)) {
+			if (in_array('staff', $userGroups) || in_array('sysop', $userGroups) || in_array('newarticlepatrol', $userGroups)) {
 				$this->mRCTest = $request->getCheck( 'wpOprctest' ) ? 0 : 1;
 			} else {
 				// Preference is always on for people not in staff, admin or nap group

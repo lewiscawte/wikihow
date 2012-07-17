@@ -18,6 +18,6 @@ $messages['en'] = array (
 	'va_week' => "This week",
 	'va_total' => "Total",
 	'va_rank' => "Rank this week",
-	'va_notice'	=> "Please watch at least 20 seconds of the video before clicking Yes...",
+	'va_notice'	=> "Please watch at least 30 seconds of the video before clicking Yes...",
 );
 

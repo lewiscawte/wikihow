@@ -2,6 +2,7 @@
 
 require_once('commandLine.inc');
 require_once("$IP/extensions/wikihow/DatabaseHelper.class.php");
+require_once("$IP/extensions/wikihow/titus/Titus.class.php");
 
 /******
  * 
@@ -56,7 +57,10 @@ foreach($articles as $articleData) {
 		$monthCount = 0;
 	
 	//grab the pv data from 30 days ago
-	$row = $dbr->selectRow('titus_historical', array('ti_datestamp', 'ti_daily_views'), array('ti_page_id' => $articleData->pv_page, 'ti_datestamp' => $monthAgo), __METHOD__);
+	$sql = "SELECT ti_datestamp, ti_daily_views from " . TitusDB::TITUS_HISTORICAL_TABLE_NAME . " WHERE ti_page_id = " . $articleData->page_id . " and ti_datestamp = '$monthAgo'"; 
+	$titus = new TitusDB();
+	$res = $titus->performTitusQuery($sql);
+	$row = $res->fetchObject();
 
 	//if there was data from 30 days ago, subtract it off
 	if($row) {

@@ -255,9 +255,10 @@ class FSRepo extends FileRepo {
 	 */
 	function publishBatch( $triplets, $flags = 0 ) {
 		// Perform initial checks
-		if ( !is_writable( $this->directory ) ) {
-			return $this->newFatal( 'upload_directory_read_only', $this->directory );
-		}
+		// XXCHANGED -- /images is not writable, but all directories under it are
+		//if ( !is_writable( $this->directory ) ) {
+		//	return $this->newFatal( 'upload_directory_read_only', $this->directory );
+		//}
 		$status = $this->newGood( array() );
 		foreach ( $triplets as $i => $triplet ) {
 			list( $srcPath, $dstRel, $archiveRel ) = $triplet;

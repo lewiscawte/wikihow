@@ -412,8 +412,8 @@ class Videoadder extends SpecialPage {
 		// add the layer of the page
 		$this->setHeaders();
 		$this->setSideWidgets();
-		$wgOut->addScript('<script type="text/javascript" src="/extensions/wikihow/cookie.js"></script>');
-		$wgOut->addScript('<script type="text/javascript" src="/extensions/wikihow/videoadder.js"></script>');
+		$wgOut->addScript('<script type="text/javascript" src="/extensions/wikihow/cookie.js?rev='.WH_SITEREV.'"></script>');
+		$wgOut->addScript('<script type="text/javascript" src="/extensions/wikihow/videoadder.js?rev='.WH_SITEREV.'"></script>');
 		$wgOut->addScript('<style type="text/css" media="all">/*<![CDATA[*/ @import "/extensions/wikihow/videoadder.css"; /*]]>*/</style>');
 		$wgOut->addHTML("<div id='va_question'>" . wfMsg('va_question') . "</div>");
 		$wgOut->addHTML("<div id='va_instructions'>" . wfMsgExt('va_instructions', 'parse') . "</div>");

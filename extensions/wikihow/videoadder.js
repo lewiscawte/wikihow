@@ -41,8 +41,8 @@ function loadNext() {
 function va_setLinks(){
 	jQuery('#va_yes').click(function(e){e.preventDefault()});
 
-	//wait 20 seconds before showing the buttons
-	jQuery('#va_notice').delay(20000).slideUp(function() {
+	//wait 30 seconds before showing the buttons
+	jQuery('#va_notice').delay(30000).slideUp(function() {
 		jQuery('#va_yes')
 			.removeClass('disabled')
 			.click(function(){

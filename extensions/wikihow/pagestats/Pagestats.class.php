@@ -34,15 +34,24 @@ class Pagestats {
 	}
 	
 	public static function getStuData($pageId, &$dbr) {
-		global $wgMemc;
+		global $wgMemc, $IP;
 		
 		//$key = "ps-stu-" . $pageId;
 		//$val = $wgMemc->get($key);
 		
 		//if(!$val) {
-			$res = $dbr->select('titus', array('ti_stu_views_www', 'ti_stu_10s_percentage_www', 'ti_stu_3min_percentage_www', 'ti_stu_views_mobile', 'ti_stu_10s_percentage_mobile'), array('ti_page_id' => $pageId), __METHOD__);
-			
-			$val = $dbr->fetchObject($res);
+			require_once("$IP/extensions/wikihow/titus/Titus.class.php");
+			$titus = new TitusDB(true);
+			$sql = "SELECT ti_stu_views_www, ti_stu_10s_percentage_www, ti_stu_3min_percentage_www, ti_stu_views_mobile, ti_stu_10s_percentage_mobile FROM titus WHERE ti_page_id = $pageId";
+			$res = $titus->performTitusQuery($sql);
+			$val = array();
+			if ($res) {
+				$val = $res->fetchObject();
+			}
+
+
+			//$res = $dbr->select('titus', array('ti_stu_views_www', 'ti_stu_10s_percentage_www', 'ti_stu_3min_percentage_www', 'ti_stu_views_mobile', 'ti_stu_10s_percentage_mobile'), array('ti_page_id' => $pageId), __METHOD__);
+			//$val = $dbr->fetchObject($res);
 			
 			//$wgMemc->set($key, $val);
 		//}
