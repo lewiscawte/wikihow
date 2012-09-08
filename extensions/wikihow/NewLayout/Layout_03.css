@@ -570,3 +570,15 @@ DIV#sidebar{
 	bottom:12px;
 	right:10px;
 }
+
+#article P#originators{
+	padding-bottom:0;
+}
+
+#footer DIV#footer_main{
+	width:500px;
+}
+
+DIV#footer{
+	padding-bottom: 0px;
+}

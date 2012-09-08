@@ -1,6 +1,7 @@
 <?php
 //
-// Generate a list of all URLs for the sitemap
+// Generate a list of all URLs for the sitemap generator and for
+// scripts that crawl the site (like to generate cache.wikihow.com)
 //
 
 require_once('commandLine.inc');
@@ -15,11 +16,11 @@ function iso8601_date($time) {
 	return $date;
 }
 
-function main() {
+function main($titles_only) {
 	$PAGE_SIZE = 2000;
 	$dbr = wfGetDB(DB_SLAVE);
 
-	$pages = array();
+	$lines = array();
 	for ($page = 0; ; $page++) {
 		$offset = $PAGE_SIZE * $page;
 		$sql = "SELECT page_id, page_title, page_namespace, page_touched FROM page WHERE page_namespace = 0 AND page_is_redirect = 0 ORDER BY page_touched DESC LIMIT $offset,$PAGE_SIZE";
@@ -41,17 +42,25 @@ function main() {
 				}
 			}
 
-			$pages[] = array(
-				'url' => $title->getFullUrl(),
-				'date' => iso8601_date($row->page_touched),
-			);
+			if (!$titles_only) {
+				$line = $title->getFullUrl() . ' lastmod=' .  iso8601_date($row->page_touched);
+			} else {
+				$line = urlencode($title->getPartialUrl());
+			}
+			$lines[] = $line;
 		}
 		$res->free();
 	}
 
-	foreach ($pages as $page) {
-		print "{$page['url']} lastmod={$page['date']}\n";
+	foreach ($lines as $line) {
+		print "$line\n";
 	}
 }
 
-main();
+$titles_only = false;
+if (count($argv) > 0 && $argv[0] == '--titles-only') {
+	$titles_only = true;
+}
+
+main($titles_only);
+

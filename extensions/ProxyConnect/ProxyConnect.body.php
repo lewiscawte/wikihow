@@ -1,16 +1,19 @@
-<?
+<?php
+
 class ProxyConnect extends UnlistedSpecialPage {
 
     function __construct() {
-        UnlistedSpecialPage::UnlistedSpecialPage( 'ProxyConnect' );
+        UnlistedSpecialPage::UnlistedSpecialPage('ProxyConnect');
     }
 
 	function isUserBlocked() {
 		global $wgUser;
+
 		// more thorough
 		if ( $wgUser->isBlocked(false) ){
 			return true;
 		}
+
 		// new user?
 		$dbr = wfGetDB(DB_MASTER); 
 		if ($wgUser->getID() > 0) {
@@ -25,7 +28,6 @@ class ProxyConnect extends UnlistedSpecialPage {
 		}
 
 		return false;
-
 	}
 
 	function updateRemote() {
@@ -51,10 +53,6 @@ class ProxyConnect extends UnlistedSpecialPage {
 
 			$db->update('GDN_User', $updates, $opts);
 			if ( self::isUserBlocked()) {
-//				$email = new MailAddress("alerts@wikihow.com");
-//				$subject = "Invalid/valid forums block for " . $wgUser->getName();
-//				$body = print_r($user->mBlock, true) . "\n" . print_r($wgUser, true);
-//				UserMailer::send($email, $email, $subject, $body);
 				$db->update('GDN_UserRole', array('RoleID = 1'), $opts);
 			} else if (in_array('bureaucrat', $wgUser->getGroups())) {
 				$db->update('GDN_UserRole', array('RoleID = 16'), $opts);
@@ -64,29 +62,27 @@ class ProxyConnect extends UnlistedSpecialPage {
 			} else {
 				$db->update("GDN_User", array('Permissions'=>'a:4:{i:0;s:19:"Garden.SignIn.Allow";s:24:"Vanilla.Discussions.View";a:6:{i:0;s:1:"1";i:1;s:1:"4";i:2;s:1:"5";i:3;s:1:"7";i:4;s:1:"8";i:5;s:1:"9";}s:23:"Vanilla.Discussions.Add";a:6:{i:0;s:1:"1";i:1;s:1:"4";i:2;s:1:"5";i:3;s:1:"7";i:4;s:1:"8";i:5;s:1:"9";}s:20:"Vanilla.Comments.Add";a:6:{i:0;s:1:"1";i:1;s:1:"4";i:2;s:1:"5";i:3;s:1:"7";i:4;s:1:"8";i:5;s:1:"9";}}'), $opts); 
 				$db->update('GDN_UserRole', array('RoleID = 8'), $opts);
-				echo $db->lastQuery();
+				print $db->lastQuery();
 			}
 			$db->ignoreErrors($oldignore);
 		} catch (Exception $e) {
-			echo "oops {$e->getMessage()}\n";
+			print "oops {$e->getMessage()}\n";
 		}
 		return true;
 	}
-    function execute ($par) {
+
+    function execute($par) {
 		global $wgUser, $wgOut;
 		$wgOut->disable();
 		header("Content-type: text/plain;");
-        header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', 0 ) . ' GMT' );
-       	header( "Cache-Control: private, must-revalidate, max-age=0" );
+        header('Expires: ' . gmdate( 'D, d M Y H:i:s', 0 ) . ' GMT');
+       	header("Cache-Control: private, must-revalidate, max-age=0");
 
-		$a = new MailAddress("travis@wikihow.com");
 		if ($wgUser->getID() == 0) {
 			return;
 		}
-		if ( self::isUserBlocked()) {
-			UserMailer::send($a, $a, "User is blocked from forums no proxyconnect " . wfHostname() . " at " . date("r"), 
-				" Blocked ? " . (self::isUserBlocked() ? "yes" : "no ") . "\n"
-				. print_r($wgUser, true));
+
+		if (self::isUserBlocked()) {
 			self::updateRemote();
 			return;
 		}
@@ -101,15 +97,9 @@ class ProxyConnect extends UnlistedSpecialPage {
 		$result .= "Groups=" . implode(',', $wgUser->getGroups()) . "\n";
 		wfDebug("ProxyConnect: returning $result\n");
 
-/*
-		UserMailer::send($a, $a, "Output for ProxyConnect from " . wfHostname() . " at " . date("r"), 
-			$result . "\n"
-			. " Blocked ? " . (self::isUserBlocked() ? "yes" : "no ") . "\n"
-			. print_r($_SERVER, true) . "\n"
-			. print_r($wgUser, true));
-*/
-		echo $result;
+		print $result;
 		self::updateRemote();
 		return;
 	}
+
 }

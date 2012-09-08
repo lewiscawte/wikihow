@@ -485,16 +485,16 @@ class AuthorEmailNotification extends SpecialPage {
 				$to_name .= " <$email>";
 			}
 
-			$from = new MailAddress ($from_name);	
-			$to = new MailAddress ($to_name);
+			$from = new MailAddress($from_name);	
+			$to = new MailAddress($to_name);
 
 			if ($type == 'text') {
 				if (!$isDev) {
 					UserMailer::send($to, $from, $subject, $body);
 				}
 				//XX HARDCODE SEND TO ELIZABETH FOR TEST
-				$to = new MailAddress ("elizabethwikihowtest@gmail.com");
-				UserMailer::send($to, $from, $subject, $body);
+				//$to = new MailAddress("elizabethwikihowtest@gmail.com");
+				//UserMailer::send($to, $from, $subject, $body);
 			} else {
 				//FOR HTML EMAILS
 				$content_type = "text/html; charset={$wgOutputEncoding}";
@@ -502,8 +502,8 @@ class AuthorEmailNotification extends SpecialPage {
 					UserMailer::send($to, $from, $subject, $body, null, $content_type);
 				}
 				//XX HARDCODE SEND TO ELIZABETH FOR TEST
-				$to = new MailAddress ("elizabethwikihowtest@gmail.com");
-				UserMailer::send($to, $from, $subject, $body, null, $content_type);
+				//$to = new MailAddress ("elizabethwikihowtest@gmail.com");
+				//UserMailer::send($to, $from, $subject, $body, null, $content_type);
 			}
 
 			wfProfileOut($fname);

@@ -1148,31 +1148,27 @@ Event.observe(window, 'load', pbInitForm);
 		$difference = $now - $joinDate;
 		$difference /= 60*60*24; //take away milliseconds and seconds
 
-		/*for ($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
-			$difference /= $lengths[$j];
-		}*/
-		$difference = round($difference);
-
 		$over = "over ";
 		if($difference < 1){ //today
 			return "since today";
 		}
-		else if($difference < 7){ //this week (days)
-			return $over . $difference . " " . ($difference>1?$periods[0]:$period[0]);
+		else if($difference < 7){ //this week (# of days)
+			$days = floor($difference);
+			return $over . $days . " " . ($days>1?$periods[0]:$period[0]);
 		}
 		else{
-			$difference = round($difference/7);
-			if($difference < 4){ //this month (weeks)
-				return $over . $difference . " " . ($difference>1?$periods[1]:$period[1]);
+			if($difference < 28){ //this month ( # of weeks)
+				$weeks = floor($difference/7);
+				return $over . $weeks . " " . ($weeks>1?$periods[1]:$period[1]);
 			}
 			else{
-				$difference = floor($difference/4.35);
-				if($difference < 12){ //this year (months)
-					return $over . $difference . " " . ($difference>1?$periods[2]:$period[2]);
+				if($difference < 360){ //this year (# months)
+					$months = floor($difference/30);
+					return $over . $months . " " . ($months>1?$periods[2]:$period[2]);
 				}
 				else{
-					$years = floor($difference/12);
-					$months = $difference % 12;
+					$years = floor($difference/365);
+					$months = floor(($difference % 365)/30);
 
 					return $over . $years . " " . ($years>1?$periods[3]:$period[3]) . " " . $months . " " . ($months>1?$periods[2]:$period[2]);
 				}

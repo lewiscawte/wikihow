@@ -88,5 +88,55 @@ class Misc {
 
 		return wfMsg($tenseMsg, $difference, $periods[$j]);
 	}
+
+	// Format a binary number 
+	public static function formatBinaryNum($n) {
+		return sprintf('%032b', $n);
+	}
+
+	// Check if an $ip address (string) is within an IP network
+	// and netmask, defined in $range (string).
+	//
+	// Note: $ip and $range need to be perfectly formatted!
+	public static function isIpInRange($ip, $range) {
+		list($range, $maskbits) = explode('/', $range);
+		list($i1, $i2, $i3, $i4) = explode('.', $ip);
+		list($r1, $r2, $r3, $r4) = explode('.', $range);
+		$numi = ($i1 << 24) | ($i2 << 16) | ($i3 << 8) | $i4;
+		$numr = ($r1 << 24) | ($r2 << 16) | ($r3 << 8) | $r4;
+		$mask = 0;
+		for ($i = 1; $i <= $maskbits; $i++) {
+			$mask |= 1 << (32 - $i);
+		}
+		$masked = $numi & $mask;
+		//print self::formatBinaryNum($masked) . ' ' .
+		//	self::formatBinaryNum($numr) . ' ' . 
+		//	self::formatBinaryNum($numi) . "\n";
+		return $masked === $numr;
+	}
+
+	/**
+	 * Add a check to see if the proxy we're going through is CloudFlare. See 
+	 * ranges:
+	 *
+	 * https://www.cloudflare.com/wiki/What_are_the_CloudFlare_IP_address_ranges
+	 */
+	function checkCloudFlareProxy($ip, &$trusted) {
+		$ranges = array(
+			'204.93.240.0/24', '204.93.177.0/24', '199.27.128.0/21',
+			'173.245.48.0/20', '103.22.200.0/22', '141.101.64.0/18',
+			'108.162.192.0/18', '190.93.240.0/20',
+		);
+		if (!$trusted && preg_match('@^(\d{1,3}\.){3}\d{1,3}$@', $ip)) {
+			foreach ($ranges as $range) {
+				if (self::isIpInRange($ip, $range)) {
+					$trusted = true;
+					break;
+				}
+			}
+		}
+		return true;
+	}
+
 }
 

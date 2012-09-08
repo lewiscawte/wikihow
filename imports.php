@@ -191,4 +191,3 @@ require_once("$IP/extensions/wikihow/WikihowShare.class.php");
 require_once("$IP/extensions/wikihow/AdminNoIntroImage.php");
 require_once("$IP/extensions/wikihow/Misc.php");
 require_once("$IP/extensions/wikihow/pagestats/Pagestats.class.php");
-require_once("$IP/extensions/wikihow/docviewer/DocViewer.php");

@@ -68,7 +68,7 @@ function wfNotifyRequesterOnNab($article_id) {
 
 function wfSendRequestNotificationEmail($emails) {
 	wfLoadExtensionMessages('RequestTopic');
-    $from = new MailAddress (wfMsg('suggested_notify_email_from'));
+    $from = new MailAddress(wfMsg('suggested_notify_email_from'));
 	$semi_rand = md5(time());
 	$mime_boundary = "==MULTIPART_BOUNDARY_$semi_rand";
 	$mime_boundary_header = chr(34) . $mime_boundary . chr(34);
@@ -102,7 +102,7 @@ $html_text";
 
 		$subject =  wfMsg('suggested_notify_email_subject', $title->getText()) ;
 		if (!$title) continue;
-    	$to = new MailAddress ($email);
+    	$to = new MailAddress($email);
 		UserMailer::send($to, $from, $subject, $body, null, "multipart/alternative;\n" .
     					"     boundary=" . $mime_boundary_header) ;
 	}

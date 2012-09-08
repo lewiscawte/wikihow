@@ -36,11 +36,18 @@ class Vanilla extends UnlistedSpecialPage {
 
 	function execute($par) {
 		global $wgUser, $wgOut;
+		if (!$wgUser) {
+			return;
+		}
 		if ($wgUser->getID() == 0) {
 			$wgOut->redirect('/Special:Userlogin?returnto=vanilla');
 			return;
 		}
-		$wgOut->addHTML("You are not logged into the forums because you do not have an email address specified in your <a href='/Special:Preferences'>preferences</a>.");
+		if (!$wgUser->getEmail()) {
+			$wgOut->addHTML("You are not logged into the forums because you do not have an email address specified in your <a href='/Special:Preferences'>preferences</a>.");
+		} else {
+			$wgOut->addHTML("A problem happened when we tried to log you into the forums. Try <a href='/Special:Userlogout'>logging out</a> of wikiHow then <a href='/Special:Userlogin'>logging back in</a> again to fix the issue.");
+		}
 		return;
 	}
 }

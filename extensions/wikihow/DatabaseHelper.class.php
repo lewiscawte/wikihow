@@ -35,7 +35,7 @@ class DatabaseHelper {
 			$options['OFFSET'] = $batchNum*$batchSize;
 			$res = $dbr->select($table, $fields, $conditions, $fname, $options);
 
-			if ($res->numRows() == 0)
+			if (!$res || $res->numRows() == 0)
 				break;
 
 			foreach ($res as $row) {

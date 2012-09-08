@@ -41,7 +41,7 @@ WH.wikihowAds = (function ($) {
 		if(wgContentLanguage == "es")
 			googleAds = 'Anucios Google';
 		else if(wgContentLanguage == "pt")
-			googleAds = 'Anúncios Google';
+			googleAds = 'AnÃºncios Google';
 		if(adIndex < adArray.length) {
 			if(adId == "2" || adId == "2a")
 				var adHtml = s = '<div class="adunit adunitp2"><div id="adunit1" ' + adPadding + '><p style="margin:0 0 5px 0; padding:0; font-size:1em;"><a href="'
@@ -84,7 +84,7 @@ WH.wikihowAds = (function ($) {
 		if(wgContentLanguage == "es")
 			googleAds = 'Anucios Google';
 		else if(wgContentLanguage == "pt")
-			googleAds = 'Anúncios Google';
+			googleAds = 'AnÃºncios Google';
 		
 		s = '<div class="de"><div style="background-color: #eee; height: 24px; width: 623px;"><p class="de_user"><a class="new" href="' 
                         + google_info.feedback_url + '" style="">' + googleAds + '</a></p></div><div style="padding: 15px;">'; 

@@ -238,6 +238,6 @@ UNIQUE (
 )
 ) ENGINE = InnoDB ;
 ALTER TABLE `spellchecker_whitelist` CHANGE `sw_word` `sw_word` VARCHAR( 20 ) CHARACTER SET latin1 COLLATE latin1_general_cs NOT NULL 
-
+ALTER TABLE `spellchecker` ADD `sc_exempt` TINYINT( 3 ) NOT NULL DEFAULT '0'
 
 **/

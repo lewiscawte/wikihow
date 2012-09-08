@@ -767,9 +767,8 @@ DONE;
 			// TODO: check for conflicts (obviously)
 			if ($a->doEdit($newtext, $wgRequest->getVal('summary') .  " (HTML5) ")) {
 
-				$alerts = new MailAddress("travis+html5@wikihow.com");
-
-				UserMailer::send($alerts, $alerts, "HTML5 Ouput for {$t->getText()}", "{$t->getFullURL()}?action=history \n HTML: " . trim($html) . "\n\nwikitext:\n $newtext\n\n\nUser: " .print_r($wgUser, true) . "\n\n\n\nPOST: " . print_r($_POST, true) );
+				//$alerts = new MailAddress("travis+html5@wikihow.com");
+				//UserMailer::send($alerts, $alerts, "HTML5 Ouput for {$t->getText()}", "{$t->getFullURL()}?action=history \n HTML: " . trim($html) . "\n\nwikitext:\n $newtext\n\n\nUser: " .print_r($wgUser, true) . "\n\n\n\nPOST: " . print_r($_POST, true) );
 
 				$r = Revision::newFromTitle($t);
 				$this->setRevCookie($t, $r);

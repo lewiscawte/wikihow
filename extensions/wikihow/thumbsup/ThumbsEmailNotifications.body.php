@@ -62,7 +62,7 @@ Content-Transfer-Encoding: 7bit
 
 $html_text";
 
-			$from = new MailAddress (wfMsg('aen_from'));
+			$from = new MailAddress(wfMsg('aen_from'));
 			$subject =  "Congratulations! You just got a thumbs up";
 
 			$isDev = false;
@@ -73,15 +73,11 @@ $html_text";
 			}
 		
 			if (!$isDev) {
-				$to = new MailAddress ($email);
+				$to = new MailAddress($email);
 				UserMailer::send($to, $from, $subject, $body, null, "multipart/alternative;\n" .
 				"     boundary=" . $mime_boundary_header) ;
 			}
 
-			// send one to our test email account for debugging
-			$to = new MailAddress ('elizabethwikihowtest@gmail.com');
-			UserMailer::send($to, $from, $subject, $body, null, "multipart/alternative;\n" .
-							"     boundary=" . $mime_boundary_header) ;
 			return true;
 
 	}

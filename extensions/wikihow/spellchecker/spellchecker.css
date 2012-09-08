@@ -169,3 +169,17 @@ a.clickfail:hover {
 	margin:0 auto;
 	width:32px;
 }
+
+#spch-welcome{
+    font-size: 16px;
+    padding: 10px 20px;
+	background-color: #F9F7F1;
+	display: none;
+}
+
+#spch-welcome img{
+    float: left;
+    line-height: 20px;
+    margin-right: 10px;
+    margin-top: 9px;
+}

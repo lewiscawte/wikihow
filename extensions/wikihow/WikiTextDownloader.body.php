@@ -28,7 +28,6 @@ class WikiTextDownloader extends UnlistedSpecialPage {
 
 	public static function isAuthorized() {
 		global $wgUser, $isDevServer;
-		return (IS_SPARE_HOST || $isDevServer) 
-			&& false !== array_search(strtolower($wgUser->getName()), array_map('strtolower', explode("\n", trim(wfMsg('wikitext_widget_users')))));
+		return false !== array_search(strtolower($wgUser->getName()), array_map('strtolower', explode("\n", trim(wfMsg('wikitext_widget_users')))));
 	}
 }

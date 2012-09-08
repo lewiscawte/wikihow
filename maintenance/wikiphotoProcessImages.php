@@ -37,6 +37,7 @@ require_once('commandLine.inc');
 
 global $IP;
 require_once("$IP/extensions/wikihow/common/S3.php");
+require_once("$IP/extensions/wikihow/DatabaseHelper.class.php");
 
 class WikiPhotoProcess {
 	const PHOTO_LICENSE = 'cc-by-sa-nc-2.5-self';
@@ -519,11 +520,19 @@ class WikiPhotoProcess {
 	private static function dbGetArticlesUpdatedAll() {
 		$articles = array();
 		$dbr = self::getDB('read');
-		$res = $dbr->select('wikiphoto_article_status', array('article_id', 'processed', 'error', 'needs_retry', 'retry'), '', __METHOD__);
-		while ($row = $res->fetchRow()) {
+
+		$res = DatabaseHelper::batchSelect('wikiphoto_article_status',
+			array('article_id', 'processed', 'error', 'needs_retry', 'retry'),
+			'',
+			__METHOD__,
+			array(),
+			DatabaseHelper::DEFAULT_BATCH_SIZE,
+			$dbr);
+
+		foreach ($res as $row) {
 			// convert MW timestamp to unix timestamp
-			$row['processed'] = wfTimestamp(TS_UNIX, $row['processed']);
-			$articles[ $row['article_id'] ] = $row;
+			$row->processed = wfTimestamp(TS_UNIX, $row->processed);
+			$articles[ $row->article_id ] = (array)$row;
 		}
 		return $articles;
 	}
