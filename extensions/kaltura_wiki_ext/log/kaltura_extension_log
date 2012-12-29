@@ -1,0 +1,841 @@
+(29/09 16:04:12.474)
+
+[http://www.kaltura.com/index.php/partnerservices2/]
+(29/09 16:04:12.474)
+
+--> startsession|1236204|Array
+(
+    [kaltura_api_version] => 1.0
+    [partner_id] => 328
+    [subp_id] => 32800
+    [format] => 3
+    [uid] => 1236204
+    [user_name] => Tderouin
+    [secret] => 9a3db4bd437c3bfb73f5baf0106f620b
+    [privileges] => *
+    [kalsig] => fdde6e3f5c48c7c1b860dc149798cfa4
+)
+
+(29/09 16:04:12.843)<-- a:2:{s:6:"result";a:5:{s:2:"ks";s:116:"OTkzZjhhYTkyNzdjMzBjMGY4Y2Q0YTAwYjdkOTkxNTc2ZmMxZDY1MXwzMjg7MzI4OzEyMjI3OTA2NDc7MDsxMjIyNzA0MjQ3LjkyNjsxMjM2MjA0Oyo=";s:10:"partner_id";s:3:"328";s:7:"subp_id";s:5:"32800";s:3:"uid";s:7:"1236204";s:10:"serverTime";i:1222704247;}s:5:"debug";a:6:{s:7:"sigtype";i:1;s:17:"validateSignature";b:1;s:9:"signature";s:32:"fdde6e3f5c48c7c1b860dc149798cfa4";s:17:"execute_impl_time";d:0.00016498565673828125;s:12:"execute_time";d:0.08697605133056640625;s:10:"total_time";s:17:"0.089107036590576";}}
+(29/09 16:04:12.843)-PHP-> strlen 527
+(29/09 16:04:12.843)<-PHP- countArray
+(
+    [result] => Array
+        (
+            [ks] => OTkzZjhhYTkyNzdjMzBjMGY4Y2Q0YTAwYjdkOTkxNTc2ZmMxZDY1MXwzMjg7MzI4OzEyMjI3OTA2NDc7MDsxMjIyNzA0MjQ3LjkyNjsxMjM2MjA0Oyo=
+            [partner_id] => 328
+            [subp_id] => 32800
+            [uid] => 1236204
+            [serverTime] => 1222704247
+        )
+
+    [debug] => Array
+        (
+            [sigtype] => 1
+            [validateSignature] => 1
+            [signature] => fdde6e3f5c48c7c1b860dc149798cfa4
+            [execute_impl_time] => 0.00016498565673828
+            [execute_time] => 0.086976051330566
+            [total_time] => 0.089107036590576
+        )
+
+)
+
+(29/09 16:04:12.844)<--> startsession|1236204| time [0.38371419906616]
+(29/09 16:04:12.844)
+
+[http://www.kaltura.com/index.php/partnerservices2/]
+(29/09 16:04:12.844)
+
+--> addkshow|1236204|Array
+(
+    [kaltura_api_version] => 1.0
+    [partner_id] => 328
+    [subp_id] => 32800
+    [format] => 3
+    [uid] => 1236204
+    [user_name] => Tderouin
+    [kshow_name] => A couple of beers in the sand
+    [kshow_description] => 
+    [kshow_indexedCustomData3] => A couple of beers in the sand
+    [allow_duplicate_names] => false
+    [ks] => OTkzZjhhYTkyNzdjMzBjMGY4Y2Q0YTAwYjdkOTkxNTc2ZmMxZDY1MXwzMjg7MzI4OzEyMjI3OTA2NDc7MDsxMjIyNzA0MjQ3LjkyNjsxMjM2MjA0Oyo=
+    [kalsig] => 55a3634164347ea8522dc5062ce5fe65
+)
+
+(29/09 16:04:13.376)<-- a:2:{s:6:"result";a:2:{s:5:"kshow";a:12:{s:2:"id";s:10:"nkhh6w1dfo";s:4:"name";s:29:"A couple of beers in the sand";s:9:"partnerId";i:328;s:6:"subpId";i:32800;s:7:"puserId";s:7:"1236204";s:11:"showEntryId";s:10:"9i8rz9zk60";s:9:"createdAt";s:19:"2008-09-29 12:04:08";s:14:"createdAtAsInt";i:1222704248;s:18:"indexedCustomData3";s:29:"A couple of beers in the sand";s:7:"version";s:6:"100000";s:11:"permissions";s:1:"1";s:12:"thumbnailUrl";s:77:"http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0";}s:10:"serverTime";i:1222704248;}s:5:"debug";a:7:{s:7:"sigtype";i:1;s:17:"validateSignature";b:1;s:9:"signature";s:32:"55a3634164347ea8522dc5062ce5fe65";s:12:"added_fields";a:2:{s:4:"name";s:29:"A couple of beers in the sand";s:18:"indexedCustomData3";s:29:"A couple of beers in the sand";}s:17:"execute_impl_time";d:0.1570918560028076171875;s:12:"execute_time";d:0.2692978382110595703125;s:10:"total_time";s:16:"0.27214789390564";}}
+(29/09 16:04:13.377)-PHP-> strlen 957
+(29/09 16:04:13.377)<-PHP- countArray
+(
+    [result] => Array
+        (
+            [kshow] => Array
+                (
+                    [id] => nkhh6w1dfo
+                    [name] => A couple of beers in the sand
+                    [partnerId] => 328
+                    [subpId] => 32800
+                    [puserId] => 1236204
+                    [showEntryId] => 9i8rz9zk60
+                    [createdAt] => 2008-09-29 12:04:08
+                    [createdAtAsInt] => 1222704248
+                    [indexedCustomData3] => A couple of beers in the sand
+                    [version] => 100000
+                    [permissions] => 1
+                    [thumbnailUrl] => http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0
+                )
+
+            [serverTime] => 1222704248
+        )
+
+    [debug] => Array
+        (
+            [sigtype] => 1
+            [validateSignature] => 1
+            [signature] => 55a3634164347ea8522dc5062ce5fe65
+            [added_fields] => Array
+                (
+                    [name] => A couple of beers in the sand
+                    [indexedCustomData3] => A couple of beers in the sand
+                )
+
+            [execute_impl_time] => 0.15709185600281
+            [execute_time] => 0.26929783821106
+            [total_time] => 0.27214789390564
+        )
+
+)
+
+(29/09 16:04:13.377)<--> addkshow|1236204| time [0.53320789337158]
+(29/09 16:04:13.377)
+
+[http://www.kaltura.com/index.php/partnerservices2/]
+(29/09 16:04:13.377)
+
+--> addwidget|1236204|Array
+(
+    [kaltura_api_version] => 1.0
+    [partner_id] => 328
+    [subp_id] => 32800
+    [format] => 3
+    [uid] => 1236204
+    [user_name] => Tderouin
+    [widget_kshowId] => nkhh6w1dfo
+    [widget_sourceWidgetId] => 201
+    [widget_partnerData] => <xml><pd_article_name>A couple of beers in the sand</pd_article_name><pd_original_url>http://wiki112.wikidiy.com/Special:KalturaCollaborativeVideoInfo</pd_original_url></xml>
+    [widget_securityType] => 1
+    [ks] => OTkzZjhhYTkyNzdjMzBjMGY4Y2Q0YTAwYjdkOTkxNTc2ZmMxZDY1MXwzMjg7MzI4OzEyMjI3OTA2NDc7MDsxMjIyNzA0MjQ3LjkyNjsxMjM2MjA0Oyo=
+    [kalsig] => a077691173d6dcbaee6341c738f1f721
+)
+
+(29/09 16:04:13.888)<-- a:2:{s:6:"result";a:2:{s:6:"widget";a:13:{s:2:"id";s:10:"wdgo42tx88";s:9:"partnerId";i:328;s:14:"sourceWidgetId";s:3:"201";s:12:"rootWidgetId";s:3:"201";s:7:"kshowId";s:10:"nkhh6w1dfo";s:7:"entryId";s:10:"9i8rz9zk60";s:8:"uiConfId";i:201;s:10:"widgetHtml";s:701:"<object name="kaltura_player_1222704248" id="kaltura_player_1222704248" type="application/x-shockwave-flash" allowScriptAccess="always" allowNetworking="all" allowFullScreen="true" height="420" width="400" data="http://www.kaltura.com/index.php/kwidget/wid/wdgo42tx88"><param name="allowScriptAccess" value="always" /><param name="allowNetworking" value="all" /><param name="allowFullScreen" value="true" /><param name="bgcolor" value="#000000" /><param name="movie" value="http://www.kaltura.com/index.php/kwidget/wid/wdgo42tx88"/><param name="flashVars" value=""/><param name="wmode" value="opaque"/><a href="http://www.kaltura.com" style="color:#bcff63; text-decoration:none; ">Kaltura</a></object>";s:11:"partnerData";s:174:"<xml><pd_article_name>A couple of beers in the sand</pd_article_name><pd_original_url>http://wiki112.wikidiy.com/Special:KalturaCollaborativeVideoInfo</pd_original_url></xml>";s:12:"securityType";i:1;s:5:"kshow";a:12:{s:2:"id";s:10:"nkhh6w1dfo";s:4:"name";s:29:"A couple of beers in the sand";s:9:"partnerId";i:328;s:6:"subpId";i:32800;s:7:"puserId";s:7:"1236204";s:11:"showEntryId";s:10:"9i8rz9zk60";s:9:"createdAt";s:19:"2008-09-29 12:04:08";s:14:"createdAtAsInt";i:1222704248;s:18:"indexedCustomData3";s:29:"A couple of beers in the sand";s:7:"version";s:6:"100000";s:11:"permissions";s:1:"1";s:12:"thumbnailUrl";s:77:"http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0";}s:5:"entry";a:18:{s:2:"id";s:10:"9i8rz9zk60";s:4:"name";s:29:"A couple of beers in the sand";s:9:"partnerId";i:328;s:6:"subpId";i:32800;s:7:"puserId";s:7:"1236204";s:4:"tags";s:29:"a couple of beers in the sand";s:6:"status";i:2;s:4:"type";i:2;s:9:"mediaType";i:6;s:7:"kshowId";s:10:"nkhh6w1dfo";s:9:"createdAt";s:19:"2008-09-29 12:04:08";s:14:"createdAtAsInt";i:1222704248;s:8:"dataPath";s:47:"/content/entry/data/1/202/9i8rz9zk60_100000.xml";s:7:"dataUrl";s:83:"http://cdn.kaltura.com/p/328/sp/32800/flvclipper/entry_id/9i8rz9zk60/version/100000";s:12:"thumbnailUrl";s:77:"http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0";s:7:"version";s:6:"100000";s:10:"editorType";s:6:"Simple";s:12:"hasRealThumb";b:1;}s:6:"uiConf";a:10:{s:2:"id";i:201;s:7:"objType";i:1;s:15:"objTypeAsString";s:6:"Widget";s:4:"name";s:13:"wiki standard";s:5:"width";s:3:"400";s:6:"height";s:3:"420";s:6:"swfUrl";s:25:"/flash/kdp/v1.0.5/kdp.swf";s:12:"confFilePath";s:54:"/web/content/uiconf/kaltura/wiki/kdp_wiki_standard.xml";s:8:"confFile";s:8022:"<?xml version="1.0" encoding="UTF-8"?>
+<layouts>
+	<!--sizes="420_422"-->
+	<layout layoutId="Large" skinPath="/content/uiconf/kaltura/wiki/wiki.swf">
+		<VBox height="100%" styleName="mlayout" width="100%">
+			<HBox height="46" styleName="TopTitle" width="100%">
+				<VBox height="100%" styleName="titels" width="100%">
+					<Label height="23" id="vtitle" label="{kdpModel.Title,myKplayer.kalturaShow.kshowName,myKplayer.kalturaEntry.entryName,''}" styleName="vtitle" width="100%"/>
+					<Label height="15" id="vdescript" label="{kdpModel.Description,myKplayer.kalturaShow.description,''}" width="100%"/>
+				</VBox>
+				<VBox height="46" id="topButtonsBox" styleName="topButtonsBox" width="100">
+					<LinkButton height="15" id="startNewVideo" k_click="jsInject:addVideo,pauseMedia" label="Start New Video" styleName="topLinkButtons" width="88"/>
+					<Spacer width="2"/>
+					<HBox height="15" styleName="topButtonsBox" width="100%">
+						<LinkButton height="15" id="credits" k_click="popup:Credits" label="Credits" styleName="topLinkButtons"/>
+						<LinkButton height="15" id="sharePopUp" k_click="popup:SharePop" label="Share" styleName="topLinkButtons"/>
+					</HBox>
+				</VBox>
+			</HBox>
+			<Canvas height="100%" id="PlayerHolder" styleName="PlayerBackground" width="100%">
+				<KplayerModule height="100%" id="myKplayer" k_path="kplayer/KplayerModule.swf" maxHeight="450" maxWidth="600" styleName="Kplayer" width="100%"/>
+			</Canvas>
+			<HBox height="32" styleName="controllerBox" width="100%">
+				<Spacer width="4"/>
+				<Button height="17" id="play" styleName="play" width="20"/>
+				<Spacer width="2"/>
+				<VBox height="100%" width="100%">
+					<Scrubber height="100%" id="scrubber" styleName="scrubber" width="100%"/>
+					<Spacer height="5"/>
+				</VBox>
+				<TimerCountdown id="timer" k_path="timertext/TimerCountdown.swf" styleName="timer" width="36"/>
+				<VolumeModule height="20" id="Volume" k_path="VolumeBars/VolumeBarA.swf" styleName="pp" width="20"/>
+				<Spacer width="2"/>
+				<Button height="17" id="gotoArticle" k_click="jsInject:gotoArticle,stopMedia" label="Info" styleName="article" width="48"/>
+				<Spacer width="4"/>
+			</HBox>
+			<HBox height="29" styleName="colabotare" width="100%">
+				<LinkButton height="22" id="addToReel" k_click="jsInject:gotoContribWizard,pauseMedia" label="Add to this video" styleName="addToReel" width="150"/>
+				<Canvas height="19" id="seperator" styleName="seperator" width="1"/>
+				<LinkButton height="22" id="editReel" k_click="jsInject:gotoEditorWindow,pauseMedia" label="Remix this video" styleName="editReel" width="150"/>
+			</HBox>
+			<HBox height="18" styleName="poweredBox2" width="100%">
+				<poweredBy height="15" id="poweredBy" k_path="poweredby/PoweredBy.swf" k_url="http://www.kaltura.com/index.php/corp/wiki_extension" styleName="poweredBy2" width="120"/>
+			</HBox>
+		</VBox>
+		<popups>
+			<SharePop height="300" id="SharePop" k_uiconf_id="204" k_path="popups/SharePopup.swf" width="350"/>
+			<Credits height="300" id="Credits" k_path="credits/CreditsWindow.swf" width="350"/>
+		</popups>
+		<javaScript>
+			<jsBlock functionName="gotoContribWizard" id="gotoContribWizard" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoContribWizard (kshowId,pd_extraData)
+						{
+							gotoCW (kshowId,pd_extraData);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="gotoEditorWindow" id="gotoEditorWindow" params="kshowId,pd_extraData,editorType">
+				<![CDATA[
+						function gotoEditorWindow (kshowId,pd_extraData, editorType)
+						{
+							if ( editorType == "" || editorType == null || editorType == "Keditor" ) type = 2;
+							else type = 1;
+							// kaltura_editor: 1==simple, 2==advanced
+							gotoEditor (kshowId,pd_extraData,type);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="gotoArticle" id="gotoArticle" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoArticle (kshowId,pd_extraData)
+						{
+							gotoKalturaArticle (kshowId,pd_extraData);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="addVideo" id="addVideo" params="">
+				<![CDATA[
+						function addVideo()
+						{
+							createNewVideo ();
+						};
+					]]>
+			</jsBlock>
+		</javaScript>
+	</layout>
+	<!-- sizes="342_300" -->
+	<layout layoutId="Medium" skinPath="/content/uiconf/kaltura/wiki/wiki.swf">
+		<VBox height="100%" styleName="mlayout" width="100%">
+			<HBox height="37" styleName="TopTitle" width="100%">
+				<VBox height="100%" styleName="titels" width="100%">
+					<Label height="18" id="vtitle"  label="{kdpModel.Title,myKplayer.kalturaShow.kshowName,myKplayer.kalturaEntry.entryName,''}" width="100%" styleName="vtitleSmall"/>
+					<Label height="14" id="vdescript"  label="{kdpModel.Description,myKplayer.kalturaShow.description,''}" width="100%" styleName="vdescript"/>
+				</VBox>
+				<VBox height="35" styleName="titelsCentered" width="45">
+						<Spacer height="3" />
+						<LinkButton height="15" width="45" id="credits" k_click="popup:Credits" label="Credits" styleName="topLinkButtonsCentered"/>
+						<LinkButton height="15" width="38" id="sharePopUp" k_click="popup:SharePop" label="Share" styleName="topLinkButtonsCentered"/>
+				</VBox>
+				<Spacer />
+			</HBox>
+			
+			<Canvas height="100%" id="PlayerHolder" styleName="PlayerBackground" width="100%">
+				<KplayerModule height="100%" id="myKplayer" k_path="kplayer/KplayerModule.swf" maxHeight="450" maxWidth="600" styleName="Kplayer" width="100%"/>
+			</Canvas>
+			
+			<HBox height="28" styleName="controllerBox" width="100%">
+				<Spacer width="2"/>
+				<Button height="17" id="play" styleName="play" width="15"/>
+				<Spacer width="2"/>
+				<Scrubber id="scrubber" styleName="scrubber" width="100%"/>
+				<TimerCountdown id="timer" k_path="timertext/TimerCountdown.swf" styleName="timerModule" width="36"/>
+				<VolumeModule height="20" id="Volume" k_path="VolumeBars/VolumeBarA.swf" styleName="pp" width="20"/>
+				<Button height="17" id="gotoArticle" k_click="jsInject:gotoArticle,stopMedia" label="Info" styleName="article" width="40"/>
+			</HBox>
+			<HBox height="20" styleName="colabotare" width="100%">
+				<LinkButton color="0xFF00FF" fontSize="10" height="18" id="addToReel" k_click="jsInject:gotoContribWizard,pauseMedia" label="Add to Video" styleName="smallWikiButtons" width="98"/>
+				<Spacer width="4"/>
+				<Canvas height="19" id="seperator" styleName="seperator" width="1"/>
+				<Spacer width="4"/>
+				<LinkButton color="0xFF00FF" fontSize="10" height="18" id="editReel" k_click="jsInject:gotoEditorWindow,pauseMedia" label="Remix Video" styleName="smallWikiButtons" width="98"/>
+			</HBox>
+			<HBox height="18" styleName="poweredBox" width="100%">
+				<poweredBy height="14" id="poweredBy" k_path="poweredby/PoweredBy.swf" k_url="http://www.kaltura.com/index.php/corp/wiki_extension" styleName="poweredBy" width="120"/>
+			</HBox>
+		</VBox>
+		<popups>
+			<SharePop height="280" id="SharePop" k_uiconf_id="204" k_path="popups/SharePopup.swf" width="250"/>
+			<Credits height="280" id="Credits" k_path="credits/CreditsWindow.swf" width="250"/>
+		</popups>
+		<javaScript>
+			<jsBlock functionName="gotoContribWizard" id="gotoContribWizard" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoContribWizard (kshowId,pd_extraData)
+						{
+							gotoCW (kshowId,pd_extraData);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="gotoEditorWindow" id="gotoEditorWindow" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoEditorWindow (kshowId,pd_extraData)
+						{
+							// kaltura_editor: 1==simple, 2==advanced
+							gotoEditor (kshowId,pd_extraData,1);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="gotoArticle" id="gotoArticle" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoArticle (kshowId,pd_extraData)
+						{
+							gotoKalturaArticle (kshowId,pd_extraData);
+						};
+					]]>
+			</jsBlock>
+		</javaScript>
+	</layout>
+</layouts>
+";s:6:"useCdn";i:1;}}s:10:"serverTime";i:1222704248;}s:5:"debug";a:7:{s:7:"sigtype";i:1;s:17:"validateSignature";b:1;s:9:"signature";s:32:"a077691173d6dcbaee6341c738f1f721";s:12:"added_fields";a:4:{s:7:"kshowId";s:10:"nkhh6w1dfo";s:14:"sourceWidgetId";s:3:"201";s:11:"partnerData";s:174:"<xml><pd_article_name>A couple of beers in the sand</pd_article_name><pd_original_url>http://wiki112.wikidiy.com/Special:KalturaCollaborativeVideoInfo</pd_original_url></xml>";s:12:"securityType";s:1:"1";}s:17:"execute_impl_time";d:0.0630528926849365234375;s:12:"execute_time";d:0.1397020816802978515625;s:10:"total_time";s:16:"0.17072892189026";}}
+(29/09 16:04:13.888)-PHP-> strlen 11405
+(29/09 16:04:13.888)<-PHP- countArray
+(
+    [result] => Array
+        (
+            [widget] => Array
+                (
+                    [id] => wdgo42tx88
+                    [partnerId] => 328
+                    [sourceWidgetId] => 201
+                    [rootWidgetId] => 201
+                    [kshowId] => nkhh6w1dfo
+                    [entryId] => 9i8rz9zk60
+                    [uiConfId] => 201
+                    [widgetHtml] => <object name="kaltura_player_1222704248" id="kaltura_player_1222704248" type="application/x-shockwave-flash" allowScriptAccess="always" allowNetworking="all" allowFullScreen="true" height="420" width="400" data="http://www.kaltura.com/index.php/kwidget/wid/wdgo42tx88"><param name="allowScriptAccess" value="always" /><param name="allowNetworking" value="all" /><param name="allowFullScreen" value="true" /><param name="bgcolor" value="#000000" /><param name="movie" value="http://www.kaltura.com/index.php/kwidget/wid/wdgo42tx88"/><param name="flashVars" value=""/><param name="wmode" value="opaque"/><a href="http://www.kaltura.com" style="color:#bcff63; text-decoration:none; ">Kaltura</a></object>
+                    [partnerData] => <xml><pd_article_name>A couple of beers in the sand</pd_article_name><pd_original_url>http://wiki112.wikidiy.com/Special:KalturaCollaborativeVideoInfo</pd_original_url></xml>
+                    [securityType] => 1
+                    [kshow] => Array
+                        (
+                            [id] => nkhh6w1dfo
+                            [name] => A couple of beers in the sand
+                            [partnerId] => 328
+                            [subpId] => 32800
+                            [puserId] => 1236204
+                            [showEntryId] => 9i8rz9zk60
+                            [createdAt] => 2008-09-29 12:04:08
+                            [createdAtAsInt] => 1222704248
+                            [indexedCustomData3] => A couple of beers in the sand
+                            [version] => 100000
+                            [permissions] => 1
+                            [thumbnailUrl] => http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0
+                        )
+
+                    [entry] => Array
+                        (
+                            [id] => 9i8rz9zk60
+                            [name] => A couple of beers in the sand
+                            [partnerId] => 328
+                            [subpId] => 32800
+                            [puserId] => 1236204
+                            [tags] => a couple of beers in the sand
+                            [status] => 2
+                            [type] => 2
+                            [mediaType] => 6
+                            [kshowId] => nkhh6w1dfo
+                            [createdAt] => 2008-09-29 12:04:08
+                            [createdAtAsInt] => 1222704248
+                            [dataPath] => /content/entry/data/1/202/9i8rz9zk60_100000.xml
+                            [dataUrl] => http://cdn.kaltura.com/p/328/sp/32800/flvclipper/entry_id/9i8rz9zk60/version/100000
+                            [thumbnailUrl] => http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0
+                            [version] => 100000
+                            [editorType] => Simple
+                            [hasRealThumb] => 1
+                        )
+
+                    [uiConf] => Array
+                        (
+                            [id] => 201
+                            [objType] => 1
+                            [objTypeAsString] => Widget
+                            [name] => wiki standard
+                            [width] => 400
+                            [height] => 420
+                            [swfUrl] => /flash/kdp/v1.0.5/kdp.swf
+                            [confFilePath] => /web/content/uiconf/kaltura/wiki/kdp_wiki_standard.xml
+                            [confFile] => <?xml version="1.0" encoding="UTF-8"?>
+<layouts>
+	<!--sizes="420_422"-->
+	<layout layoutId="Large" skinPath="/content/uiconf/kaltura/wiki/wiki.swf">
+		<VBox height="100%" styleName="mlayout" width="100%">
+			<HBox height="46" styleName="TopTitle" width="100%">
+				<VBox height="100%" styleName="titels" width="100%">
+					<Label height="23" id="vtitle" label="{kdpModel.Title,myKplayer.kalturaShow.kshowName,myKplayer.kalturaEntry.entryName,''}" styleName="vtitle" width="100%"/>
+					<Label height="15" id="vdescript" label="{kdpModel.Description,myKplayer.kalturaShow.description,''}" width="100%"/>
+				</VBox>
+				<VBox height="46" id="topButtonsBox" styleName="topButtonsBox" width="100">
+					<LinkButton height="15" id="startNewVideo" k_click="jsInject:addVideo,pauseMedia" label="Start New Video" styleName="topLinkButtons" width="88"/>
+					<Spacer width="2"/>
+					<HBox height="15" styleName="topButtonsBox" width="100%">
+						<LinkButton height="15" id="credits" k_click="popup:Credits" label="Credits" styleName="topLinkButtons"/>
+						<LinkButton height="15" id="sharePopUp" k_click="popup:SharePop" label="Share" styleName="topLinkButtons"/>
+					</HBox>
+				</VBox>
+			</HBox>
+			<Canvas height="100%" id="PlayerHolder" styleName="PlayerBackground" width="100%">
+				<KplayerModule height="100%" id="myKplayer" k_path="kplayer/KplayerModule.swf" maxHeight="450" maxWidth="600" styleName="Kplayer" width="100%"/>
+			</Canvas>
+			<HBox height="32" styleName="controllerBox" width="100%">
+				<Spacer width="4"/>
+				<Button height="17" id="play" styleName="play" width="20"/>
+				<Spacer width="2"/>
+				<VBox height="100%" width="100%">
+					<Scrubber height="100%" id="scrubber" styleName="scrubber" width="100%"/>
+					<Spacer height="5"/>
+				</VBox>
+				<TimerCountdown id="timer" k_path="timertext/TimerCountdown.swf" styleName="timer" width="36"/>
+				<VolumeModule height="20" id="Volume" k_path="VolumeBars/VolumeBarA.swf" styleName="pp" width="20"/>
+				<Spacer width="2"/>
+				<Button height="17" id="gotoArticle" k_click="jsInject:gotoArticle,stopMedia" label="Info" styleName="article" width="48"/>
+				<Spacer width="4"/>
+			</HBox>
+			<HBox height="29" styleName="colabotare" width="100%">
+				<LinkButton height="22" id="addToReel" k_click="jsInject:gotoContribWizard,pauseMedia" label="Add to this video" styleName="addToReel" width="150"/>
+				<Canvas height="19" id="seperator" styleName="seperator" width="1"/>
+				<LinkButton height="22" id="editReel" k_click="jsInject:gotoEditorWindow,pauseMedia" label="Remix this video" styleName="editReel" width="150"/>
+			</HBox>
+			<HBox height="18" styleName="poweredBox2" width="100%">
+				<poweredBy height="15" id="poweredBy" k_path="poweredby/PoweredBy.swf" k_url="http://www.kaltura.com/index.php/corp/wiki_extension" styleName="poweredBy2" width="120"/>
+			</HBox>
+		</VBox>
+		<popups>
+			<SharePop height="300" id="SharePop" k_uiconf_id="204" k_path="popups/SharePopup.swf" width="350"/>
+			<Credits height="300" id="Credits" k_path="credits/CreditsWindow.swf" width="350"/>
+		</popups>
+		<javaScript>
+			<jsBlock functionName="gotoContribWizard" id="gotoContribWizard" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoContribWizard (kshowId,pd_extraData)
+						{
+							gotoCW (kshowId,pd_extraData);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="gotoEditorWindow" id="gotoEditorWindow" params="kshowId,pd_extraData,editorType">
+				<![CDATA[
+						function gotoEditorWindow (kshowId,pd_extraData, editorType)
+						{
+							if ( editorType == "" || editorType == null || editorType == "Keditor" ) type = 2;
+							else type = 1;
+							// kaltura_editor: 1==simple, 2==advanced
+							gotoEditor (kshowId,pd_extraData,type);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="gotoArticle" id="gotoArticle" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoArticle (kshowId,pd_extraData)
+						{
+							gotoKalturaArticle (kshowId,pd_extraData);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="addVideo" id="addVideo" params="">
+				<![CDATA[
+						function addVideo()
+						{
+							createNewVideo ();
+						};
+					]]>
+			</jsBlock>
+		</javaScript>
+	</layout>
+	<!-- sizes="342_300" -->
+	<layout layoutId="Medium" skinPath="/content/uiconf/kaltura/wiki/wiki.swf">
+		<VBox height="100%" styleName="mlayout" width="100%">
+			<HBox height="37" styleName="TopTitle" width="100%">
+				<VBox height="100%" styleName="titels" width="100%">
+					<Label height="18" id="vtitle"  label="{kdpModel.Title,myKplayer.kalturaShow.kshowName,myKplayer.kalturaEntry.entryName,''}" width="100%" styleName="vtitleSmall"/>
+					<Label height="14" id="vdescript"  label="{kdpModel.Description,myKplayer.kalturaShow.description,''}" width="100%" styleName="vdescript"/>
+				</VBox>
+				<VBox height="35" styleName="titelsCentered" width="45">
+						<Spacer height="3" />
+						<LinkButton height="15" width="45" id="credits" k_click="popup:Credits" label="Credits" styleName="topLinkButtonsCentered"/>
+						<LinkButton height="15" width="38" id="sharePopUp" k_click="popup:SharePop" label="Share" styleName="topLinkButtonsCentered"/>
+				</VBox>
+				<Spacer />
+			</HBox>
+			
+			<Canvas height="100%" id="PlayerHolder" styleName="PlayerBackground" width="100%">
+				<KplayerModule height="100%" id="myKplayer" k_path="kplayer/KplayerModule.swf" maxHeight="450" maxWidth="600" styleName="Kplayer" width="100%"/>
+			</Canvas>
+			
+			<HBox height="28" styleName="controllerBox" width="100%">
+				<Spacer width="2"/>
+				<Button height="17" id="play" styleName="play" width="15"/>
+				<Spacer width="2"/>
+				<Scrubber id="scrubber" styleName="scrubber" width="100%"/>
+				<TimerCountdown id="timer" k_path="timertext/TimerCountdown.swf" styleName="timerModule" width="36"/>
+				<VolumeModule height="20" id="Volume" k_path="VolumeBars/VolumeBarA.swf" styleName="pp" width="20"/>
+				<Button height="17" id="gotoArticle" k_click="jsInject:gotoArticle,stopMedia" label="Info" styleName="article" width="40"/>
+			</HBox>
+			<HBox height="20" styleName="colabotare" width="100%">
+				<LinkButton color="0xFF00FF" fontSize="10" height="18" id="addToReel" k_click="jsInject:gotoContribWizard,pauseMedia" label="Add to Video" styleName="smallWikiButtons" width="98"/>
+				<Spacer width="4"/>
+				<Canvas height="19" id="seperator" styleName="seperator" width="1"/>
+				<Spacer width="4"/>
+				<LinkButton color="0xFF00FF" fontSize="10" height="18" id="editReel" k_click="jsInject:gotoEditorWindow,pauseMedia" label="Remix Video" styleName="smallWikiButtons" width="98"/>
+			</HBox>
+			<HBox height="18" styleName="poweredBox" width="100%">
+				<poweredBy height="14" id="poweredBy" k_path="poweredby/PoweredBy.swf" k_url="http://www.kaltura.com/index.php/corp/wiki_extension" styleName="poweredBy" width="120"/>
+			</HBox>
+		</VBox>
+		<popups>
+			<SharePop height="280" id="SharePop" k_uiconf_id="204" k_path="popups/SharePopup.swf" width="250"/>
+			<Credits height="280" id="Credits" k_path="credits/CreditsWindow.swf" width="250"/>
+		</popups>
+		<javaScript>
+			<jsBlock functionName="gotoContribWizard" id="gotoContribWizard" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoContribWizard (kshowId,pd_extraData)
+						{
+							gotoCW (kshowId,pd_extraData);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="gotoEditorWindow" id="gotoEditorWindow" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoEditorWindow (kshowId,pd_extraData)
+						{
+							// kaltura_editor: 1==simple, 2==advanced
+							gotoEditor (kshowId,pd_extraData,1);
+						};
+					]]>
+			</jsBlock>
+			<jsBlock functionName="gotoArticle" id="gotoArticle" params="kshowId,pd_extraData">
+				<![CDATA[
+						function gotoArticle (kshowId,pd_extraData)
+						{
+							gotoKalturaArticle (kshowId,pd_extraData);
+						};
+					]]>
+			</jsBlock>
+		</javaScript>
+	</layout>
+</layouts>
+
+                            [useCdn] => 1
+                        )
+
+                )
+
+            [serverTime] => 1222704248
+        )
+
+    [debug] => Array
+        (
+            [sigtype] => 1
+            [validateSignature] => 1
+            [signature] => a077691173d6dcbaee6341c738f1f721
+            [added_fields] => Array
+                (
+                    [kshowId] => nkhh6w1dfo
+                    [sourceWidgetId] => 201
+                    [partnerData] => <xml><pd_article_name>A couple of beers in the sand</pd_article_name><pd_original_url>http://wiki112.wikidiy.com/Special:KalturaCollaborativeVideoInfo</pd_original_url></xml>
+                    [securityType] => 1
+                )
+
+            [execute_impl_time] => 0.063052892684937
+            [execute_time] => 0.1397020816803
+            [total_time] => 0.17072892189026
+        )
+
+)
+
+(29/09 16:04:13.888)<--> addwidget|1236204| time [0.51135396957397]
+(29/09 16:04:13.889)Submitted kshow_id: nkhh6w1dfo, kshow_name: A couple of beers in the sand
+(29/09 16:04:13.903)
+
+[http://www.kaltura.com/index.php/partnerservices2/]
+(29/09 16:04:13.903)
+
+--> getkshow|1236204|Array
+(
+    [kaltura_api_version] => 1.0
+    [partner_id] => 328
+    [subp_id] => 32800
+    [format] => 3
+    [uid] => 1236204
+    [user_name] => Tderouin
+    [kshow_id] => nkhh6w1dfo
+    [ks] => OTkzZjhhYTkyNzdjMzBjMGY4Y2Q0YTAwYjdkOTkxNTc2ZmMxZDY1MXwzMjg7MzI4OzEyMjI3OTA2NDc7MDsxMjIyNzA0MjQ3LjkyNjsxMjM2MjA0Oyo=
+    [kalsig] => cc76f8c72523871fff13a55252ed997b
+)
+
+(29/09 16:04:14.283)<-- a:2:{s:6:"result";a:2:{s:5:"kshow";a:12:{s:2:"id";s:10:"nkhh6w1dfo";s:4:"name";s:29:"A couple of beers in the sand";s:9:"partnerId";i:328;s:6:"subpId";i:32800;s:7:"puserId";s:7:"1236204";s:11:"showEntryId";s:10:"9i8rz9zk60";s:9:"createdAt";s:19:"2008-09-29 12:04:08";s:14:"createdAtAsInt";i:1222704248;s:18:"indexedCustomData3";s:29:"A couple of beers in the sand";s:7:"version";s:6:"100000";s:11:"permissions";s:1:"1";s:12:"thumbnailUrl";s:77:"http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0";}s:10:"serverTime";i:1222704249;}s:5:"debug";a:6:{s:7:"sigtype";i:1;s:17:"validateSignature";b:1;s:9:"signature";s:32:"cc76f8c72523871fff13a55252ed997b";s:17:"execute_impl_time";d:0.01614284515380859375;s:12:"execute_time";d:0.115375041961669921875;s:10:"total_time";s:16:"0.12493205070496";}}
+(29/09 16:04:14.284)-PHP-> strlen 817
+(29/09 16:04:14.284)<-PHP- countArray
+(
+    [result] => Array
+        (
+            [kshow] => Array
+                (
+                    [id] => nkhh6w1dfo
+                    [name] => A couple of beers in the sand
+                    [partnerId] => 328
+                    [subpId] => 32800
+                    [puserId] => 1236204
+                    [showEntryId] => 9i8rz9zk60
+                    [createdAt] => 2008-09-29 12:04:08
+                    [createdAtAsInt] => 1222704248
+                    [indexedCustomData3] => A couple of beers in the sand
+                    [version] => 100000
+                    [permissions] => 1
+                    [thumbnailUrl] => http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0
+                )
+
+            [serverTime] => 1222704249
+        )
+
+    [debug] => Array
+        (
+            [sigtype] => 1
+            [validateSignature] => 1
+            [signature] => cc76f8c72523871fff13a55252ed997b
+            [execute_impl_time] => 0.016142845153809
+            [execute_time] => 0.11537504196167
+            [total_time] => 0.12493205070496
+        )
+
+)
+
+(29/09 16:04:14.284)<--> getkshow|1236204| time [0.38130307197571]
+(29/09 16:04:14.285)revision_data
+kalturaHistoryData Object
+(
+    [data] => Array
+        (
+            [version] => 100000
+            [id] => nkhh6w1dfo
+            [name] => A couple of beers in the sand
+            [description] => 
+            [wgUserName] => Tderouin
+            [timestamp] => 1222704254
+            [articleCurrentVersion] => *NEW*
+            [widget_id] => wdgo42tx88
+        )
+
+)
+
+(29/09 16:04:14.302)efKalturaWidgetRender
+(29/09 16:04:16.417)
+
+[http://www.kaltura.com/index.php/partnerservices2/]
+(29/09 16:04:16.418)
+
+--> startsession|1236204|Array
+(
+    [kaltura_api_version] => 1.0
+    [partner_id] => 328
+    [subp_id] => 32800
+    [format] => 3
+    [uid] => 1236204
+    [user_name] => Tderouin
+    [secret] => 9a3db4bd437c3bfb73f5baf0106f620b
+    [privileges] => *
+    [kalsig] => fdde6e3f5c48c7c1b860dc149798cfa4
+)
+
+(29/09 16:04:16.726)<-- a:2:{s:6:"result";a:5:{s:2:"ks";s:116:"MzdhM2Y5ZmM2YTM1MTcyOTQyODJhMTRkMTdkM2JlN2M5ZDlmZWRkOHwzMjg7MzI4OzEyMjI3OTA2NTE7MDsxMjIyNzA0MjUxLjgwODk7MTIzNjIwNDsq";s:10:"partner_id";s:3:"328";s:7:"subp_id";s:5:"32800";s:3:"uid";s:7:"1236204";s:10:"serverTime";i:1222704251;}s:5:"debug";a:6:{s:7:"sigtype";i:1;s:17:"validateSignature";b:1;s:9:"signature";s:32:"fdde6e3f5c48c7c1b860dc149798cfa4";s:17:"execute_impl_time";d:0.0001609325408935546875;s:12:"execute_time";d:0.075706005096435546875;s:10:"total_time";s:17:"0.077832937240601";}}
+(29/09 16:04:16.726)-PHP-> strlen 530
+(29/09 16:04:16.726)<-PHP- countArray
+(
+    [result] => Array
+        (
+            [ks] => MzdhM2Y5ZmM2YTM1MTcyOTQyODJhMTRkMTdkM2JlN2M5ZDlmZWRkOHwzMjg7MzI4OzEyMjI3OTA2NTE7MDsxMjIyNzA0MjUxLjgwODk7MTIzNjIwNDsq
+            [partner_id] => 328
+            [subp_id] => 32800
+            [uid] => 1236204
+            [serverTime] => 1222704251
+        )
+
+    [debug] => Array
+        (
+            [sigtype] => 1
+            [validateSignature] => 1
+            [signature] => fdde6e3f5c48c7c1b860dc149798cfa4
+            [execute_impl_time] => 0.00016093254089355
+            [execute_time] => 0.075706005096436
+            [total_time] => 0.077832937240601
+        )
+
+)
+
+(29/09 16:04:16.726)<--> startsession|1236204| time [0.30922079086304]
+(29/09 16:04:16.727)
+
+[http://www.kaltura.com/index.php/partnerservices2/]
+(29/09 16:04:16.727)
+
+--> getkshow|1236204|Array
+(
+    [kaltura_api_version] => 1.0
+    [partner_id] => 328
+    [subp_id] => 32800
+    [format] => 3
+    [uid] => 1236204
+    [user_name] => Tderouin
+    [kshow_id] => nkhh6w1dfo
+    [ks] => MzdhM2Y5ZmM2YTM1MTcyOTQyODJhMTRkMTdkM2JlN2M5ZDlmZWRkOHwzMjg7MzI4OzEyMjI3OTA2NTE7MDsxMjIyNzA0MjUxLjgwODk7MTIzNjIwNDsq
+    [kalsig] => e1b2bb5ddbede9ac9bd9f3c983c7ecd9
+)
+
+(29/09 16:04:17.113)<-- a:2:{s:6:"result";a:2:{s:5:"kshow";a:12:{s:2:"id";s:10:"nkhh6w1dfo";s:4:"name";s:29:"A couple of beers in the sand";s:9:"partnerId";i:328;s:6:"subpId";i:32800;s:7:"puserId";s:7:"1236204";s:11:"showEntryId";s:10:"9i8rz9zk60";s:9:"createdAt";s:19:"2008-09-29 12:04:08";s:14:"createdAtAsInt";i:1222704248;s:18:"indexedCustomData3";s:29:"A couple of beers in the sand";s:7:"version";s:6:"100000";s:11:"permissions";s:1:"1";s:12:"thumbnailUrl";s:77:"http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0";}s:10:"serverTime";i:1222704252;}s:5:"debug";a:6:{s:7:"sigtype";i:1;s:17:"validateSignature";b:1;s:9:"signature";s:32:"e1b2bb5ddbede9ac9bd9f3c983c7ecd9";s:17:"execute_impl_time";d:0.0165960788726806640625;s:12:"execute_time";d:0.11738109588623046875;s:10:"total_time";s:16:"0.12741708755493";}}
+(29/09 16:04:17.114)-PHP-> strlen 818
+(29/09 16:04:17.114)<-PHP- countArray
+(
+    [result] => Array
+        (
+            [kshow] => Array
+                (
+                    [id] => nkhh6w1dfo
+                    [name] => A couple of beers in the sand
+                    [partnerId] => 328
+                    [subpId] => 32800
+                    [puserId] => 1236204
+                    [showEntryId] => 9i8rz9zk60
+                    [createdAt] => 2008-09-29 12:04:08
+                    [createdAtAsInt] => 1222704248
+                    [indexedCustomData3] => A couple of beers in the sand
+                    [version] => 100000
+                    [permissions] => 1
+                    [thumbnailUrl] => http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/0
+                )
+
+            [serverTime] => 1222704252
+        )
+
+    [debug] => Array
+        (
+            [sigtype] => 1
+            [validateSignature] => 1
+            [signature] => e1b2bb5ddbede9ac9bd9f3c983c7ecd9
+            [execute_impl_time] => 0.016596078872681
+            [execute_time] => 0.11738109588623
+            [total_time] => 0.12741708755493
+        )
+
+)
+
+(29/09 16:04:17.114)<--> getkshow|1236204| time [0.38745713233948]
+(29/09 11:07:04.7)ajaxKalturaUpdateArticle: [nkhh6w1dfo|328|32800|A couple of beers in the sand|wdgo42tx88|4ec717ab59]
+(29/09 11:07:04.120)
+
+[http://www.kaltura.com/index.php/partnerservices2/]
+(29/09 11:07:04.120)
+
+--> startsession|1236204|Array
+(
+    [kaltura_api_version] => 1.0
+    [partner_id] => 328
+    [subp_id] => 32800
+    [format] => 3
+    [uid] => 1236204
+    [user_name] => Tderouin
+    [secret] => 9a3db4bd437c3bfb73f5baf0106f620b
+    [privileges] => *
+    [kalsig] => fdde6e3f5c48c7c1b860dc149798cfa4
+)
+
+(29/09 11:07:04.426)<-- a:2:{s:6:"result";a:5:{s:2:"ks";s:116:"YzM5NGE1YjA2MzY4MDhkZDRiNjVlNjRkNDExNGRkNWM3YTFlNzJlOHwzMjg7MzI4OzEyMjI3OTA4MTk7MDsxMjIyNzA0NDE5LjQ5MDM7MTIzNjIwNDsq";s:10:"partner_id";s:3:"328";s:7:"subp_id";s:5:"32800";s:3:"uid";s:7:"1236204";s:10:"serverTime";i:1222704419;}s:5:"debug";a:6:{s:7:"sigtype";i:1;s:17:"validateSignature";b:1;s:9:"signature";s:32:"fdde6e3f5c48c7c1b860dc149798cfa4";s:17:"execute_impl_time";d:0.0001637935638427734375;s:12:"execute_time";d:0.072638988494873046875;s:10:"total_time";s:17:"0.074769973754883";}}
+(29/09 11:07:04.426)-PHP-> strlen 530
+(29/09 11:07:04.426)<-PHP- countArray
+(
+    [result] => Array
+        (
+            [ks] => YzM5NGE1YjA2MzY4MDhkZDRiNjVlNjRkNDExNGRkNWM3YTFlNzJlOHwzMjg7MzI4OzEyMjI3OTA4MTk7MDsxMjIyNzA0NDE5LjQ5MDM7MTIzNjIwNDsq
+            [partner_id] => 328
+            [subp_id] => 32800
+            [uid] => 1236204
+            [serverTime] => 1222704419
+        )
+
+    [debug] => Array
+        (
+            [sigtype] => 1
+            [validateSignature] => 1
+            [signature] => fdde6e3f5c48c7c1b860dc149798cfa4
+            [execute_impl_time] => 0.00016379356384277
+            [execute_time] => 0.072638988494873
+            [total_time] => 0.074769973754883
+        )
+
+)
+
+(29/09 11:07:04.426)<--> startsession|1236204| time [0.30673503875732]
+(29/09 11:07:04.427)
+
+[http://www.kaltura.com/index.php/partnerservices2/]
+(29/09 11:07:04.427)
+
+--> getkshow|1236204|Array
+(
+    [kaltura_api_version] => 1.0
+    [partner_id] => 328
+    [subp_id] => 32800
+    [format] => 3
+    [uid] => 1236204
+    [user_name] => Tderouin
+    [kshow_id] => nkhh6w1dfo
+    [ks] => YzM5NGE1YjA2MzY4MDhkZDRiNjVlNjRkNDExNGRkNWM3YTFlNzJlOHwzMjg7MzI4OzEyMjI3OTA4MTk7MDsxMjIyNzA0NDE5LjQ5MDM7MTIzNjIwNDsq
+    [kalsig] => d6bf7e7d9d89598b17f5e5cb4b44bf5f
+)
+
+(29/09 11:07:04.813)<-- a:2:{s:6:"result";a:2:{s:5:"kshow";a:13:{s:2:"id";s:10:"nkhh6w1dfo";s:4:"name";s:29:"A couple of beers in the sand";s:9:"partnerId";i:328;s:6:"subpId";i:32800;s:7:"puserId";s:7:"1236204";s:6:"status";i:8;s:11:"showEntryId";s:10:"9i8rz9zk60";s:9:"createdAt";s:19:"2008-09-29 12:04:08";s:14:"createdAtAsInt";i:1222704248;s:18:"indexedCustomData3";s:29:"A couple of beers in the sand";s:7:"version";s:6:"100001";s:11:"permissions";s:1:"1";s:12:"thumbnailUrl";s:82:"http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/100000";}s:10:"serverTime";i:1222704419;}s:5:"debug";a:6:{s:7:"sigtype";i:1;s:17:"validateSignature";b:1;s:9:"signature";s:32:"d6bf7e7d9d89598b17f5e5cb4b44bf5f";s:17:"execute_impl_time";d:0.01689815521240234375;s:12:"execute_time";d:0.1184999942779541015625;s:10:"total_time";s:15:"0.1294219493866";}}
+(29/09 11:07:04.813)-PHP-> strlen 839
+(29/09 11:07:04.813)<-PHP- countArray
+(
+    [result] => Array
+        (
+            [kshow] => Array
+                (
+                    [id] => nkhh6w1dfo
+                    [name] => A couple of beers in the sand
+                    [partnerId] => 328
+                    [subpId] => 32800
+                    [puserId] => 1236204
+                    [status] => 8
+                    [showEntryId] => 9i8rz9zk60
+                    [createdAt] => 2008-09-29 12:04:08
+                    [createdAtAsInt] => 1222704248
+                    [indexedCustomData3] => A couple of beers in the sand
+                    [version] => 100001
+                    [permissions] => 1
+                    [thumbnailUrl] => http://cdn.kaltura.com/p/328/sp/32800/thumbnail/entry_id/9i8rz9zk60/version/100000
+                )
+
+            [serverTime] => 1222704419
+        )
+
+    [debug] => Array
+        (
+            [sigtype] => 1
+            [validateSignature] => 1
+            [signature] => d6bf7e7d9d89598b17f5e5cb4b44bf5f
+            [execute_impl_time] => 0.016898155212402
+            [execute_time] => 0.11849999427795
+            [total_time] => 0.1294219493866
+        )
+
+)
+
+(29/09 11:07:04.813)<--> getkshow|1236204| time [0.38651204109192]
+(29/09 11:07:04.815)revision_data
+kalturaHistoryData Object
+(
+    [data] => Array
+        (
+            [version] => 100001
+            [id] => nkhh6w1dfo
+            [name] => A couple of beers in the sand
+            [description] => 
+            [wgUserName] => Tderouin
+            [timestamp] => 1222704424
+            [articleCurrentVersion] => 1957697
+            [widget_id] => wdgo42tx88
+        )
+
+)
+
+(29/09 16:07:04.877)efKalturaWidgetRender

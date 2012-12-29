@@ -1,0 +1,57 @@
+<?php
+/*
+This file is part of the Kaltura Collaborative Media Suite which allows users 
+to do with audio, video, and animation what Wiki platfroms allow them to do with 
+text.
+
+Copyright (C) 2006-2008  Kaltura Inc.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+// this will allow the partner to decide the name of the new namespace
+define ( 'KALTURA_NAMESPACE_STRING' , "Video" );
+
+$kg_version = "1.0";
+
+$partner_id = "{partner_id}";
+$subp_id = "{subp_id}";
+$secret = "{partner_secret}";
+$admin_secret = "{partner_admin_secret}";
+ 
+$wiki_root = "{wiki_root}";
+
+// defines if to log every hit to the server
+$log_kaltura_services = true;//{log_kaltura_services};
+
+
+// texts
+$partner_name = "{partner_name}";
+$btn_txt_back = "{btn_txt_back}";
+$btn_txt_publish = "{btn_txt_publish}" ;
+$logo_url = "{logo_url}";
+
+$kg_open_editor_as_special = true; 
+$kg_open_editor_as_special_body_only = {kg_open_editor_as_special_body_only} ; 
+$kg_allow_anonymous_users = {kg_allow_anonymous_users}; 
+
+$kg_installation_complete = {kg_installation_complete};
+
+$kg_widget_id_default = 201;
+$kg_widget_id_preview = 203;
+$kg_widget_id_no_edit = 204;
+
+$kg_cw_conf_id_wiki_default = 210; 
+$kg_se_conf_id_wiki_default = 220;
+
+?>
