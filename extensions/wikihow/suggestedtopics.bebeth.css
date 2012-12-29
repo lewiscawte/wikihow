@@ -1,0 +1,280 @@
+
+table.suggested_titles_list {
+    width: 100%;
+    margin:0 0 15px 0;
+    clear:both;
+}
+
+.suggested_titles_list td {
+    border-top:1px dotted #e1e1e1;
+}
+
+.suggested_titles_list .footer td{
+    border:none;
+}
+
+tr.st_on td {
+    background: #eee;
+}
+
+.st_write {
+    width:73px;
+    text-align:center;
+    border-left:1px solid #DEDACF;
+}
+
+td.st_title {
+    width:425px;
+}
+
+.st_requestor{
+    width:125px;
+    border-right:1px solid #DEDACF;
+}
+td.st_title_m {
+    width: 300px;
+}
+
+tr.st_top_row{
+    background: url('/skins/WikiHow/images/sttable_top.png') no-repeat;
+    height: 48px;
+}
+
+tr.st_top_row td {
+    text-align: left;
+    border: none;
+}
+
+td.st_radio {
+    text-align:center;
+}
+
+.request_table{
+
+}
+
+.request_table td{
+    vertical-align: top;
+    padding-bottom:25px;
+}
+
+.request_table td.label{
+    text-align: right;
+    padding-right:10px;
+}
+
+#suggest_topic_form{
+    margin-top:10px;
+}
+
+.suggested_titles_list .st_top_row .st_title{
+    font-size: 21px;
+}
+
+.suggested_titles_list tr.st_on td{
+	background-color:#fff7f7;
+}
+
+.suggested_titles_list td.st_title{
+	text-align:left;
+}
+
+.suggested_titles_list td{
+	line-height: 24px;
+}
+
+td.category_list{
+	text-align:center;
+}
+
+.pagination{
+    font-size: 14px;
+}
+
+.categorytopics{
+    clear:both;
+    margin-left: -4px;
+}
+
+.categorytopics td{
+    padding-right:10px;
+    padding-bottom: 10px;
+}
+
+.categorytopics td.first .categorylink{
+    margin-left:-4px;
+}
+
+.categorytopics td.last{
+    padding-right:0;
+}
+
+.st_search{
+    background: url("/skins/WikiHow/images/st_search.png") no-repeat;
+    width:333px;
+    height: 28px;
+    padding:18px 18px;
+    float:left;
+    position:relative;
+    clear:both;
+    margin-bottom:15px;
+}
+
+td .st_search{
+    margin:0;
+}
+
+.st_box2{
+    background: url("/skins/WikiHow/images/st_button2.png") no-repeat;
+    width:241px;
+    height: 34px;
+    text-align: center;
+    float:left;
+    margin-left: 13px;
+    padding:15px 0;
+    position:relative;
+}
+
+.st_box2.singleline{
+    padding:22px 0;
+    height:20px;
+}
+
+#article .st_box2 p{
+    padding:0;
+}
+
+.categorylink{
+    width: 107px;
+    height: 104px;
+    background: url("/skins/WikiHow/images/st_category.png") no-repeat 0 0;
+    vertical-align: middle;
+    display: table-cell;
+    text-align: center;
+    color: #504239;
+    font-size: 12px;
+    padding:0 5px;
+}
+
+.categorylink:hover{
+    background-position:0 -104px;
+    text-decoration: none;
+}
+
+.categorybutton{
+    background: url("/skins/WikiHow/images/st_button1.png") 0 0 no-repeat;
+    width:117px;
+    height: 68px;
+    text-align: center;
+    line-height: 68px;
+    float:left;
+    margin-left: 9px;
+}
+
+.categorybutton:hover{
+    background-position: 0 -68px;
+    text-decoration: none;
+}
+
+tr.st_top_row td.st_icon{
+    text-align: center;
+}
+
+.st_arrow{
+    position:absolute;
+    bottom:-22px;
+}
+
+.st_box2 .st_arrow{
+    left:110px;
+}
+
+.st_search .st_arrow{
+    left:170px;
+}
+
+h4{
+    font-size:16px;
+    line-height: 26px;
+}
+
+#wpCaptchaWord{
+    width:205px;
+    font-size:12px;
+    color:#999999;
+    border:1px solid #DFDACE;
+    padding:5px;
+    height: 15px;
+}
+
+#article p.header{
+    font-size:28px;
+    padding-bottom:.5em;
+}
+
+.fancy_entry{
+    font-size:12px;
+    color:#999999;
+    border:1px solid #DFDACE;
+    padding:5px;
+    height: 15px;
+}
+
+#entry_howto{
+    background: url('/skins/WikiHow/images/bkg_howto.gif') no-repeat 0 2px;
+    padding-left:70px;
+    width:225px;
+}
+
+/*******************
+side widgets
+*********************/
+table.st_stats {
+	margin-top: 10px;
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+table.st_stats td {
+    padding: 5px 0 0 0;
+}
+
+.st_stats tr.dashed td{
+    border-bottom: 1px dashed #cccccc;
+    padding-bottom:5px;
+}
+
+td.stcount {
+    text-align: right;
+    color: #000;
+}
+
+td.stleaderimg {
+    width: 42px;
+}
+
+table.stleaders{
+    width:100%;
+    margin:10px 0;
+}
+
+.stleaders td{
+    border-bottom: 1px dashed #cccccc;
+    padding:5px 0;
+}
+
+table.stleaders img {
+    height: 32px;
+}
+
+.leader_count{
+    text-align:right;
+}
+
+.leader_image{
+    width:42px;
+}
+
+.leader_user{
+    text-align:left;
+}
