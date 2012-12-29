@@ -1,0 +1,75 @@
+
+table.suggested_titles_list {
+	width: 100%;
+	border: 1px solid #eee;
+	padding: 5px;
+}
+
+table.suggested_titles_list td {
+	padding: 2px;
+}
+
+tr.st_on td {
+	background: #eee;
+}
+
+td.st_write {
+	text-align: right;
+}
+
+td.st_title {
+	width: 400px;
+}
+td.st_title_m {
+	width: 300px;
+}
+
+tr.st_top_row td {
+	font-weight: 	bold;
+	text-align:		center;
+	border-bottom:	1px solid #000;
+}
+
+td.st_radio {
+	text-align:center;
+}
+
+	.request_table{
+		margin-left:30px;	
+	}
+	
+	.request_table td{
+		padding:5px 0;
+	}
+	
+	#suggest_topic_form{
+		margin-top:10px;
+	}
+
+		.suggested_titles_list{
+			border:1px solid #cccccc;
+			padding:5px;
+			margin:30px 0;
+		}
+		.suggested_titles_list .st_top_row td{
+			border-bottom:1px solid black;
+			text-align:center;
+			font-weight:bold;
+		}
+		
+		.suggested_titles_list tr.st_on td{
+			background-color:#fff7f7;
+		}
+		
+		.suggested_titles_list td.st_title{
+			width:60%;
+			text-align:left;
+		}
+		
+		.suggested_titles_list td{
+			text-align:center;
+		}
+		
+		td.category_list{
+			text-align:center;
+		}
