@@ -1,0 +1,157 @@
+span.mw-rollback-link {
+	display: none;
+}
+
+#mw-diff-ntitle2a, #mw-diff-ntitle4{
+    display:none;
+}
+
+#feature_star, #markaspatrolledlinks, #fulledit, #undolink, #feature_star{
+	display: none;
+
+}
+
+#controls {
+text-align:right; font-size: 0.9em;
+}
+
+select.namespaceselector {
+	font-size: 11px;
+}
+
+table.rcleaders {
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+table.rcleaderboard{
+	margin-top:10px;
+}
+
+.rcleaders tr.dashed td{
+    border-bottom: 1px dashed #cccccc;
+    padding-bottom:5px;
+}
+
+td.rcleaderimg {
+	width: 42px;
+}
+
+table.rcleaders img {
+	height: 32px;
+}
+
+table.rcleaders td {
+    padding: 5px 0 0 0;
+}
+table.rcleaderboard td {
+    border-bottom: 1px dashed #ccc;
+    padding-top: 2px;
+}
+
+td.patrolcount {
+	text-align: right;
+	color: #000;
+}
+
+
+#mw-diff-otitle2, #mw-diff-ntitle2{
+    font-size:12px;
+}
+
+.rc_header{
+	background-color:#f2f2f2;
+	height:46px;
+	border-top:1px solid #bfb8a9;
+	border-bottom:1px solid #bfb8a9;
+	padding:0 40px;
+}
+
+.rc_header .button{
+    margin:0 5px;
+    border:none;
+}
+
+.rc_header input.button{
+    padding:0 0 2px 0;
+}
+
+.rc_submenu{
+	display:none;
+}
+
+.rc_submenu td{
+	background-color:#f9f4e9;
+	height:38px;
+	border-bottom:1px solid #bfb8a9;
+	text-align:center;
+	padding:5px 45px;
+}
+
+#rc_help td{
+	background-color:#ffffff;
+	text-align: left;
+}
+
+#rc_subtabs{
+	margin-top:-1px;
+	margin-bottom:20px;
+	height:21px;
+}
+
+#rc_subtabs .tableft{
+	background:url(/skins/WikiHow/images/rc_tabs.png) no-repeat 0 -25px;
+	height:21px;
+	padding-left:5px;
+	float:left;
+	margin-right:3px;
+}
+
+#rc_subtabs .tableft.on{
+	background-position: 0 -50px;
+}
+
+#rc_subtabs .tabright{
+	background:url(/skins/WikiHow/images/rc_tabs.png) no-repeat right -25px;
+	height:21px;
+	padding-right:5px;
+}
+
+#rc_subtabs .on .tabright{
+    background-position: right -50px;
+}
+
+#rc_subtabs a{
+	background:url(/skins/WikiHow/images/rc_tabs.png) repeat-x 0 0;
+	height:21px;
+	padding:0 5px;
+	line-height:20px;
+	color:#514239;
+	font-size:11px;
+	display:block;
+}
+
+#rc_subtabs .on a{
+	background-position:0 -75px;
+}
+
+#rc_subtabs .arrow{
+    background: url(/skins/WikiHow/images/rc_arrow.png) no-repeat top left;
+    width:8px;
+    height:8px;
+    margin:6px 3px 0 0;
+    float:left;
+}
+
+#rc_subtabs .on .arrow{
+    background: url(/skins/WikiHow/images/rc_arrow.png) bottom left;
+}
+
+#rc_subtabs a img{
+	margin-right:4px;
+}
+
+#rcactivewidget{
+	padding:5px 0;
+}
+
