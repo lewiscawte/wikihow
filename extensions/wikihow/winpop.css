@@ -1,0 +1,78 @@
+#winpop_overlay {
+position:fixed;
+top:0;
+right:0;
+bottom:0;
+left:0;
+height:100%;
+width:100%;
+margin:0;
+padding:0;
+background:#E7EDFF;
+opacity:.80;
+filter: alpha(opacity=80);
+-moz-opacity: 0.80;
+z-index:101;
+}
+
+
+
+#winpop_outer {
+    position:fixed;
+	top:10%;
+	left:25%;
+	margin:0;
+	padding:0;
+	z-index:102;
+	width:679px;
+}
+
+
+
+#winpop_inner {
+	margin: 10px 0 0 0;
+	padding: 15px 0;
+	overflow: auto;
+}
+
+#winpop_inner a{
+	cursor:pointer;
+}
+
+#winpop_inner h3{
+	margin:0 0 5px 0;
+	font-size:1.25em;
+}
+
+#winpop_inner ul{
+	margin:10px 0 0 15px;
+	padding:0;
+}
+
+#winpop_content{
+	background: url(/skins/WikiHow/images/article_bg.png) repeat-y;
+	padding:0 23px;
+}
+
+#winpop_outer.winpop_special #winpop_content {
+background-image:url(/skins/WikiHow/images/article_bg_v2_750.png);
+}
+
+#winpop_header {
+	border-bottom: 1px dashed #999;
+}
+
+    
+
+#winpop_logo { 
+	margin: 5px;
+}
+
+    
+
+#winpop_x {
+    float: right;
+	cursor: pointer;
+	cursor: hand;
+ }
+
