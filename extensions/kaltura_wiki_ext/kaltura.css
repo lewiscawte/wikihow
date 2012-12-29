@@ -1,0 +1,88 @@
+/*
+This file is part of the Kaltura Collaborative Media Suite which allows users
+to do with audio, video, and animation what Wiki platfroms allow them to do with
+text.
+
+Copyright (C) 2006-2008  Kaltura Inc.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+html,body { height:100%; }
+#modalbox{ position: fixed; left: 50%; top:15%; margin:0 0 0 -340px; background:#262626; border:3px solid #666;  z-index: 100; }
+#modalbox.modalbox2{ width:400px; margin:0 0 0 -200px; padding-top:20px; }
+#overlay{ position: fixed; top: 0; left: 0; z-index: 99; width: 100%; height: 100%; background:url(images/transBG.png) 0 0 repeat; cursor: wait; }
+
+/* Fixed posistioning emulation for IE6, currently no need because its being set via the JQM js to offset the wizard in the middle */
+* html #overlay{ position: absolute; background:#000; filter: alpha(opacity=40); top: expression((document.documentElement.scrollTop || document.body.scrollTop) + Math.round(0 * (document.documentElement.offsetHeight || document.body.clientHeight) / 100) + 'px'); }
+* html #modalbox{ position: absolute; top: expression((document.documentElement.scrollTop || document.body.scrollTop) + Math.round(5 * (document.documentElement.offsetHeight || document.body.clientHeight) / 100) + 'px'); }
+
+#modalbox iframe{ overflow:hidden; }
+
+#modalbox.editor{ top:50%; margin:-273px 0 0 -445px; }
+
+#modalbox.player{ top:15%; margin:0 0 0 -100px; }
+
+#kaltura_test{ color: blue; border: 1px solid #666; margin:1px }
+
+#mbCloseBtn{ right:10px; width:14px; height:14px; background:url(images/btn_close.gif) 0 0 no-repeat; }
+#mbCloseBtn.type1{ color:#ccc; position:absolute; top:4px; }
+#mbHelpBtn{ right:40px; background:url(images/btn_help.gif) 0 0 no-repeat; }
+#mbCloseBtn:hover, #mbHelpBtn:hover{ background-position:0 -14px; text-decoration: none; color:#fff; }
+
+/*--------------------------------
+	Form elements
+---------------------------------*/
+
+.scheme1{ margin:20px auto; width:750px; padding:5px; border:1px solid #ccc; background-color:#eee; }
+	.scheme1 .container{ padding:15px; }
+	
+	.scheme1 a{ color:#007196; }
+	.scheme1 h1{ background-color:#666; color: #fff; padding:12px 8px; font-size:2em; font-weight:normal; }
+	.scheme1 h1 p.right{ float:right; font-size:0.5em; line-height:1em; marign:0; color:#eee; }
+		.scheme1 h1 p.right a{ color:#D1EA7B; }
+	.scheme1 form h2{ background-color:#666; color: #fff; font-size:1.8em; padding: 8px; font-weight:normal; }
+		.scheme1 form h2 span{ color:#D1EA7B; font-size:0.85em; }
+	.scheme1 p, .scheme1 ol{ color:#555555; font-size:1.2em; font-weight:bold; }
+	.scheme1 ol{ color:#777; }
+	
+	.scheme1 input, .scheme1 textarea{ color:#444; font-size:12px; font-family:arial; font-weight:bold; padding:3px; border:1px solid #AAA; background-color:#FAFAFA; }
+	.scheme1 input:focus, .scheme1 textarea:focus{ color:#FF3333; background-color:#FFF; }
+	.scheme1 textarea{ overflow:auto; }
+	.scheme1 p.textbox{ clear:both; color:#444; font-weight:bold; padding:8px; margin:25px 0pt 30px; border-top:10px solid #ddd; border-bottom:10px solid #ddd; }
+	.scheme1 p:focus{ color:red; }
+	.scheme1 form{ padding:15px; }
+		.scheme1 form .item{ margin-bottom:10px; overflow:hidden; }
+		.scheme1 form .item label{ float:left; width:18em; line-height:2em; }
+		.scheme1 form label{ margin-right:20px; color:#555; font-size:1.2em; font-weight:bold; }
+		.scheme1 form div.item2 label{ float:none; line-height:1.4; }
+		.scheme1 form label.chkbx{ cursor: pointer; }
+			.scheme1 form div.item div.opts{ float:left; }
+		.scheme1 form div.item label.radio{ display:block; }
+			.scheme1 form div.item label.radio input{ vertical-align:middle; margin:0 5px -1px 0; }
+		.scheme1 form div.item input{ width:320px; font-size:1.4em; }
+		.scheme1 form input:focus{ color:#FF3333; }
+		.scheme1 ul.linksList li{ margin-bottom:10px; font-size:1.2em; font-weight:bold; }
+		.scheme1 label.chklabel{ cursor:pointer; }
+		.scheme1 fieldset.type1 div.item{ margin-bottom:8px; }
+		.scheme1 form label.radio, #page_new_app form label.chkbx{ cursor:pointer; }
+		.scheme1 form label.radio{ margin-right:2em; }
+		.scheme1 form label.radio input{ margin:0 6px -2px 0; border:0 none; }
+		.scheme1 form label.chkbx input{ width:auto; margin:-2px 6px 1px 0pt; vertical-align:middle; border:0 none; background-color:transparent; }
+		/* for radio buttons */
+		.scheme1 form div.item label.radio{ float:none; line-height:1.7em; width:auto; margin:0 20px 0 0; cursor:pointer; }
+		.scheme1 form div.item label.radio input{ width:auto; margin:0 5px -3px 0; border:none; background:none; cursor:pointer; }
+
+	.scheme1 button{ clear:both; font-weight:bold; font-size:2em; margin-right:8px; margin-top:40px; padding:3px 12px; color:#444; }
