@@ -1,0 +1,3 @@
+.comdash-container { border: 1px solid black; }
+.comdash-priorities { border: 1px dashed red; }
+.comdash-widget-box { border: 1px solid green; width: 250px; display: inline; }
