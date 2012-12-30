@@ -1,0 +1,394 @@
+/*
+ * Edit Finder Class
+ */
+var editfinder_preview = false;
+var g_bEdited = false;
+
+function EditFinder() {
+	this.m_title = '';
+	this.m_searchterms = '';
+}
+
+EditFinder.prototype.init = function () {
+	editFinder.getArticle();
+	
+	//bind skip link
+	jQuery('#editfinder_skip a').click(function(e) {
+		e.preventDefault();
+		if (!jQuery(this).hasClass('clickfail'))
+			editFinder.getArticle();	
+	});
+	
+	//update name/type
+	jQuery('#editfinder_stats h3').html('Your '+WH.lang['app-name']+': '+WH.lang[g_eftype]+' Stats');
+	
+	/*category choosing*/
+	jQuery('#editfinder_choose_cats').click(function(e){
+		e.preventDefault();
+		jQuery('#dialog-box').html('');
+		jQuery('#dialog-box').load('/Special:SuggestCategories', function(){
+			if (g_eftype !== '') {
+				jQuery('#suggest_cats').attr('action',"/Special:SuggestCategories?type="+g_eftype);
+			}
+			jQuery('#dialog-box').dialog( "option", "position", 'center' );
+			jQuery('#dialog-box td').each(function(){
+				var myInput = $(this).find('input');
+				var position = $(this).position();
+				$(myInput).css('top', position.top + 10 + "px");
+				$(myInput).css('left', position.left + 10 + "px");
+				$(this).click(function(){
+					editFinder.choose_cat($(this).attr('id'));
+				})
+			})
+			jQuery('#check_all_cats').click(function(){
+				var cats = jQuery('form input:checkbox');
+				var bChecked = jQuery(this).attr('checked');
+				for (i=0;i<cats.length;i++) {
+					var catid = cats[i].id.replace('check_','');
+					editFinder.choose_cat(catid,bChecked);
+				}
+			});
+		});
+		jQuery('#dialog-box').dialog({
+			width: 826,
+			modal: true,
+			title: 'Categories'
+		});
+	});
+	
+}
+
+EditFinder.prototype.choose_cat = function(key,bChoose) {
+	safekey = key.replace("&", "and");
+ 	var e = $("#" + safekey);
+	
+	//forcing it or based off the setting?
+	if (bChoose == null)
+		bChoose = (e.hasClass('not_chosen')) ? true : false;
+	
+ 	if (bChoose) {
+ 		e.removeClass('not_chosen');
+ 		e.addClass('chosen');
+ 		document.suggest_cats.cats.value += ", " + key;
+		jQuery('#check_' + safekey).attr('checked', true);
+ 	} else {
+ 		e.removeClass('chosen');
+ 		e.addClass('not_chosen');
+ 		var reg = new RegExp (key, "g");
+ 		document.suggest_cats.cats.value = document.suggest_cats.cats.value.replace(reg, '');
+		jQuery('#check_' + safekey).attr('checked', false);
+		jQuery('#check_all_cats').attr('checked', false);
+ 	}
+ }
+
+EditFinder.prototype.updateStandingsTable = function() {
+	var url = '/Special:EditFinder?getstandings=1';
+
+	jQuery.get(url, function (data) {
+		jQuery('#editfinder_standings_table').html(data);
+	});
+}
+
+EditFinder.prototype.getArticle = function(id) {
+	var url = '/Special:EditFinder?fetchArticle=1';
+	var e = jQuery('#article_title');
+	if (e.html()) {
+		url += '&skip=' + encodeURIComponent(e.html());
+	}	
+	var title = '';
+	
+	//add the edit type
+	if (g_eftype !== '') 
+		url += '&edittype=' + g_eftype;
+		
+	//add the article id if we need a specific one
+	if (id) 
+		url += '&id=' + id;
+	
+	jQuery('#editfinder_article_inner').fadeOut('fast');
+	jQuery('#editfinder_preview').fadeOut('fast',function() {
+		jQuery('#editfinder_spinner').fadeIn();
+		
+		jQuery.get(url, function (data) {
+			var json = jQuery.parseJSON(data);
+			
+			aid = json['aid'];
+			title = json['title'];
+			aURL = json['url'];
+
+			window.setTimeout(editFinder.getStats, 1000);
+			editFinder.display(title,aURL,aid,'editfinder_preview','intro');
+		});
+	});
+	
+	
+
+}
+
+// 
+//
+EditFinder.prototype.display = function (title, url, id, DIV, origin, currentStep) {
+
+	this.m_title = title;
+	this.m_product = 'editfinder';
+	this.m_textAreaID = 'summary';
+	this.m_currentStep = 0;
+
+	// set up post- dialog load callback
+	var showBox = this.m_currentStep !== 0;
+	var that = this;
+
+		
+	var urlget = '/Special:EditFinder?show-article=1&aid='+id;
+	jQuery.get(urlget, function(data) {
+		jQuery('#' + DIV).html(data);
+
+		//stop spinning and show stuff
+		jQuery('#editfinder_spinner').fadeOut('fast',function() {
+		
+			
+			//fill in the blanks
+			if (title == undefined) {
+				titlelink = '[No articles found]';
+			}
+			else {
+				titlelink = '<a href="'+url+'">'+title+'</a>';
+				jQuery('#editfinder_yes').click(function(e) {
+					e.preventDefault();
+					if (!jQuery(this).hasClass('clickfail')) {
+						editFinder.edit(id);
+					}
+				});
+			}
+			jQuery('#editfinder_article_inner').html(titlelink);
+			
+			jQuery('#editfinder_article_inner').fadeIn();
+			jQuery('#' + DIV).fadeIn();
+		});
+	});
+
+}
+
+
+EditFinder.prototype.edit = function (id,title) {
+	var url = '/Special:EditFinder?edit-article=1&aid='+id;
+
+	jQuery.ajax({
+		url: url,
+		success: function(data) {
+			document.getElementById('editfinder_preview').innerHTML = data;
+			jQuery('#editfinder_preview').css('height','950px');
+			restoreToolbarButtons();
+			//Preview button
+			jQuery('#wpPreview').click(function() {
+				editfinder_preview = true;
+			});
+			//Publish button
+			jQuery('#wpSave').click(function() {
+				editfinder_preview = false;
+			});
+			//form submit
+			jQuery('#editform').submit(function(e) {
+				e.preventDefault();
+				//just a preview?
+				if (editfinder_preview) {
+					editFinder.showPreview(id);
+					jQuery('html, body').animate({scrollTop:0});
+					}
+				else {
+					//pop conf modal
+					editFinder.displayConfirmation(id);
+				}
+			});
+	
+			//pre-fill summary
+			jQuery('#wpSummary').val("Edit from "+WH.lang['app-name']+": "+WH.lang[g_eftype]);
+	
+			//make Cancel do the right thing
+			jQuery('.editButtons a:last-child').click(function(e) {
+				e.preventDefault();
+				//do we need to make the preview disappear?
+				if (editfinder_preview) {
+					jQuery('#editfinder_preview_updated').fadeOut('fast');
+				}
+				editFinder.cancelConfirmationModal(id);
+			});
+			
+			//disable edit/skip choices
+			editFinder.disableTopButtons();		
+			
+			
+			//throw cursor in the textarea
+			jQuery('#wpTextbox1').focus();
+			jQuery('#wpTextbox1').change(function() {
+				g_bEdited = true;
+			});
+	
+			//add the id to the action url
+			action = jQuery('#editform').attr('action');
+			jQuery('#editform').attr('action',action+"&aid="+id+"&type="+g_eftype);
+		}
+	});
+}
+
+EditFinder.prototype.showPreview = function (id) {
+	var editform = jQuery('#wpTextbox1').val();	
+	var url = '/index.php?action=submit&wpPreview=true&live=true';
+	
+	jQuery.ajax({
+		url: url,
+		type: 'POST',
+		data: 'wpTextbox1='+editform,
+		success: function(data) {
+			
+			var XMLObject = data;
+			var previewElement = jQuery(data).find('preview').first();
+
+			/* Inject preview */
+			var previewContainer = jQuery('#editfinder_preview_updated');
+			if ( previewContainer && previewElement ) {
+				previewContainer.html(previewElement.first().text());
+				previewContainer.slideDown('slow');
+			}		
+		}
+	});
+}
+
+EditFinder.prototype.getStats = function () {
+	var url = '/Special:EditFinder?fetchStats=true';
+
+	jQuery.get(url, function (data) {
+		var json = jQuery.parseJSON(data);
+		jQuery('#editfinder_stats_today').html( json['today'] );
+		jQuery('#editfinder_stats_week').html( json['week'] );
+		jQuery('#editfinder_stats_all').html( json['all'] );
+		if (json['standing'] == 0) {
+			jQuery('#editfinder_stats_standing').html('NA');
+		} else {
+			jQuery('#editfinder_stats_standing').html( json['standing'] );
+		}
+
+		jQuery('#editfinder_msg').html( json['defaultmsg'] );
+	});
+}
+
+EditFinder.prototype.displayConfirmation = function( id ) {
+	var url = '/Special:EditFinder?confirmation=1&type='+g_eftype+'&aid='+ id;
+
+	jQuery('#img-box').load(url, function() {
+		jQuery('#img-box').dialog({
+		   width: 450,
+		   modal: true,
+		   title: 'Edit Finder Confirmation',
+		   show: 'slide',
+			closeOnEscape: true,
+			position: 'center'
+		});
+	});
+}
+
+EditFinder.prototype.closeConfirmation = function( bRemoveTemplate ) {	
+	//removing the template?
+	if (bRemoveTemplate) {
+		var text = jQuery('#wpTextbox1').val();
+		var reg = new RegExp('{{'+g_eftype+'[^\r\n]*}}','i');
+		jQuery('#wpTextbox1').val(text.replace(reg,''));
+	}
+	
+	//close modal window
+	jQuery('#img-box').dialog('close');
+	editFinder.resetTopButtons();
+	
+	jQuery('#editfinder_article_inner').fadeOut('fast');
+	jQuery('#editfinder_preview').fadeOut('fast');
+	jQuery('#editfinder_preview_updated').fadeOut('fast', function() {
+		jQuery('#editfinder_spinner').fadeIn();
+		jQuery('html, body').animate({scrollTop:0});
+	});
+	
+	//submit
+	jQuery.ajax({
+		type: 'POST',
+		url: jQuery('#editform').attr('action'),
+		data: jQuery('#editform').serialize()
+	});	
+	
+	//next!
+	window.location.reload();
+	return false;
+}
+
+EditFinder.prototype.cancelConfirmationModal = function( id ) {
+	var url = '/Special:EditFinder?cancel-confirmation=1&aid='+ id;
+
+	if (g_bEdited) {
+		jQuery('#img-box').load(url, function(data) {	
+			//changes; get the box
+			jQuery('#img-box').dialog({
+			   width: 450,
+			   modal: true,
+			   title: 'Edit Finder Confirmation',
+			   show: 'slide',
+				closeOnEscape: true,
+				position: 'center'
+			});
+			
+			//initialize buttons
+			jQuery('#efcc_yes').click(function(e) {
+				e.preventDefault();
+				jQuery('#img-box').dialog('close');
+				jQuery('html, body').animate({scrollTop:0});
+				editFinder.resetTopButtons();
+				editFinder.getArticle(id);
+				
+			});
+			jQuery('#efcc_no').click(function() {
+				jQuery('#img-box').dialog('close');
+			});
+		});
+	}
+	else {
+		//no change; go back
+		jQuery('html, body').animate({scrollTop:0});
+		editFinder.resetTopButtons();
+		editFinder.getArticle(id);
+		return;
+	}
+}
+
+EditFinder.prototype.disableTopButtons = function() {
+	//disable edit/skip choices
+	jQuery('#editfinder_yes').addClass('clickfail');	
+	jQuery('#editfinder_skip a').addClass('clickfail');
+	jQuery('#editfinder_skip_arrow').css('background-position','-165px -13px');
+}
+
+EditFinder.prototype.resetTopButtons = function() {
+	//disable edit/skip choices
+	jQuery('#editfinder_yes').removeClass('clickfail');
+	jQuery('#editfinder_skip a').removeClass('clickfail');
+	jQuery('#editfinder_skip_arrow').css('background-position','-165px 0');
+}
+
+
+var editFinder = new EditFinder();
+setInterval('editFinder.updateStandingsTable()', 600000);
+
+window.setTimeout(updateWidgetTimer, 60*1000);
+
+function updateWidgetTimer() {
+	updateTimer('stup');
+	window.setTimeout(updateWidgetTimer, 60*1000);
+}
+
+function updateTimer(id) {
+    var e = jQuery("#" + id);
+    var i = parseInt(e.html());
+    if (i > 1) {
+       e.fadeOut(400, function() {
+           i--;
+           e.html(i);
+           e.fadeIn();
+        });
+    }
+}
