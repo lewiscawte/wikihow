@@ -1,0 +1,91 @@
+#user_action,
+
+#search_site,
+
+#article_tabs,
+
+#ImportantLinks,
+
+#aside,
+
+#lower_ads,
+
+#Actions_table,
+
+#footer UL,
+
+DIV.SecL, 
+
+DIV.SecR,
+
+H2 SPAN.editsection,
+
+#accurate { display: none; }
+
+
+
+
+
+#footer P { display: block; }
+
+
+
+#breadcrumb {         
+
+	clear: both;
+
+	padding-top: 10px;    
+
+}
+
+    
+
+h2 { background-color: #FFF;}
+
+
+
+#sidebar{
+
+display:none;
+
+}
+
+
+
+#bubbles{
+
+display:none;
+
+}
+
+
+
+#article h2{background-image:none;}
+
+
+
+#share_icons, #end_options, #embed_this{display:none;}
+
+#article_tools_header{display:none;}
+
+div#article_shell{
+	width:800px;
+	margin:0;
+}
+
+div#article{
+	background-image:none;
+}
+
+body{
+	background-color:#ffffff;
+}
+
+div#last_question{
+	background:none;
+}
+
+img.module_cap{
+	display:none;
+}
+

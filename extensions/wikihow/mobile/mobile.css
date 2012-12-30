@@ -1,0 +1,184 @@
+@charset "utf-8";
+/* CSS Document */
+
+*{margin:0; padding:0; font-family:Helvetica, Arial;}
+
+a{text-decoration:none; color:#038aaf;}
+a img{border:none;}
+.floatright{float:right; margin:0 0 11px 11px;}
+.floatleft{float:left; margin:0 11px 11px 0;}
+.clear{clear:both;}
+.clearall{clear:both;}
+
+body{
+}
+
+#header_logo{
+	background-color:#f7f5f2;
+	padding:10px 10px;
+}
+
+.logo{
+	line-height:0px;
+}
+
+.surprise{
+	float:right;
+	font-size:12px;
+	font-family:Helvetica, Arial;
+	font-weight:bold;
+	color:#038aaf;
+	text-decoration:none;
+}
+
+#header_logo p{
+	font-size:12px;
+	color:#697d69;
+	margin-top:10px;
+}
+
+.search{
+	/* faster than this: background:url(/extensions/wikihow/mobile/images/bkg_search.jpg) repeat-x; */
+	background:url(data:image/jpg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAAPAAA/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLDAoKCwoKDBAMDAwMDAwQDA4PEA8ODBMTFBQTExwbGxscHx8fHx8fHx8fHwEHBwcNDA0YEBAYGhURFRofHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8f/8AAEQgAKwAPAwERAAIRAQMRAf/EAFIAAQEBAQAAAAAAAAAAAAAAAAAEAwcBAQEBAQAAAAAAAAAAAAAAAAABAgMQAQEBAAAAAAAAAAAAAAAAAAATEhEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A7/twYNgmooUBLUQqCSioUBNQCgMQAf/Z) repeat-x;
+
+	border:1px solid #b5aa95;
+	height:29px;
+	padding:7px 0;
+}
+
+.search_box{
+	/* faster than this: background:#FFFFFF url(/extensions/wikihow/mobile/images/sherlock.gif) no-repeat left center; */
+	background:#FFFFFF url(data:image/gif;base64,R0lGODlhEAAMAMQAALKysrq6utLS0snJyc3Nza6ursXFxbu7u7GxsaioqODg4La2tqCgoMTExKGhodHR0aWlpZiYmJycnJeXl////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAAAAAAALAAAAAAQAAwAQAVJICWOwBRFEDGuIyJNU/FKDzsFLDEdLFVEhpFAIulRABHEiEA0OoeTAesFCZSAxgmEFZg0eijWIWpkTByLxEkicLIes5p79BgoQgA7) no-repeat left center;
+	border:3px solid #E6EAE2;
+	height:17px;
+	margin-left:5px;
+	padding:4px 2px 2px 20px;
+	width:217px;
+	float:left;
+	-webkit-border-radius:0px;
+}
+
+.home_label{
+	position:absolute;
+	top:-10px;
+	left:-12px;
+	z-index:1;
+}
+
+#article_top{
+	background-color:#f7f5f2;
+	padding:15px;
+	position:relative;
+	font-size:12px;
+}
+
+h1{
+	font-size:18px;
+	color:#038aaf;
+	margin:15px 0 0 0;
+}
+
+h3{
+	font-family:Helvetica, Arial;
+	color:#ffffff;
+	font-size:12px;
+	background-color:#98a596;
+	padding:0 15px;
+	line-height:23px;
+	text-align:left;
+}
+
+.rounders{
+	position:relative;
+}
+
+.corner{
+	position:absolute;
+	background:url(/extensions/wikihow/mobile/images/image_sprite.png) no-repeat;
+	height:10px;
+	width:10px;
+}
+
+.top_left{
+	background-position:-134px -31px;
+	top:0;
+	left:0;
+}
+
+.top_right{
+	background-position:-124px -31px;
+	top:0;
+	right:0;
+}
+
+.bottom_left{
+	background-position:-134px -21px;
+	bottom:0;
+	left:0;
+}
+
+.bottom_right{
+	background-position:-124px -21px;
+	bottom:0;
+	right:0;
+}
+
+.grey .top_left{
+	background-position:-134px -10px;
+}
+.grey .top_right{
+	background-position:-124px -10px;
+}
+.grey .bottom_left{
+	background-position:-134px 0;
+}
+.grey .bottom_right{
+	background-position:-124px 0;
+}
+
+#footer_links{
+	background-color:#dee5d7;
+	border-left:1px solid #b5aa95;
+	border-bottom:1px solid #b5aa95;
+	border-right:1px solid #b5aa95;
+	padding:10px 6px;
+}
+
+#footer_links a{
+	font-size:12px;
+}
+
+/********************
+ buttons
+ *********************/
+.button{
+	background:url(/extensions/wikihow/mobile/images/btn_blue.png) no-repeat;
+	height:26px;
+	line-height:26px;
+	color:#ffffff;
+	display:block;
+	text-align:center;
+	font-size:12px;
+}
+
+.button.center{
+	margin:0 auto;
+}
+
+.button_150{
+	background-position:0 0;
+	width:150px;
+}
+
+.search_button{
+	background:url(/extensions/wikihow/mobile/images/btn_blue.png) no-repeat -150px 0;
+	font-size:12px;
+	color:#f1f9fc;
+	width:61px;
+	height:29px;
+	border:none;
+	font-weight:bold;
+	float:left;
+	-webkit-border-radius:0px;
+}
+
