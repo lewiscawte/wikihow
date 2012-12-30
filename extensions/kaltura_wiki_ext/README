@@ -1,0 +1,52 @@
+Below are the instructions for installing Kaltura's MediaWiki Video Extension.
+(These instructions and additional information can also be found at: http://www.kaltura.com/wiki/index.php/MediaWiki_Extension)
+Note that this extension can be used with MediaWiki version 1.10 and up.
+
+If you are installing this extension for the first time:
+
+1. Extract the zipped file under the wiki/extensions directory.
+   It will create a directory called kaltura_wiki_ext which will include 20 files of types 'php' 'js' and 'css' and a directory named 'log' (which includes a single file) and a directory named 'images'
+
+2. In the wiki's main directory, edit LocalSettings.php, and under the line saying
+  require_once( "$IP/includes/DefaultSettings.php" );
+  Or
+  require_once( "includes/DefaultSettings.php" );
+
+  paste the following:
+  require_once( "$IP/extensions/kaltura_wiki_ext/kaltura_extension.php" );
+
+3. Log into the wiki as an admin.  
+Now refresh the wiki and go to Special Pages – you will see a new special page named: 
+"Video extension installation".  Click on the new page and follow the instructions to complete installation
+
+4. Following the installation, we recommend that you enable logging, in order to monitor and track any issues. To enable logging:
+      * Set $log_kaltura_services = true;
+      * Grant write permissions to the '../kaltura_wiki_ext/log' directory in order to
+	allow the extension to log debug info into a file called 'kaltura_extension_log' 
+
+5. Feel free to contact Kaltura at support@kaltura.com with any question you have.
+
+
+If you are updating your existing Kaltura video extension /Already have a Kaltura Partner ID:
+
+1. Under the wiki/extensions directory, rename the directory called kaltura_wiki_ext to be named kaltura_wiki_ext1
+   This will ensure that your previous version is saved (in the rare case that it will need to be referenced in the future)
+
+2. Extract the zipped file under the wiki/extensions directory.
+   It will create a directory called kaltura_wiki_ext which will include 20 files of types 'php' 'js' and 'css' and a directory named 'log' (which includes a single file) and a directory named 'images'
+
+3. Log into the wiki as an admin.  
+Now refresh the wiki and go to Special Pages – you will see a new special page named: 
+"Video extension installation". Click on the new page and follow the instructions to complete installation.
+
+IMPORTANT NOTE:  Make sure to mark on the installation page that you ALREADY 
+have a Kaltura Partner ID. You will then be prompted to provide your Kaltura Partner ID 
+and Secret (provided when you first signed up) in order to save your previous settings and information.
+
+4. Following the installation, we recommend that you enable logging, in order to monitor and track any issues. To enable logging:
+      * Set $log_kaltura_services = true;
+      * Grant write permissions to the '../kaltura_wiki_ext/log' directory in order to
+	allow the extension to log debug info into a file called 'kaltura_extension_log' 
+
+5. Feel free to contact Kaltura at support@kaltura.com with any question you have.
+
