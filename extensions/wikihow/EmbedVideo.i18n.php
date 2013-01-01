@@ -1,0 +1,37 @@
+<?
+$messages = array();
+$messages['en']= 
+        array(
+		'embedvideo-missing-params' => 'EmbedVideo is missing a required parameter.',
+        'embedvideo-bad-params' => 'EmbedVideo received a bad parameter.',
+        'embedvideo-unparsable-param-string' => 'EmbedVideo received the unparsable parameter string "<tt>$1</tt>".',
+        'embedvideo-unrecognized-service' => 'EmbedVideo does not recognize the video service "<tt>$1</tt>".',
+        'embedvideo-bad-id' => 'EmbedVideo received the bad id "$1" for the service "$2".',
+        'embedvideo-illegal-width' => 'EmbedVideo received the illegal width parameter "$1".',
+        'embedvideo-embed-clause' =>
+            '<object width="$2" height="$3">'.
+            '<param name="movie" value="$1"></param>'.
+			'<param name="allowfullscreen" value="true"></param>' .
+            '<param name="wmode" value="transparent"></param>'.
+            '<embed src="$1" type="application/x-shockwave-flash" '.
+            'wmode="transparent" width="$2" height="$3">'.
+            '</embed></object>',
+        'embedvideo-embed-clause-howcast' =>
+            '<object width="$2" height="$3">'.
+            '<param name="movie" value="$1"></param>'.
+			'<param name="allowfullscreen" value="true"></param>' .
+            '<param name="wmode" value="transparent"></param>'.
+            '<param name="allowScriptAccess" value="always"></param>'.
+            '<embed src="$1" type="application/x-shockwave-flash" '.
+            'wmode="transparent" width="$2" height="$3" allowFullScreen="true" allowScriptAccess="always">'.
+            '</embed></object>',
+        'embedvideo-embed-clause-videojug' =>
+            '<object width="$2" height="$3">'.
+            '<param name="movie" value="$1"></param>'.
+            '<param name="allowfullscreen" value="true"></param>' .
+            '<param name="wmode" value="transparent"></param>'.
+            '<param name="allowScriptAccess" value="always"></param>'.
+            '<embed src="$1" type="application/x-shockwave-flash" '.
+            'wmode="transparent" width="$2" height="$3" allowFullScreen="true" allowScriptAccess="always">'.
+            '</embed></object>'
+	);
