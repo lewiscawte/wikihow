@@ -1,0 +1,103 @@
+abuse_filter 			- AbuseFilter extension
+abuse_filter_action		- AbuseFilter extension
+abuse_filter_history 	- AbuseFilter extension
+abuse_filter_log		- AbuseFilter extension
+archive					- Mediawiki
+avatar					- List of avatar user images
+blobs					- Mediawiki
+brokenlinks				- Mediawiki
+bugreport				- Used by Special:Bugreport, which receives bug reports from the toolbar. Mostly obsolete;
+cat_views				- Tracks logged in users page views by top level category so we can suggest articles to write
+categorylinks			- Mediawiki 
+categorylinkstop		- Links pages to their top level category
+checkjs					- Was used for tracking some sort of javascript thing, has 2018747 rows, if no more updates, can delete
+cu_changes				- Check user
+cu_log					- Check user
+docentcategories		- Docents feature, obsolete by keep for now
+docentwarnings			- Docents feature, obsolete by keep for now
+drafts					- Drafts extension
+edit_track				- Used to track how many people who click edit, click "Save"
+email_notifications		- Email notifications table
+emailfeed				- Used for capturing email addresses for future email list?	
+et						- Track rejected emails 
+externallinks			- Mediawiki
+facebook_sessions		- Use for Facebook App, last update 2010-11, could be deleted
+filearchive				- Mediawiki
+firstedit				- Aggregrate count of who started which article, makes it easier than scanning the revision table for rev_user
+gmini					- Logs GSA searches/errors	
+google_indexed			- Was used to track which pages had been indexed in Google, hasn't been updated since 09/2009
+google_monitor			- Extension for tracking a subset of pages that are indexed in Google
+google_monitor_results 	- Extension for tracking a subset of pages that are indexed in Google
+image					- Mediawiki
+imageadder				- Intro Image adder extension
+imageadder_standings	- Intro Image adder extension
+imagelinks				- Mediawiki
+import_articles			- ImportXML: Import articles through XML
+improve_links			- List of certain templates for "Articles you can improve" list we used to have
+interwiki				- Mediawiki
+ipblocks				- Mediawiki
+job						- Mediawiki
+langlinks				- Mediawiki
+logging					- Mediawiki
+mailman_subscribe		- Docents feature
+mailman_unsubscribe		- Docents feature
+math					- Mediawiki
+me						- UserMailer spam tracker
+newarticlepatrol		- New article boost feature
+objectcache				- Mediawiki
+oldimage				- Mediawiki
+page					- Mediawiki
+page_restrictions		- Mediawiki
+pagelinks				- Mediawiki
+pagelist				- Rising star feed, etc
+pageswithbrokenlinks	- Pageswithbrokenlinks extension
+passcaptcha				- Catpcha
+profilebox				- Profile boxes for user pages
+proposedredirects		- CreatePage users can suggest creating redirects to existing articles
+protected_titles		- Mediawiki
+querycache				- Mediawiki
+querycache_info			- Mediawiki
+querycachetwo			- Mediawiki
+rating					- Ratings for "Was this article accurate? Yes/No" feature
+rating_low				- Summary of articles with low ratings, refreshed nightly
+recentchanges			- Mediawiki
+redirect				- Mediawiki
+revision				- Mediawiki
+rssfeed					- Managerss feed extension that is not yet finished
+ru_stcl					- Russian suggested titles
+searchindex				- Mediawiki 
+share_id				- Rudimentary tracking system for clicking specific links see clickshare in wikibits
+share_track				- Rudimentary tracking system for clicking specific links see clickshare in wikibits
+site_stats				- Mediawiki
+sitesnap				- Dailystats
+skey					- Keys for various searching like Related wikihows drop down, could be improved with Sphinx
+slog					- Old archive of searches performed on the site
+snap					- DailyStats extension
+spoofuser				- AntiSpoof extension
+stcl					- Batch of suggestions, possibly could be deleted
+stop_words				- Used for generating search keys for skey
+sugg					- Spelling suggestions that were logged from Google SOAP API back in the day
+suggest_cats			- CreatePage, users can store what categories they are interested in for suggestions
+suggested_links			- Links suggestions to actual article pages for "Articles for you to write" section
+suggested_notify		- You can be notified when your suggestion has ben written
+suggested_titles		- A list of suggested titles for Special:CreatePage
+templatelinks			- Mediawiki
+text					- Mediawiki
+trackbacks				- Mediawiki
+transcache				- Mediawiki
+urls					- Used for page counter script from front ends
+user					- Mediawiki, but now obsolete since we store this table in wiki_shared
+user_groups				- Mediawiki
+user_newkudos			- Mediawiki
+user_newtalk			- Fan Mail feature, similar to user_newtalk
+user_rights				- I think this is a precursor to user_groups in Mediawiki, may be able to delete
+video_blacklist			- Related videos extension
+video_data				- Related videos extension
+video_flag				- Related videos extension
+video_links				- Related videos extension
+video_removedlinks		- Related videos extension
+video_titles			- Related videos extension
+videoaddear				- Video adder extension, similar to Intro Image Adder
+watchlist				- Mediawiki
+ytas_meta				- Used for Youtube upload extnesion, not really used anymore but the extension still exists
+
