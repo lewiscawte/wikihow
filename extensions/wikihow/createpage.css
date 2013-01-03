@@ -1,0 +1,60 @@
+div.cpbox {
+	width: 600px;
+	border: 1px solid #ccc;
+	padding: 20px;
+	margin-bottom: 30px;
+	font-size: 110%;
+	line-height: 1.8;
+}
+div.cpbox INPUT  {
+	font-weight: bold;
+	padding: 	3px;
+}
+div.cpbox input.button{ /*need this b/c its overwriting the button styles */
+padding-top:0px;
+padding-bottom:3px;
+}
+table.cpresults {
+	width: 100%;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+table.cpresults td {
+	border: 1px solid #eee;
+	padding: 2px;
+	margin: 2px;
+}
+
+INPUT[disabled] {
+    background-color: #EEE;
+    color: #000000;
+	font-weight: normal;
+}
+
+input.next[disabled] {
+	font-weight: normal;
+}
+input.next {
+	font-weight: bold;
+}
+
+table.p_redirects {
+	width: 100%;
+	margin-left:auto; margin-right:auto;
+	font-size: 90%;
+}
+table.p_redirects td{
+	border-bottom: 1px solid #ccc;
+}
+
+tr.toprow td{
+	background: #ccc;
+	font-weight: bold;
+	text-align: center;
+	padding: 5px;
+}
+
+td.btn {
+	text-align:center;
+	padding: 3px;
+}
