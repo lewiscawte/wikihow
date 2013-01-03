@@ -1,0 +1,64 @@
+#sliderbox {
+	position: fixed;
+	width: 300px;
+	height: 200px;
+	bottom: 0;
+	right: 0;
+	display: none;
+}
+
+/* IE6 HACK for position: fixed */
+/* blech */
+* html #sliderbox  { position: absolute; }
+/* end blech */
+
+#sliderbox h2 {
+	background: url(./header_bg.png) repeat-x 0 0;
+	height: 32px;
+	line-height: 32px;
+	padding-left: 12px;
+	font-size: 1.2em;
+	border: 2px solid #b5ab97;
+	-moz-border-radius: 10px 10px 0 0;
+    -webkit-border-radius: 10px 10px 0 0;
+    -khtml-border-radius: 10px 10px 0 0;
+    border-radius: 10px 10px 0 0;
+	-moz-box-shadow: -3px 3px 4px #BFBFBF;
+	-webkit-box-shadow: -3px 3px 4px #BFBFBF;
+	box-shadow: -3px 3px 4px #BFBFBF;
+}
+
+a#slider_close_button {
+	float: right;
+	margin-right: 10px;
+}
+a#slider_close_button:hover { text-decoration: none; }
+
+#slider_contents {
+	background: url(./book_question.png) #FFF no-repeat 20px 20px;
+	border: 2px solid #b5ab97;
+	border-top: none;
+	height: 250px;
+	padding: 20px 40px 20px 90px;
+	font-size: .9em;
+	color: #111;
+	-moz-box-shadow: -3px 3px 4px #BFBFBF;
+	-webkit-box-shadow: -3px 3px 4px #BFBFBF;
+	box-shadow: -3px 3px 4px #BFBFBF;
+}
+
+.slider_strong {
+	font-weight: bold;
+	font-size: 1.6em;
+	padding: 2px 0;
+}
+
+#slider_no {
+	float: right;
+	line-height: 26px;
+	font-weight: bold;
+}
+
+#slider_choices {
+	margin-top: 14px;
+}
