@@ -1,0 +1,39 @@
+.ui-autocomplete-loading { 
+	background: white url('/skins/WikiHow/images/catsearch-working.gif') right center no-repeat; 
+} 
+
+.csui_hidden {
+	display: none;
+	visibility: hidden;
+}
+
+#csui_interests {
+	margin-top: 5px;
+	width: 295px;
+}
+
+.csui_category {
+	background: #FCFBF4;
+	border: 1px #BDB7A7 solid;
+	color: #504239;
+	padding: 2px 0px 2px 3px;
+	margin: 2px 0px 2px 0px;
+	min-width: 1px;
+}
+
+.csui_close {
+	margin-right: 3px;
+	float: right;
+	cursor: pointer;
+}
+
+.csui_categories {
+	min-height: 20px;
+	width: 300px;
+	margin-top: 3px;
+	margin-bottom: 10px;
+}
+
+.csui_categories_outer {
+	margin-top: 15px;
+}
