@@ -1,0 +1,4 @@
+# pad*.whstatic.com robots.txt
+User-agent: *
+Disallow: /
+

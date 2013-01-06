@@ -1,0 +1,14 @@
+	<script type='text/javascript'>
+
+	var rc_URL = "";
+	var rc_ReloadInterval = 0;
+    if(wgUserID > 0) {
+        var rc_URL = "http://" + window.location.hostname + "/Special:RCWidget/current";
+        var rc_ReloadInterval = 60000;
+    } else {
+        var rc_URL = "http://" + window.location.hostname + "/Special:RCWidget";
+        var rc_ReloadInterval = 160000;
+    }
+?>
+        Event.observe(window, 'load', rcwLoad);
+	</script>
