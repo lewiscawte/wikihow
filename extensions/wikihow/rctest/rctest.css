@@ -1,0 +1,51 @@
+#rct_data {
+	display: none;
+}
+
+#rct_debug {
+	display: block !important;
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	background: yellow;
+}
+
+#rct_results {
+	display: none;
+	position: relative;
+	width: 644px;
+	border-top: 1px solid #BFB8A9;
+	border-bottom: 1px solid #BFB8A9;
+	margin-bottom: -70px;
+	margin-left: -23px;
+	margin-top: -15px;
+	background-color: #F2F2F2;
+	padding: 15px;
+}
+
+#rct_next_button {
+	margin-left: auto;
+	margin-right: auto;
+	cursor: pointer;
+	margin-top: 10px;
+	background-position: 0% 0px;
+}
+
+#rct_heading {
+	font-size: 1.5em;
+	font-weight: bold;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10px;
+	width: 185px;
+}
+.rct_section {
+	font-size: 1.2em;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+#rct_results p {
+	margin-bottom: 10px;
+}
+

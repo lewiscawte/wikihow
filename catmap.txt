@@ -1,0 +1,22 @@
+	
+$catmap = array(
+	"Arts & Entertainment" => "Image:Category_arts.jpg", 
+	"Health" => "Image:Category_health.jpg", 
+	"Relationships" => "Image:Category_relationships.jpg", 
+	"Cars & Other Vehicles" => "Image:Category_cars.jpg", 
+	"Hobbies & Crafts" => "Image:Category_hobbies.jpg", 
+	"Sports & Fitness" => "Image:Category_sports.jpg", 
+	"Computers & Electronics" => "Image:Category_computers.jpg", 
+	"Holidays & Traditions" => "Image:Category_holidays.jpg", 
+	"Travel" => "Image:Category_travel.jpg", 
+	"Education & Communications" => "Image:Category_education.jpg", 
+	"Home & Garden" => "Image:Category_home.jpg", 
+	"Work World" => "Image:Category_work.jpg", 
+	"Family Life" => "Image:Category_family.jpg", 
+	"Personal Care & Style" => "Image:Category_personal.jpg", 
+	"Youth" => "Image:Category_youth.jpg", 
+	"Finance, Business & Legal" => "Image:Category_finance.jpg", 
+	"Pets & Animals" => "Image:Category_pets.jpg", 
+	"Food & Entertaining" => "Image:Category_food.jpg", 
+	"Philosophy & Religion" => "Image:Category_philosophy.jpg", 
+);
