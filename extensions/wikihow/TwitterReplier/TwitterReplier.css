@@ -1,0 +1,168 @@
+#tweetit_container {
+	margin:0 0 0 -25px;
+}
+
+#screenName {display:none}
+#profileImage {display:none}
+#new_tweets {
+	font-weight:bold;
+	display:none;
+	background-color: #EEF6E3;
+	padding:10px;
+	width:643px;
+	border:1px solid #ADB1A7;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	text-align: center;
+	margin: 0 0 10px 15px;
+}
+
+ul#tweets_ticker {
+	width:690px;
+	float:left; 
+	margin: -15px 10px -64px 0;
+	padding:0;
+	height: 589px;
+	overflow:auto;
+}
+
+#tweets_ticker li {
+	width:656px;
+	margin: 0;
+	padding: 13px 0px 16px 19px;
+	border-bottom:1px solid #ADB1A7; 
+	list-style: none;
+}
+
+/*#tweets_ticker li span .avatar {*/
+span .avatar {
+	float:left;
+	padding:5px;
+	margin: 1px 13px 5px 0;
+	display:block;
+}
+
+span .tweet {
+	width:580px;
+	display:block;
+	float:left;
+}
+/* #tweets_ticker li span .time { */
+span .time {
+	color: #B1B1B1;
+	font-size:10px;
+}
+
+#authorizationContainer {
+	display:none;
+}
+
+#authorizationContainer hr {
+	margin: 0 -12px 0 -12px;
+}
+#authorizationContainer .images {
+	text-align: center;
+	margin:30px 0px 34px 0px;
+}
+
+#authorizationContainer .images img {
+	margin-right:14px;
+}
+#authorizationContainer .button {
+	text-align:right;
+	margin: 15px 15px -1px 0;
+}
+
+#reply_container {
+	margin: -108px 0 -63px 690px;
+	padding: 0 0 0 10px;
+	background-color:white;
+	width:285px;
+	background-image: url( /extensions/wikihow/TwitterReplier/images/bg_reply_left_rail.gif);
+	background-position:left center;
+	background-repeat: repeat-y;
+	min-height:684px;
+	-moz-border-radius: 0px 10px 10px 0px;
+	border-radius: 0px 10px 10px 0px;
+}
+
+#instructions {
+	padding: 179px 0 0 0;
+}
+
+#instructions img {
+	vertical-align: middle;
+}
+#instructions p {
+	color: #0075a1;
+	font-weight:bold;
+	font-size: 18px;
+	background-image: url("/extensions/wikihow/TwitterReplier/images/icon_left_arrow.gif");
+    background-repeat: no-repeat;
+	padding-left:95px;
+}
+
+#close {
+	padding: 14px 15px 16px 0;
+	font-weight:bold;
+	color: #0075a1;
+	height:7px;
+	text-align:right;
+	font-size:13px;
+	-moz-border-radius: 0 10px 0 0;
+	border-radius: 0px 10px 0px 0px;
+	margin:0 0 17px -9px;
+}
+
+#trSearchForm input {
+	border:1px solid #D9D3C7;
+	width:222px;
+	height:27px;
+	padding: 0 33px 0 9px;
+	margin-bottom:17px;
+	background-image:url(/extensions/wikihow/TwitterReplier/images/icon_magnifying_glass.gif);
+	background-position:96% 50%;
+	background-repeat:no-repeat
+}
+#suggestedTitles {
+	width:267px;
+	border:1px solid #ADB1A7;
+	border-collapse: collapse;
+	font-size:13px;
+}
+
+#suggestedTitles a {color:#4D8BA9;}
+
+#suggestedTitles thead {display:none}
+
+#suggestedTitles .even {
+	background-color:#F8F7F3;
+}
+
+#suggestedTitles .odd {
+	background-color:white;
+}
+
+#suggestedTitles td {
+	padding:8px 3px 8px 7px;
+}
+
+#respond_to {
+	color:#717171;
+}
+
+#reply_tweet {
+	width:237px;
+	height:53px;
+	font-family:arial;
+	font-size:11px;
+	padding:9px;
+}
+
+#over_limit {color:red}
+.dark_grey{color:#333}
+.grey{color:#858585}
+.light_grey{color:#a3a3a3}
+.steps {font-size:18px}
+.locked{background-color:#efeeeb}
+.bold{font-weight:bold}
